@@ -1,0 +1,10 @@
+node_modules
+dist
+*.local
+.env
+.env.*
+.DS_Store
+*.log
+node_modules/.tmp
+dist.novo
+dist.antigo

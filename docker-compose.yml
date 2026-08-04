@@ -1,0 +1,35 @@
+# Sobe sua aplicação + um Postgres próprio. Um comando: docker compose up -d --build
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?defina DB_PASSWORD no .env}
+      POSTGRES_DB: app
+    volumes:
+      - dados_db:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    environment:
+      HOST: 0.0.0.0
+      PORT: "3000"
+      DB_SCHEMA: app_recife_por_elas
+      DATABASE_URL: postgres://app:${DB_PASSWORD}@db:5432/app
+    ports:
+      - "${PORTA_PUBLICA:-8080}:3000"
+
+volumes:
+  dados_db:
