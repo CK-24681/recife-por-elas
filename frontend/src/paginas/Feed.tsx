@@ -257,6 +257,20 @@ export default function Feed() {
           </div>
         ) : (
           <div className="fd-grade">
+            {(filtro === '' || filtro === 'Emprego') && (
+              <div className="fd-card surgir" style={{ background: '#fdf8f6', borderColor: '#fed7aa' }}>
+                <span className="fd-card-tag" style={{ background: '#ea580c', color: '#fff', border: 'none' }}>
+                  ⚠️ Guia de Vagas Oficiais
+                </span>
+                <h3 style={{ color: '#9a3412', marginTop: 8 }}>Portal Emprega Brasil / Agência do Trabalho PE</h3>
+                <p style={{ color: '#7c2d12', fontWeight: 500 }}>
+                  As vagas oficiais do estado são atualizadas diariamente no portal do governo. Siga os passos: 1. Clique no botão abaixo. 2. Acesse com seu Gov.br. 3. No filtro de cidade, digite 'Recife' e busque pela sua área de interesse.
+                </p>
+                <a href="https://servicos.mte.gov.br/" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: 12, padding: '8px 16px', background: '#ea580c', color: '#fff', borderRadius: 6, fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
+                  Acessar Portal de Vagas
+                </a>
+              </div>
+            )}
             {filtradas.map((item: Oportunidade, i: number) => {
               const externo = item.link_inscricao && !item.id;
               // Descrição decodificada e limpa — seguro contra XSS

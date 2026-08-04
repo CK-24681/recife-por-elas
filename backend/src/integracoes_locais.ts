@@ -214,88 +214,6 @@ const CAPACITACAO_LOCAL: OportunidadeExterna[] = [
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ─────────────────────────────────────────────────────────────────────────────
-// 3.  EMPREGOS REAIS — Operacionais (🟡 Seed inteligente)
-// ─────────────────────────────────────────────────────────────────────────────
-
-const EMPREGOS_REAIS: OportunidadeExterna[] = [
-  {
-    titulo: 'Auxiliar de Limpeza (Hospitalar)',
-    descricao: 'Vaga para auxiliar de serviços gerais com foco em limpeza hospitalar. Necessário ensino fundamental e experiência prévia. Escala 12x36.',
-    empresa: 'Hospital da Restauração (Terceirizada)',
-    tipo: 'Emprego',
-    fonte: 'Agência de Emprego Recife',
-    link_inscricao: 'https://conecta.recife.pe.gov.br',
-    bairro: 'Derby',
-    endereco: 'Rua Amauri de Medeiros, Derby, Recife - PE',
-    latitude: -8.0558,
-    longitude: -34.8988,
-    horario: 'Escala 12x36 (Dia ou Noite)',
-    data_inicio_inscricao: new Date().toISOString().slice(0, 10),
-    data_fim_inscricao: '',
-  },
-  {
-    titulo: 'Costureira Industrial',
-    descricao: 'Contrata-se costureira com experiência em máquina reta e overlock para confecção de fardamentos. Salário fixo + produção + VT.',
-    empresa: 'Confecções Nordeste',
-    tipo: 'Emprego',
-    fonte: 'SINE Recife',
-    link_inscricao: 'https://empregabrasil.mte.gov.br',
-    bairro: 'Imbiribeira',
-    endereco: 'Av. Marechal Mascarenhas de Morais, Imbiribeira, Recife - PE',
-    latitude: -8.1068,
-    longitude: -34.9142,
-    horario: 'Seg–Sex, 7h30–17h15',
-    data_inicio_inscricao: new Date().toISOString().slice(0, 10),
-    data_fim_inscricao: '',
-  },
-  {
-    titulo: 'Atendente de Padaria',
-    descricao: 'Atendimento ao balcão, reposição de vitrine e organização do salão. Não exige experiência prévia, apenas boa comunicação. Morar próximo.',
-    empresa: 'Padaria Boa Viagem',
-    tipo: 'Emprego',
-    fonte: 'SINE Recife',
-    link_inscricao: 'https://empregabrasil.mte.gov.br',
-    bairro: 'Boa Viagem',
-    endereco: 'Rua Ribeiro de Brito, Boa Viagem, Recife - PE',
-    latitude: -8.1189,
-    longitude: -34.9015,
-    horario: 'Turno Tarde/Noite (13h às 21h)',
-    data_inicio_inscricao: new Date().toISOString().slice(0, 10),
-    data_fim_inscricao: '',
-  },
-  {
-    titulo: 'Auxiliar de Cozinha / Merendeira',
-    descricao: 'Preparação de alimentos, higienização de hortifrúti e apoio ao cozinheiro. Preferência por quem já trabalhou em refeitórios ou escolas.',
-    empresa: 'Restaurante Sabor Cidadão',
-    tipo: 'Emprego',
-    fonte: 'Agência de Emprego Recife',
-    link_inscricao: 'https://conecta.recife.pe.gov.br',
-    bairro: 'Santo Amaro',
-    endereco: 'Av. Cruz Cabugá, Santo Amaro, Recife - PE',
-    latitude: -8.0531,
-    longitude: -34.8770,
-    horario: 'Seg–Sáb, 6h–14h',
-    data_inicio_inscricao: new Date().toISOString().slice(0, 10),
-    data_fim_inscricao: '',
-  },
-  {
-    titulo: 'Recepcionista (Clínica Popular)',
-    descricao: 'Marcação de exames, atendimento telefônico e acolhimento de pacientes. Ensino médio completo e conhecimento básico em informática.',
-    empresa: 'Clínica Saúde Recife',
-    tipo: 'Emprego',
-    fonte: 'Vagas.com',
-    link_inscricao: 'https://vagas.com.br',
-    bairro: 'Casa Amarela',
-    endereco: 'Rua Padre Lemos, Casa Amarela, Recife - PE',
-    latitude: -8.0315,
-    longitude: -34.9168,
-    horario: 'Seg–Sex, 8h–18h',
-    data_inicio_inscricao: new Date().toISOString().slice(0, 10),
-    data_fim_inscricao: '',
-  }
-];
-
-// ─────────────────────────────────────────────────────────────────────────────
 // 4.  REDE DE APOIO — ONGs, CRAS, CREAS, Creches (🟡 Seed com endereços reais)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -530,7 +448,6 @@ export function buscarOportunidadesLocais(
   filtros?: { tipo?: string; bairro?: string }
 ): OportunidadeExterna[] {
   const todas: OportunidadeExterna[] = [
-    ...EMPREGOS_REAIS,
     ...BENEFICIOS_REAIS,
     ...CAPACITACAO_LOCAL,
     ...REDE_APOIO_LOCAL,
