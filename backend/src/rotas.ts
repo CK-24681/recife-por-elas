@@ -4,7 +4,7 @@
 import type { Express, Request, Response, NextFunction } from 'express';
 import type { Pool } from 'pg';
 import { validarToken, decifrarEmail } from './auth';
-import { buscarOportunidadesExternas } from './integracoes';
+import { unificarOportunidadesExternas } from './integracoes';
 
 // Extende Request com usuarioId (validado pelo token).
 interface ReqAuth extends Request {
@@ -136,7 +136,7 @@ export function registrarRotas(app: Express, pool: Pool): void {
       const bairro = String(req.query.bairro || '').trim();
       const horario = String(req.query.horario || '').trim();
 
-      const data = await buscarOportunidadesExternas({
+      const data = await unificarOportunidadesExternas({
         tipo: tipo || undefined,
         bairro: bairro || undefined,
         horario: horario || undefined,

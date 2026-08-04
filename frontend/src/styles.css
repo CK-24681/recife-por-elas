@@ -1744,3 +1744,74 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
   }
 }
 
+/* --- ADIÇÕES PARA O FEED REFATORADO --- */
+.fd-turno-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: var(--fundo-suave);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-top: 16px;
+  max-width: 440px;
+}
+
+.fd-turno-label {
+  font-size: 13px;
+  color: var(--texto-suave);
+  white-space: nowrap;
+}
+
+.fd-turno-select {
+  font-size: 13px;
+  font-family: var(--fonte-corpo);
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  padding: 4px 8px;
+  background: #fff;
+  color: var(--texto);
+  cursor: pointer;
+  flex: 1;
+  min-width: 140px;
+}
+
+.fd-turno-status {
+  font-size: 12px;
+  color: var(--texto-suave);
+}
+
+.fd-grade-padded {
+  padding-block: clamp(32px, 5vw, 56px);
+}
+
+.fd-skel-linha-40 {
+  width: 40%;
+}
+
+.fd-card-apoio {
+  display: flex;
+  flex-direction: column;
+}
+
+.mapa-popup-desc-container {
+  flex: 1;
+  margin-bottom: 12px;
+}
+
+.fd-card-acoes {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--borda);
+}
+
+.fd-card-acoes .btn-mapa,
+.fd-card-acoes .btn-contato {
+  flex: 1;
+  font-size: 13px;
+  padding: 8px 12px;
+  text-align: center;
+}

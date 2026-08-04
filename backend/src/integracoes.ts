@@ -11,12 +11,18 @@ export interface OportunidadeExterna {
   fonte: string;
   link_inscricao: string;
   bairro: string;
+  /** Endereço formatado completo para uso no Google Maps (Rua, Nº, Bairro, Recife–PE). */
   endereco: string;
+  /** Alias explícito para o botão "Como Chegar" no frontend. */
+  endereco_completo?: string;
   latitude: number | null;
   longitude: number | null;
   horario: string;
   data_inicio_inscricao: string;
   data_fim_inscricao: string;
+  categoria?: string;
+  /** true = oportunidade 100% online; o mapa não deve plotar esse ponto. */
+  isOnline?: boolean;
 }
 
 // ─── Helpers ───
@@ -53,6 +59,34 @@ async function fetchComTimeout(url: string, opts: RequestInit = {}): Promise<Res
     return null;
   } finally {
     limpar();
+  }
+}
+
+// ─── GEOCODER (Nominatim / OpenStreetMap) ───
+// Converte um endereço de texto em coordenadas geográficas.
+// Usado como fallback quando APIs de vagas (ex: Adzuna) omitem lat/lng.
+// Se o geocoding falhar, retorna null — a vaga vai apenas para o Feed,
+// nunca para um ponto genérico no mapa.
+async function geocodeEndereco(
+  endereco: string
+): Promise<{ lat: number; lng: number } | null> {
+  if (!endereco || endereco.trim().length < 5) return null;
+  try {
+    const query = encodeURIComponent(`${endereco}, Recife, Pernambuco, Brasil`);
+    const url = `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1&countrycodes=br`;
+    const data = await fetchJSON(url, {
+      'User-Agent': 'RecifePorElas/1.0 (contato@recifepporelas.app)',
+      'Accept-Language': 'pt-BR',
+    });
+    if (!data || !Array.isArray(data) || data.length === 0) return null;
+    const lat = parseFloat(data[0].lat);
+    const lng = parseFloat(data[0].lon);
+    if (isNaN(lat) || isNaN(lng)) return null;
+    // Verificação de saníade: coordenadas devem estar dentro de Pernambuco
+    if (lat < -9.5 || lat > -7.0 || lng < -35.5 || lng > -34.5) return null;
+    return { lat, lng };
+  } catch {
+    return null;
   }
 }
 
@@ -112,7 +146,7 @@ async function buscarRemotive(): Promise<OportunidadeExterna[]> {
 }
 
 // ─── ADZUNA (busca geolocalizada — App ID + App Key via env) ───
-
+// Geocoding automático via Nominatim quando a API omite lat/lng.
 async function buscarAdzuna(): Promise<OportunidadeExterna[]> {
   const appId = process.env.ADZUNA_APP_ID;
   const appKey = process.env.ADZUNA_APP_KEY;
@@ -123,21 +157,40 @@ async function buscarAdzuna(): Promise<OportunidadeExterna[]> {
   );
   if (!data) return [];
   const vagas: any[] = data?.results || [];
-  return vagas.map((v: any) => ({
-    titulo: String(v.title || 'Vaga').slice(0, 200),
-    descricao: String(v.description || '').slice(0, 1000),
-    empresa: String(v.company?.display_name || '').slice(0, 200),
-    tipo: 'Emprego' as const,
-    fonte: 'Adzuna',
-    link_inscricao: String(v.redirect_url || ''),
-    bairro: String(v.location?.area?.[2] || v.location?.area?.[1] || 'Recife'),
-    endereco: String(v.location?.display_name || ''),
-    latitude: v.latitude ?? null,
-    longitude: v.longitude ?? null,
-    horario: v.contract_time === 'part_time' ? 'Meio período' : 'Horário comercial',
-    data_inicio_inscricao: new Date().toISOString().slice(0, 10),
-    data_fim_inscricao: '',
-  }));
+
+  // Geocoding assíncrono em paralelo (máximo 6 chamadas simultâneas para respeitar
+  // o rate-limit do Nominatim: 1 req/s por IP, tolerável em lotes pequenos)
+  const resultados = await Promise.all(
+    vagas.map(async (v: any) => {
+      let lat: number | null = v.latitude ?? null;
+      let lng: number | null = v.longitude ?? null;
+
+      // Fallback: geocodar o endereço se a Adzuna não enviou coordenadas
+      if ((lat === null || lng === null) && v.location?.display_name) {
+        const coords = await geocodeEndereco(String(v.location.display_name));
+        if (coords) { lat = coords.lat; lng = coords.lng; }
+      }
+
+      const enderecoRaw = String(v.location?.display_name || '');
+      return {
+        titulo: String(v.title || 'Vaga').slice(0, 200),
+        descricao: String(v.description || '').slice(0, 1000),
+        empresa: String(v.company?.display_name || '').slice(0, 200),
+        tipo: 'Emprego' as const,
+        fonte: 'Adzuna',
+        link_inscricao: String(v.redirect_url || ''),
+        bairro: String(v.location?.area?.[2] || v.location?.area?.[1] || 'Recife'),
+        endereco: enderecoRaw,
+        endereco_completo: enderecoRaw || undefined,
+        latitude: lat,
+        longitude: lng,
+        horario: v.contract_time === 'part_time' ? 'Meio período' : 'Horário comercial',
+        data_inicio_inscricao: new Date().toISOString().slice(0, 10),
+        data_fim_inscricao: '',
+      } satisfies OportunidadeExterna;
+    })
+  );
+  return resultados;
 }
 
 // ─── THE MUSE — DESATIVADO v1 ───────────────────────────────────────────────
@@ -453,7 +506,7 @@ export async function validarCadUnico(cpf: string): Promise<{ valido: boolean; d
 
 // ─── AGREGADOR PRINCIPAL ───
 
-export async function buscarOportunidadesExternas(
+export async function unificarOportunidadesExternas(
   filtros?: { tipo?: string; bairro?: string; horario?: string }
 ): Promise<OportunidadeExterna[]> {
   try {
@@ -514,7 +567,7 @@ export async function buscarOportunidadesExternas(
     // Limita a 80 resultados (ampliado para acomodar dados locais prioritários)
     return filtradas.slice(0, 80);
   } catch (e) {
-    console.error('buscarOportunidadesExternas — erro inesperado:', e);
+    console.error('unificarOportunidadesExternas — erro inesperado:', e);
     // Em caso de falha total, retorna ao menos os dados locais
     return buscarOportunidadesLocais(filtros);
   }
