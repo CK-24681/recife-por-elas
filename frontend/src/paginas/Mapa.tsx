@@ -172,7 +172,7 @@ export default function Mapa() {
             </button>
           </div>
         ) : (
-          <div className="mapa-wrapper" style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, height: '100vh', width: '100%' }}>
+          <div className="mapa-wrapper">
             {/* ── Barra de filtros flutuante sobre o mapa ── */}
             <div className="map-filtros-flutuante">
               {FILTROS.map((f) => {
@@ -202,7 +202,6 @@ export default function Mapa() {
               zoom={13}
               className="mapa-container-interno"
               zoomControl={false}
-              style={{ height: '70vh', minHeight: '500px', width: '100%', zIndex: 0, borderRadius: '12px' }}
             >
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

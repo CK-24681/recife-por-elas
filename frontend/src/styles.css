@@ -510,6 +510,37 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
   text-decoration: none;
 }
 
+/* ——— CABEÇALHOS DE PÁGINA (Perfil, Candidaturas) ——— */
+.pagina-cabecalho {
+  background: var(--fundo-suave);
+  border-bottom: 1px solid var(--borda);
+  padding-block: clamp(28px, 4vw, 48px);
+}
+.pagina-titulo {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.pagina-subtitulo {
+  color: var(--texto-suave);
+  font-size: 15px;
+}
+.pf-container-centralizado {
+  padding-block: 48px;
+  text-align: center;
+}
+.btn-alerta {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: #ea580c;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
 .mapa-secao {
   background: var(--fundo-suave);
   border-bottom: 1px solid var(--borda);
@@ -550,8 +581,11 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
 
 /* Wrapper do mapa */
 .mapa-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  height: 100vh;
   width: 100%;
-  height: 600px;
   border-radius: 20px;
   overflow: hidden;
   border: 1px solid var(--borda);
@@ -559,7 +593,14 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
   z-index: 1;
   box-shadow: 0 8px 32px rgba(0,0,0,0.10);
 }
-@media (max-width: 600px) { .mapa-wrapper { height: 480px; } }
+@media (max-width: 600px) { .mapa-wrapper { height: 100vh; } }
+
+.mapa-container-interno {
+  flex: 1;
+  width: 100%;
+  z-index: 0;
+  border-radius: 12px;
+}
 
 /* Esqueleto de carregamento */
 .mapa-carregando {

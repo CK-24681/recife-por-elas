@@ -46,10 +46,10 @@ export default function Candidaturas() {
 
   return (
     <>
-      <section style={{background:'var(--fundo-suave)',borderBottom:'1px solid var(--borda)',paddingBlock:'clamp(28px,4vw,48px)'}}>
+      <section className="pagina-cabecalho">
         <div className="container">
-          <h1 style={{fontSize:'clamp(1.5rem,3vw,2rem)',fontWeight:700,marginBottom:6}}>Minhas candidaturas</h1>
-          <p style={{color:'var(--texto-suave)',fontSize:15}}>{estado === 'carregando' ? 'Carregando…' : `${candidaturas.length} candidatura${candidaturas.length !== 1 ? 's' : ''} registrada${candidaturas.length !== 1 ? 's' : ''}`}</p>
+          <h1 className="pagina-titulo">Minhas candidaturas</h1>
+          <p className="pagina-subtitulo">{estado === 'carregando' ? 'Carregando…' : `${candidaturas.length} candidatura${candidaturas.length !== 1 ? 's' : ''} registrada${candidaturas.length !== 1 ? 's' : ''}`}</p>
         </div>
       </section>
 

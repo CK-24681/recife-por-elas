@@ -301,10 +301,12 @@ export default function Feed() {
             {(filtro === '' || filtro === 'Emprego') && <CardGuiaVagas />}
             
             {filtradas.map((item, i) => {
+              if (!item) return null;
+              const key = item.id ? `item-${item.id}` : `idx-${i}`;
               if (item.tipo === 'Apoio') {
-                return <CardApoio key={`apoio-${item.id || i}`} item={item} />;
+                return <CardApoio key={key} item={item} />;
               }
-              return <CardOportunidade key={`oportunidade-${item.id || i}`} item={item} />;
+              return <CardOportunidade key={key} item={item} />;
             })}
           </div>
         )}

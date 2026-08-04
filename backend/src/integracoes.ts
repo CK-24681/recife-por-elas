@@ -42,7 +42,8 @@ async function fetchJSON(url: string, headers?: Record<string, string>): Promise
     });
     if (!res.ok) throw new Error(`${res.status}`);
     return await res.json();
-  } catch {
+  } catch (e) {
+    console.error(`Erro no fetchJSON para ${url}:`, e);
     return null;
   } finally {
     limpar();
@@ -55,7 +56,8 @@ async function fetchComTimeout(url: string, opts: RequestInit = {}): Promise<Res
   const { signal, limpar } = criarSinalTimeout(8_000);
   try {
     return await fetch(url, { ...opts, signal });
-  } catch {
+  } catch (e) {
+    console.error(`Erro no fetchComTimeout para ${url}:`, e);
     return null;
   } finally {
     limpar();
@@ -85,7 +87,8 @@ async function geocodeEndereco(
     // Verificação de saníade: coordenadas devem estar dentro de Pernambuco
     if (lat < -9.5 || lat > -7.0 || lng < -35.5 || lng > -34.5) return null;
     return { lat, lng };
-  } catch {
+  } catch (e) {
+    console.error(`Erro no geocodeEndereco para ${endereco}:`, e);
     return null;
   }
 }
@@ -112,6 +115,7 @@ async function buscarArbeitnow(): Promise<OportunidadeExterna[]> {
     endereco: String(v.location || 'Trabalho remoto'),
     latitude: null,
     longitude: null,
+    isOnline: true,
     horario: 'Flexível',
     data_inicio_inscricao: new Date().toISOString().slice(0, 10),
     data_fim_inscricao: '',
@@ -139,6 +143,7 @@ async function buscarRemotive(): Promise<OportunidadeExterna[]> {
     endereco: String(v.candidate_required_location || 'Trabalho 100% remoto'),
     latitude: null,
     longitude: null,
+    isOnline: true,
     horario: 'Flexível',
     data_inicio_inscricao: new Date().toISOString().slice(0, 10),
     data_fim_inscricao: '',
@@ -220,6 +225,7 @@ async function buscarTheMuse(): Promise<OportunidadeExterna[]> {
     endereco: (v.locations || []).map((l: any) => l.name).join(', ') || 'Brasil',
     latitude: null,
     longitude: null,
+    isOnline: true,
     horario: 'A consultar',
     data_inicio_inscricao: new Date().toISOString().slice(0, 10),
     data_fim_inscricao: '',
@@ -244,6 +250,7 @@ async function buscarEVG(): Promise<OportunidadeExterna[]> {
     endereco: 'Plataforma EV.G — Escola Virtual de Governo',
     latitude: null,
     longitude: null,
+    isOnline: true,
     horario: 'Livre (EAD)',
     data_inicio_inscricao: new Date().toISOString().slice(0, 10),
     data_fim_inscricao: '',
@@ -276,7 +283,8 @@ async function buscarDATASUS(): Promise<OportunidadeExterna[]> {
       data_inicio_inscricao: '',
       data_fim_inscricao: '',
     }));
-  } catch {
+  } catch (e) {
+    console.error('Erro em buscarDATASUS:', e);
     return []; // endpoint do DATASUS pode variar — falha silenciosa
   }
 }
@@ -308,7 +316,8 @@ async function buscarBolsaFamilia(): Promise<OportunidadeExterna[]> {
       data_inicio_inscricao: new Date().toISOString().slice(0, 10),
       data_fim_inscricao: '',
     }];
-  } catch {
+  } catch (e) {
+    console.error('Erro em buscarBolsaFamilia:', e);
     return [];
   }
 }
@@ -340,7 +349,8 @@ async function buscarBPC(): Promise<OportunidadeExterna[]> {
       data_inicio_inscricao: new Date().toISOString().slice(0, 10),
       data_fim_inscricao: '',
     }];
-  } catch {
+  } catch (e) {
+    console.error('Erro em buscarBPC:', e);
     return [];
   }
 }
@@ -371,7 +381,8 @@ async function buscarPETI(): Promise<OportunidadeExterna[]> {
       data_inicio_inscricao: new Date().toISOString().slice(0, 10),
       data_fim_inscricao: '',
     }];
-  } catch {
+  } catch (e) {
+    console.error('Erro em buscarPETI:', e);
     return [];
   }
 }
@@ -412,11 +423,13 @@ async function buscarEdX(): Promise<OportunidadeExterna[]> {
       endereco: 'Plataforma edX — cursos livres de universidades globais',
       latitude: null,
       longitude: null,
+      isOnline: true,
       horario: 'Livre (EAD)',
       data_inicio_inscricao: c.enrollment_start ? String(c.enrollment_start).slice(0, 10) : new Date().toISOString().slice(0, 10),
       data_fim_inscricao: c.enrollment_end ? String(c.enrollment_end).slice(0, 10) : '',
     }));
-  } catch {
+  } catch (e) {
+    console.error('Erro em buscarEdX:', e);
     return [];
   }
 }
@@ -457,11 +470,13 @@ async function buscarCoursera(): Promise<OportunidadeExterna[]> {
       endereco: 'Plataforma Coursera — cursos e especializações profissionais',
       latitude: null,
       longitude: null,
+      isOnline: true,
       horario: 'Livre (EAD)',
       data_inicio_inscricao: new Date().toISOString().slice(0, 10),
       data_fim_inscricao: '',
     }));
-  } catch {
+  } catch (e) {
+    console.error('Erro em buscarCoursera:', e);
     return [];
   }
 }

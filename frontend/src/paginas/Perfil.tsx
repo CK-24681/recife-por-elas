@@ -50,6 +50,15 @@ const mascaraData = (v: string) => {
   return v;
 };
 
+const extrairArray = (jsonStr: string): any[] => {
+  try {
+    const parsed = JSON.parse(jsonStr);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
 export default function Perfil() {
   const { usuario } = useSessao();
   const toast = useToast();
@@ -87,33 +96,11 @@ export default function Perfil() {
     setEditando(true);
     const qty = dados.filhos;
     setQtdFilhos(qty === 0 ? 'Nenhum' : qty >= 10 ? '10+' : String(qty));
-    try {
-      const parsedIdades = JSON.parse(dados.idades_filhos || '[]');
-      setIdadesFilhos(Array.isArray(parsedIdades) ? parsedIdades : []);
-    } catch {
-      setIdadesFilhos([]);
-    }
-    
-    try {
-      const parsedHab = JSON.parse(dados.habilidades || '[]');
-      setHabilidadesStr(Array.isArray(parsedHab) ? parsedHab.join(', ') : '');
-    } catch {
-      setHabilidadesStr('');
-    }
-
-    try {
-      const parsedExp = JSON.parse(dados.experiencias || '[]');
-      setExperiencias(Array.isArray(parsedExp) ? parsedExp : []);
-    } catch {
-      setExperiencias([]);
-    }
-
-    try {
-      const parsedCur = JSON.parse(dados.cursos || '[]');
-      setCursos(Array.isArray(parsedCur) ? parsedCur : []);
-    } catch {
-      setCursos([]);
-    }
+    setIdadesFilhos(extrairArray(dados.idades_filhos));
+    const hab = extrairArray(dados.habilidades);
+    setHabilidadesStr(hab.join(', '));
+    setExperiencias(extrairArray(dados.experiencias) as Experiencia[]);
+    setCursos(extrairArray(dados.cursos) as Curso[]);
   };
 
   const cancelar = () => { setEditando(false); };
@@ -147,15 +134,6 @@ export default function Perfil() {
 
   const iniciais = (dados.nome || usuario?.nome || 'A').split(' ').map((p: string) => p[0]).slice(0, 2).join('').toUpperCase();
 
-  const extrairArray = (jsonStr: string): any[] => {
-    try {
-      const parsed = JSON.parse(jsonStr);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
-  };
-
   const renderIdadesFilhos = () => {
     try {
       const lista = JSON.parse(dados.idades_filhos || '[]');
@@ -171,12 +149,12 @@ export default function Perfil() {
   if (estado === 'carregando') {
     return (
       <>
-        <section style={{background:'var(--fundo-suave)',borderBottom:'1px solid var(--borda)',paddingBlock:'clamp(28px,4vw,48px)'}}>
+        <section className="pagina-cabecalho">
           <div className="container">
-            <h1 style={{fontSize:'clamp(1.5rem,3vw,2rem)',fontWeight:700}}>Meu perfil</h1>
+            <h1 className="pagina-titulo">Meu perfil</h1>
           </div>
         </section>
-        <section className="container" style={{paddingBlock:48,textAlign:'center'}}>
+        <section className="container pf-container-centralizado">
           <div className="sessao-spinner" style={{margin:'0 auto'}} />
         </section>
       </>
@@ -189,9 +167,9 @@ export default function Perfil() {
 
   return (
     <>
-      <section style={{background:'var(--fundo-suave)',borderBottom:'1px solid var(--borda)',paddingBlock:'clamp(28px,4vw,48px)'}}>
+      <section className="pagina-cabecalho">
         <div className="container">
-          <h1 style={{fontSize:'clamp(1.5rem,3vw,2rem)',fontWeight:700}}>Meu perfil</h1>
+          <h1 className="pagina-titulo">Meu perfil</h1>
         </div>
       </section>
 
