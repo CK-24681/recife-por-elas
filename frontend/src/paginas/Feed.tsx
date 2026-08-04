@@ -9,7 +9,7 @@ interface Oportunidade {
   titulo: string;
   descricao: string;
   empresa?: string;
-  tipo: 'Emprego' | 'Curso' | 'Benefício social' | 'Microcrédito';
+  tipo: 'Emprego' | 'Curso' | 'Benefício social' | 'Microcrédito' | 'Apoio';
   fonte: string;
   link_inscricao: string;
   bairro: string;

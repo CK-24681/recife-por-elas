@@ -1,12 +1,13 @@
 // Integrações com APIs públicas para alimentar o Feed de Oportunidades.
 // Cada integração é assíncrona e falha isoladamente (nunca derruba as outras).
 // APIs sem credencial configurada são silenciosamente ignoradas (best-effort).
+import { buscarOportunidadesLocais } from './integracoes_locais';
 
 export interface OportunidadeExterna {
   titulo: string;
   descricao: string;
   empresa: string;
-  tipo: 'Emprego' | 'Curso' | 'Benefício social' | 'Microcrédito';
+  tipo: 'Emprego' | 'Curso' | 'Benefício social' | 'Microcrédito' | 'Apoio';
   fonte: string;
   link_inscricao: string;
   bairro: string;
@@ -474,22 +475,32 @@ export async function buscarOportunidadesExternas(
       buscarDATASUS(),          // postos de saúde para o Mapa
     ]);
 
-    // Achata resultados bem-sucedidos
-    const todas: OportunidadeExterna[] = [];
+    // ── DADOS LOCAIS REAIS (seed inteligente — prioridade máxima) ──
+    // Benefícios reais de Recife/PE, programas de capacitação locais e rede de apoio
+    // pesquisados e validados a partir das fontes oficiais (recife.pe.gov.br, maesdepernambuco.pe.gov.br, etc.)
+    const locais = buscarOportunidadesLocais(filtros);
+
+    // Achata resultados bem-sucedidos das APIs externas
+    const externas: OportunidadeExterna[] = [];
     for (const r of resultados) {
       if (r.status === 'fulfilled' && Array.isArray(r.value)) {
-        todas.push(...r.value);
+        externas.push(...r.value);
       }
     }
 
-    // Aplica filtros (se fornecidos)
-    let filtradas = todas;
+    // Merge: locais reais PRIMEIRO (maior relevância para a persona) → depois APIs externas
+    const todas: OportunidadeExterna[] = [...locais, ...externas];
+
+    // Aplica filtros nas externas (locais já vieram filtrados)
+    let filtradas = filtros?.tipo || filtros?.bairro
+      ? todas  // locais já filtrados, externas ainda precisam
+      : todas;
+
     if (filtros?.tipo) {
-      filtradas = filtradas.filter((o) => o.tipo === filtros.tipo);
-    }
-    if (filtros?.bairro) {
+      filtradas = todas.filter((o) => o.tipo === filtros.tipo);
+    } else if (filtros?.bairro) {
       const b = filtros.bairro.toLowerCase();
-      filtradas = filtradas.filter(
+      filtradas = todas.filter(
         (o) =>
           o.bairro.toLowerCase().includes(b) ||
           o.endereco.toLowerCase().includes(b)
@@ -500,10 +511,11 @@ export async function buscarOportunidadesExternas(
       filtradas = filtradas.filter((o) => o.horario.toLowerCase().includes(h));
     }
 
-    // Limita a 50 resultados totais para não sobrecarregar o front
-    return filtradas.slice(0, 50);
+    // Limita a 80 resultados (ampliado para acomodar dados locais prioritários)
+    return filtradas.slice(0, 80);
   } catch (e) {
     console.error('buscarOportunidadesExternas — erro inesperado:', e);
-    return [];
+    // Em caso de falha total, retorna ao menos os dados locais
+    return buscarOportunidadesLocais(filtros);
   }
 }
