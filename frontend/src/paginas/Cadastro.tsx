@@ -1,12 +1,14 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from '../roteador';
-import { cadastrar } from '../api';
+import { cadastrar, apiJSON } from '../api';
 import { useSessao } from '../sessao';
+import { useToast } from '../toast';
 
 type Passo = 'criar-conta' | 'dados-pessoais' | 'contexto' | 'concluido';
 
 export default function Cadastro() {
   const { definirUsuario } = useSessao();
+  const toast = useToast();
   const [passo, setPasso] = useState<Passo>('criar-conta');
 
   // passo 1
@@ -24,8 +26,8 @@ export default function Cadastro() {
   const [bairro, setBairro] = useState('');
 
   // passo 3
-  const [filhos, setFilhos] = useState('');
-  const [idadesFilhos, setIdadesFilhos] = useState('');
+  const [qtdFilhos, setQtdFilhos] = useState('Nenhum');
+  const [idadesFilhos, setIdadesFilhos] = useState<string[]>([]);
   const [turno, setTurno] = useState('');
 
   // máscara CPF
@@ -57,7 +59,26 @@ export default function Cadastro() {
   };
 
   const passoDados = (e: FormEvent) => { e.preventDefault(); setPasso('contexto'); };
-  const passoContexto = (e: FormEvent) => { e.preventDefault(); setPasso('concluido'); };
+  const passoContexto = async (e: FormEvent) => {
+    e.preventDefault();
+    try {
+      await apiJSON('/perfil', {
+        method: 'PUT',
+        corpo: {
+          cpf,
+          telefone,
+          data_nascimento: dataNascimento,
+          bairro,
+          filhos: qtdFilhos === 'Nenhum' ? 0 : qtdFilhos === '10+' ? idadesFilhos.length : parseInt(qtdFilhos),
+          idades_filhos: qtdFilhos !== 'Nenhum' ? JSON.stringify(idadesFilhos) : '[]',
+          turno_disponivel: turno,
+        },
+      });
+      setPasso('concluido');
+    } catch (err) {
+      toast.erro(err instanceof Error ? err.message : 'Erro ao salvar contexto.');
+    }
+  };
 
   const progresso = passo === 'criar-conta' ? 1 : passo === 'dados-pessoais' ? 2 : passo === 'contexto' ? 3 : 4;
 
@@ -122,8 +143,62 @@ export default function Cadastro() {
             <h2>Seu contexto familiar</h2>
             <p>Isso nos ajuda a priorizar vagas que respeitam sua rotina.</p>
             <form className="cd-onboard-form" onSubmit={passoContexto}>
-              <label>Quantos filhos você tem? <select value={filhos} onChange={(e) => setFilhos(e.target.value)}><option value="">Selecione</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4+">4 ou mais</option></select></label>
-              <label>Idades dos filhos <input value={idadesFilhos} onChange={(e) => setIdadesFilhos(e.target.value)} placeholder="Ex.: 6 e 9 anos" /></label>
+              <label>Quantos filhos você tem?
+                <select value={qtdFilhos} onChange={(e) => {
+                  const val = e.target.value;
+                  setQtdFilhos(val);
+                  if (val === 'Nenhum') {
+                    setIdadesFilhos([]);
+                  } else {
+                    const minCount = val === '10+' ? 10 : parseInt(val);
+                    setIdadesFilhos(prev => {
+                      let novas = [...prev];
+                      if (novas.length < minCount) {
+                        while (novas.length < minCount) novas.push('');
+                      } else if (novas.length > minCount && val !== '10+') {
+                        novas = novas.slice(0, minCount);
+                      }
+                      return novas;
+                    });
+                  }
+                }}>
+                  <option value="Nenhum">Nenhum</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10+">10+</option>
+                </select>
+              </label>
+
+              {qtdFilhos !== 'Nenhum' && idadesFilhos.map((idade, index) => (
+                <label key={index}>Idade do {index + 1}º filho
+                  <select value={idade} onChange={(e) => { const n = [...idadesFilhos]; n[index] = e.target.value; setIdadesFilhos(n); }} required>
+                    <option value="">Selecione a idade</option>
+                    {Array.from({ length: 18 }, (_, i) => (
+                      <option key={i} value={String(i)}>{i}</option>
+                    ))}
+                    <option value="18+">18+</option>
+                  </select>
+                </label>
+              ))}
+
+              {qtdFilhos === '10+' && (
+                <button
+                  type="button"
+                  className="btn-secundario"
+                  onClick={() => setIdadesFilhos(prev => [...prev, ''])}
+                  style={{ marginBottom: 16, marginTop: -8 }}
+                >
+                  + Adicionar mais um filho
+                </button>
+              )}
+
               <label>Turno disponível para trabalhar/estudar
                 <select value={turno} onChange={(e) => setTurno(e.target.value)}>
                   <option value="">Selecione</option>
@@ -153,6 +228,7 @@ export default function Cadastro() {
           </div>
         )}
       </main>
+      {toast.container}
     </div>
   );
 }

@@ -86,6 +86,14 @@ export async function inicializarBanco(pool: Pool, schema: string): Promise<void
       interesses      TEXT DEFAULT ''
     )`);
 
+  // Adiciona novas colunas caso não existam
+  await pool.query(`
+    ALTER TABLE perfil
+    ADD COLUMN IF NOT EXISTS sobre_mim TEXT DEFAULT '',
+    ADD COLUMN IF NOT EXISTS experiencias TEXT DEFAULT '[]',
+    ADD COLUMN IF NOT EXISTS cursos TEXT DEFAULT '[]',
+    ADD COLUMN IF NOT EXISTS habilidades TEXT DEFAULT '[]'
+  `);
 }
 
 // ═══ REGISTRO DAS ROTAS ═══
@@ -285,6 +293,10 @@ export function registrarRotas(app: Express, pool: Pool): void {
           idades_filhos: '',
           turno_disponivel: '',
           interesses: '',
+          sobre_mim: '',
+          experiencias: '[]',
+          cursos: '[]',
+          habilidades: '[]',
         });
       }
       // Merge: dados do perfil + nome/email do usuario
@@ -298,7 +310,7 @@ export function registrarRotas(app: Express, pool: Pool): void {
   // PUT /api/perfil
   app.put('/api/perfil', autenticar, async (req: ReqAuth, res: Response) => {
     try {
-      const { nome, email, telefone, cpf, data_nascimento, bairro, filhos, idades_filhos, turno_disponivel, interesses } = req.body || {};
+      const { nome, email, telefone, cpf, data_nascimento, bairro, filhos, idades_filhos, turno_disponivel, interesses, sobre_mim, experiencias, cursos, habilidades } = req.body || {};
 
       // Atualiza nome na tabela usuarios (se informado)
       if (nome && typeof nome === 'string' && nome.trim()) {
@@ -307,12 +319,14 @@ export function registrarRotas(app: Express, pool: Pool): void {
 
       // R06: UPSERT no perfil da usuária logada
       await pool.query(
-        `INSERT INTO perfil (usuario_id, telefone, cpf, data_nascimento, bairro, filhos, idades_filhos, turno_disponivel, interesses)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        `INSERT INTO perfil (usuario_id, telefone, cpf, data_nascimento, bairro, filhos, idades_filhos, turno_disponivel, interesses, sobre_mim, experiencias, cursos, habilidades)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
          ON CONFLICT (usuario_id) DO UPDATE SET
            telefone=EXCLUDED.telefone, cpf=EXCLUDED.cpf, data_nascimento=EXCLUDED.data_nascimento,
            bairro=EXCLUDED.bairro, filhos=EXCLUDED.filhos, idades_filhos=EXCLUDED.idades_filhos,
-           turno_disponivel=EXCLUDED.turno_disponivel, interesses=EXCLUDED.interesses`,
+           turno_disponivel=EXCLUDED.turno_disponivel, interesses=EXCLUDED.interesses,
+           sobre_mim=EXCLUDED.sobre_mim, experiencias=EXCLUDED.experiencias, cursos=EXCLUDED.cursos,
+           habilidades=EXCLUDED.habilidades`,
         [
           req.usuarioId,
           String(telefone || ''),
@@ -323,6 +337,10 @@ export function registrarRotas(app: Express, pool: Pool): void {
           String(idades_filhos || ''),
           String(turno_disponivel || ''),
           String(interesses || ''),
+          String(sobre_mim || ''),
+          String(experiencias || '[]'),
+          String(cursos || '[]'),
+          String(habilidades || '[]')
         ],
       );
       res.json({ ok: true });

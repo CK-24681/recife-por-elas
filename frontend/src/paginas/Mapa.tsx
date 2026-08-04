@@ -57,26 +57,19 @@ function criarIcone(tipo: string) {
   
   return L.divIcon({
     className: 'custom-leaflet-icon',
-    html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 40" width="32" height="40" style="filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3));">
-      <path d="M16 0C7.163 0 0 7.163 0 16c0 10.45 16 24 16 24s16-13.55 16-24C32 7.163 24.837 0 16 0z" fill="${cor}" stroke="white" stroke-width="1.5" />
-      <circle cx="16" cy="15" r="10" fill="white" />
-      <text x="16" y="19" font-size="12" text-anchor="middle" font-family="sans-serif">${emoji}</text>
-    </svg>`,
-    iconSize: [32, 40],
-    iconAnchor: [16, 40],
-    popupAnchor: [0, -40]
+    html: `<div class="mapa-pin-redondo" style="background-color: ${cor};">${emoji}</div>`,
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+    popupAnchor: [0, -15]
   });
 }
 
 const userIcon = L.divIcon({
   className: 'user-leaflet-icon',
-  html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="24" height="32" style="filter: drop-shadow(0px 0px 8px rgba(239,68,68,0.8));">
-    <path d="M12 0C5.373 0 0 5.373 0 12c0 7.838 12 20 12 20s12-12.162 12-20C24 5.373 18.627 0 12 0z" fill="#ef4444" stroke="white" stroke-width="2" />
-    <circle cx="12" cy="11" r="5" fill="white" />
-  </svg>`,
-  iconSize: [24, 32],
-  iconAnchor: [12, 32],
-  popupAnchor: [0, -32]
+  html: `<div class="mapa-pin-redondo user" style="background-color: #ef4444;"></div>`,
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+  popupAnchor: [0, -12]
 });
 
 // Componente auxiliar para centralizar o mapa na usuária
@@ -168,7 +161,7 @@ export default function Mapa() {
           <p className="mapa-subtitulo">Veja empregos, cursos e a rede de apoio perto de você no Recife</p>
           
           <div className="mapa-filtros-row">
-            <div className="mp-filtros" style={{ margin: 0 }}>
+            <div className="mp-filtros">
               {tags.map((t) => (
                 <button key={t.valor} className={`fd-filtro ${filtro === t.valor ? 'ativo' : ''}`} onClick={() => setFiltro(t.valor)}>
                   {t.rotulo}
@@ -189,8 +182,7 @@ export default function Mapa() {
 
               <button 
                 onClick={obterLocalizacao}
-                className="btn-primario"
-                style={{ borderRadius: 20, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', fontSize: 14 }}
+                className="btn-primario mapa-btn-loc"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
                 Usar minha localização
@@ -200,7 +192,7 @@ export default function Mapa() {
         </div>
       </section>
 
-      <section className="container" style={{ paddingBlock: 'clamp(28px,5vw,56px)' }}>
+      <section className="container mapa-secao-padding">
         {estado === 'carregando' ? (
           <div className="mapa-carregando" />
         ) : estado === 'erro' ? (
@@ -214,7 +206,7 @@ export default function Mapa() {
             <MapContainer 
               center={centroRecife} 
               zoom={13} 
-              style={{ width: '100%', height: '100%' }}
+              className="mapa-container-interno"
             >
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -242,7 +234,7 @@ export default function Mapa() {
                     icon={criarIcone(op.tipo)}
                   >
                     <Popup>
-                      <div style={{ minWidth: 200 }}>
+                      <div className="mapa-popup-content">
                         <span className="mapa-popup-tag" style={{ color: coresPin[op.tipo] }}>
                           {op.tipo}
                         </span>
@@ -252,7 +244,7 @@ export default function Mapa() {
                         {/* Se tiver "Status de Vagas" na descrição (Creches) */}
                         {op.descricao.includes('Status de Vagas') ? (
                            <>
-                             <p className="mapa-popup-desc" style={{ WebkitLineClamp: 2 }}>
+                             <p className="mapa-popup-desc truncate-2">
                                {op.descricao.split('Status de Vagas:')[0].trim()}
                              </p>
                              <p className="mapa-popup-status">
@@ -295,7 +287,7 @@ export default function Mapa() {
         
         {/* Card Educativo (Guia de Vagas Oficiais) */}
         {(filtro === '' || filtro === 'Emprego') && estado === 'ok' && (
-          <div className="fd-grade" style={{ marginTop: 24 }}>
+          <div className="fd-grade mt-24">
             <div className="fd-card surgir fd-card-alerta">
               <span className="fd-card-tag tag-alerta">
                 ⚠️ Guia de Vagas Oficiais

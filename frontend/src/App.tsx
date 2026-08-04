@@ -166,9 +166,10 @@ function Conteudo() {
             <div className="hp-parceiros">
               <span>Apoiadores:</span>
               <div className="hp-selos">
+                <span className="hp-selo"><span className="hp-selo-dot" style={{background:'var(--cor-primaria)'}}></span>Programa Recife Resolve</span>
                 <span className="hp-selo"><span className="hp-selo-dot" style={{background:'var(--coral)'}}></span>Prefeitura do Recife</span>
-                <span className="hp-selo"><span className="hp-selo-dot" style={{background:'var(--cor-primaria)'}}></span>ONG Amparo</span>
-                <span className="hp-selo"><span className="hp-selo-dot" style={{background:'#214E8A'}}></span>Instituto Leve</span>
+                <span className="hp-selo"><span className="hp-selo-dot" style={{background:'#214E8A'}}></span>CESAR</span>
+                <span className="hp-selo"><span className="hp-selo-dot" style={{background:'#4A90E2'}}></span>UK-Brazil Tech Hub</span>
               </div>
             </div>
           </div>
@@ -182,14 +183,13 @@ function Conteudo() {
         </div>
       </section>
 
-      {/* NÚMEROS */}
+      {/* IMPACTO E CONTEXTO */}
       <section className="nu-faixa" id="impacto">
         <div className="container">
           <div className="nu-grade surgir">
-            <div className="nu-item"><strong>3.200+</strong><span>mulheres cadastradas</span></div>
-            <div className="nu-item"><strong>1.800+</strong><span>vagas preenchidas</span></div>
-            <div className="nu-item"><strong>45</strong><span>bairros atendidos</span></div>
-            <div className="nu-item"><strong>92%</strong><span>de satisfação</span></div>
+            <div className="nu-item"><strong>11,3M</strong><span>de mães solo no Brasil</span></div>
+            <div className="nu-item"><strong>Recife e RMR</strong><span>foco total de atuação</span></div>
+            <div className="nu-item"><strong>100%</strong><span>gratuito para as mães</span></div>
           </div>
         </div>
       </section>
@@ -277,81 +277,7 @@ function Conteudo() {
         </div>
       </section>
 
-      {/* DEPOIMENTOS */}
-      <section className="secao dpR-secao" id="depoimentos">
-        <div className="container">
-          <div className="dpR-cabeca surgir">
-            <div className="dpR-intro">
-              <span className="secao-etiqueta">Depoimentos</span>
-              <h2 className="secao-titulo">Histórias de quem já transformou a vida</h2>
-              <p className="secao-sub">Mulheres reais, do Recife, que encontraram seu caminho.</p>
-            </div>
-            <p className="dpR-dica">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-              <span>Role para ver as histórias</span>
-            </p>
-          </div>
-          <div className="dpR-palco surgir">
-            <div className="dpR-trilho" role="region" aria-label="Depoimentos" tabIndex={0}>
-              <article className="dpR-card">
-                <header className="dpR-topo">
-                  <span className="dpR-setor">Vaga de costureira · Ibura, Recife</span>
-                  <svg className="dpR-aspas" viewBox="0 0 32 24" aria-hidden="true"><path fill="currentColor" d="M13 24H1V13C1 6.4 6.4 1 13 1v5c-2.8 0-5.2 1.9-6 4.4h6V24Zm18 0H19V13c0-6.6 5.4-12 12-12v5c-2.8 0-5.2 1.9-6 4.4h6V24Z"/></svg>
-                </header>
-                <blockquote className="dpR-fala"><p>"Eu achava que com dois filhos pequenos ninguém ia me contratar. O Recife Por Elas me mostrou uma vaga de costura a 15 minutos de casa, com horário flexível. Comecei na semana seguinte."</p></blockquote>
-                <footer className="dpR-quem">
-                  <span className="dpR-iniciais" aria-hidden="true">MS</span>
-                  <span className="dpR-dados"><strong className="dpR-nome">Maria Silva</strong><span className="dpR-cargo">Mãe de dois · Costureira</span></span>
-                </footer>
-              </article>
-              <article className="dpR-card">
-                <header className="dpR-topo">
-                  <span className="dpR-setor">Curso de informática · Casa Amarela, Recife</span>
-                  <svg className="dpR-aspas" viewBox="0 0 32 24" aria-hidden="true"><path fill="currentColor" d="M13 24H1V13C1 6.4 6.4 1 13 1v5c-2.8 0-5.2 1.9-6 4.4h6V24Zm18 0H19V13c0-6.6 5.4-12 12-12v5c-2.8 0-5.2 1.9-6 4.4h6V24Z"/></svg>
-                </header>
-                <blockquote className="dpR-fala"><p>"Fiquei sabendo do curso gratuito de Excel pelo app. Era perto da creche da minha filha. Em dois meses terminei, e hoje trabalho como auxiliar administrativa num escritório."</p></blockquote>
-                <footer className="dpR-quem">
-                  <span className="dpR-iniciais" aria-hidden="true">JP</span>
-                  <span className="dpR-dados"><strong className="dpR-nome">Juliana Pereira</strong><span className="dpR-cargo">Mãe solo · Auxiliar administrativa</span></span>
-                </footer>
-              </article>
-              <article className="dpR-card">
-                <header className="dpR-topo">
-                  <span className="dpR-setor">Benefício social · Boa Viagem, Recife</span>
-                  <svg className="dpR-aspas" viewBox="0 0 32 24" aria-hidden="true"><path fill="currentColor" d="M13 24H1V13C1 6.4 6.4 1 13 1v5c-2.8 0-5.2 1.9-6 4.4h6V24Zm18 0H19V13c0-6.6 5.4-12 12-12v5c-2.8 0-5.2 1.9-6 4.4h6V24Z"/></svg>
-                </header>
-                <blockquote className="dpR-fala"><p>"Eu nem sabia que tinha direito ao auxílio. A plataforma me avisou, explicou a documentação e ainda tinha uma voluntária pra ajudar. Consegui em 20 dias."</p></blockquote>
-                <footer className="dpR-quem">
-                  <span className="dpR-iniciais" aria-hidden="true">AC</span>
-                  <span className="dpR-dados"><strong className="dpR-nome">Ana Carla</strong><span className="dpR-cargo">Mãe de três · Dona de casa</span></span>
-                </footer>
-              </article>
-              <article className="dpR-card">
-                <header className="dpR-topo">
-                  <span className="dpR-setor">Empreendedorismo · Várzea, Recife</span>
-                  <svg className="dpR-aspas" viewBox="0 0 32 24" aria-hidden="true"><path fill="currentColor" d="M13 24H1V13C1 6.4 6.4 1 13 1v5c-2.8 0-5.2 1.9-6 4.4h6V24Zm18 0H19V13c0-6.6 5.4-12 12-12v5c-2.8 0-5.2 1.9-6 4.4h6V24Z"/></svg>
-                </header>
-                <blockquote className="dpR-fala"><p>"Participei da oficina de vendas online e hoje vendo meus doces pelo WhatsApp. Montei meu delivery com o que aprendi no curso grátis indicado pelo app."</p></blockquote>
-                <footer className="dpR-quem">
-                  <span className="dpR-iniciais" aria-hidden="true">RS</span>
-                  <span className="dpR-dados"><strong className="dpR-nome">Rita Sousa</strong><span className="dpR-cargo">Empreendedora · Doce Rita</span></span>
-                </footer>
-              </article>
-              <article className="dpR-card">
-                <header className="dpR-topo">
-                  <span className="dpR-setor">Rede de apoio · Campo Grande, Recife</span>
-                  <svg className="dpR-aspas" viewBox="0 0 32 24" aria-hidden="true"><path fill="currentColor" d="M13 24H1V13C1 6.4 6.4 1 13 1v5c-2.8 0-5.2 1.9-6 4.4h6V24Zm18 0H19V13c0-6.6 5.4-12 12-12v5c-2.8 0-5.2 1.9-6 4.4h6V24Z"/></svg>
-                </header>
-                <blockquote className="dpR-fala"><p>"O grupo de apoio foi o que me salvou. Conversar com outras mães que passam pelo mesmo, sem julgamento. Me deu forças pra voltar a estudar."</p></blockquote>
-                <footer className="dpR-quem">
-                  <span className="dpR-iniciais" aria-hidden="true">CF</span>
-                  <span className="dpR-dados"><strong className="dpR-nome">Carla Freitas</strong><span className="dpR-cargo">Estudante · Mãe solo</span></span>
-                </footer>
-              </article>
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       {/* FAQ */}
       <section className="secao" id="faq">
@@ -388,9 +314,9 @@ function Conteudo() {
       {/* CTA FINAL */}
       <section className="ct-faixa" id="comecar">
         <div className="container ct-caixa">
-          <h2 className="ct-titulo surgir">Pronta para dar o próximo passo?</h2>
-          <p className="ct-sub surgir">Cadastre-se agora e comece a receber oportunidades que respeitam sua rotina, seu bairro e seus sonhos.</p>
-          <Link to="/cadastro" className="btn-secundario surgir">Criar minha conta gratuita</Link>
+          <h2 className="ct-titulo surgir">Ajude a construir essa comunidade</h2>
+          <p className="ct-sub surgir">Estamos em fase inicial de testes. Cadastre-se para ser uma das nossas primeiras usuárias e ajude a moldar uma plataforma que respeita sua rotina e seu bairro.</p>
+          <Link to="/cadastro" className="btn-secundario surgir">Fazer parte agora</Link>
         </div>
       </section>
 
@@ -452,7 +378,6 @@ function HeaderLanding({ estado, encerrar }: { estado: string; encerrar: () => v
         <nav className="hn-nav">
           <a href="/#como-funciona">Como funciona</a>
           <a href="/#recursos">Recursos</a>
-          <a href="/#depoimentos">Depoimentos</a>
           <a href="/#faq">Dúvidas</a>
         </nav>
         <div className="hn-acoes">
@@ -472,7 +397,6 @@ function HeaderLanding({ estado, encerrar }: { estado: string; encerrar: () => v
         <nav className="hn-nav-movel">
           <a href="/#como-funciona">Como funciona</a>
           <a href="/#recursos">Recursos</a>
-          <a href="/#depoimentos">Depoimentos</a>
           <a href="/#faq">Dúvidas</a>
           {estado === 'logado' ? (
             <>

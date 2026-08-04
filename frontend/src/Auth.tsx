@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from 'react';
-import { cadastrar, entrar, recuperar, redefinir, type Usuario } from './api';
+import { entrar, recuperar, redefinir, type Usuario } from './api';
+import { Link } from './roteador';
 
-type Modo = 'entrar' | 'cadastro' | 'recuperar' | 'redefinir';
+type Modo = 'entrar' | 'recuperar' | 'redefinir';
 
 // Painel de autenticação seguro embutido no app base. Mostra login, cadastro,
 // recuperação e (se vier ?reset=TOKEN na URL) a redefinição de senha.
@@ -15,7 +16,6 @@ export default function Auth({
   onVoltar: () => void;
 }) {
   const [modo, setModo] = useState<Modo>(resetToken ? 'redefinir' : 'entrar');
-  const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [verSenha, setVerSenha] = useState(false);
@@ -40,8 +40,6 @@ export default function Auth({
     try {
       if (modo === 'entrar') {
         onLogado(await entrar(email, senha));
-      } else if (modo === 'cadastro') {
-        onLogado(await cadastrar(nome, email, senha));
       } else if (modo === 'recuperar') {
         setMsg(await recuperar(email));
       } else if (modo === 'redefinir') {
@@ -56,7 +54,7 @@ export default function Auth({
   };
 
   const titulo =
-    modo === 'entrar' ? 'Entrar' : modo === 'cadastro' ? 'Criar conta' : modo === 'recuperar' ? 'Recuperar senha' : 'Nova senha';
+    modo === 'entrar' ? 'Entrar' : modo === 'recuperar' ? 'Recuperar senha' : 'Nova senha';
 
   return (
     <main className="auth-wrap">
@@ -68,20 +66,7 @@ export default function Auth({
         </button>
         <h2 className="auth-titulo">{titulo}</h2>
 
-        {(modo === 'entrar' || modo === 'cadastro') && (
-          <div className="auth-tabs">
-            <button type="button" className={modo === 'entrar' ? 'on' : ''} onClick={() => trocar('entrar')}>Entrar</button>
-            <button type="button" className={modo === 'cadastro' ? 'on' : ''} onClick={() => trocar('cadastro')}>Criar conta</button>
-          </div>
-        )}
-
         <form className="auth-form" onSubmit={enviar}>
-          {modo === 'cadastro' && (
-            <label>
-              Nome
-              <input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Seu nome" required />
-            </label>
-          )}
           {modo !== 'redefinir' && (
             <label>
               E-mail
@@ -116,7 +101,14 @@ export default function Auth({
         </form>
 
         <div className="auth-links">
-          {modo === 'entrar' && <button type="button" onClick={() => trocar('recuperar')}>Esqueci minha senha</button>}
+          {modo === 'entrar' && (
+            <>
+              <button type="button" onClick={() => trocar('recuperar')}>Esqueci minha senha</button>
+              <p className="auth-dica" style={{ marginTop: '16px', fontSize: '14px', color: 'var(--texto-suave)' }}>
+                Ainda não tem conta? <Link to="/cadastro" style={{ color: 'var(--cor-primaria)', fontWeight: 600 }}>Cadastre-se grátis</Link>
+              </p>
+            </>
+          )}
           {(modo === 'recuperar' || modo === 'redefinir') && <button type="button" onClick={() => trocar('entrar')}>← Voltar para o login</button>}
         </div>
       </div>

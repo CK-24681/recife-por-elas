@@ -280,12 +280,12 @@ export default function Feed() {
                       {iconeTipo(item.tipo)}{item.tipo}
                     </span>
                     <h3>{item.titulo}</h3>
-                    {item.empresa && <p className="mapa-popup-empresa">{item.empresa}</p>}
+                    {item.empresa && <p className="fd-empresa">{item.empresa}</p>}
                     
                     {/* Se tiver "Status de Vagas" na descrição (Creches) */}
                     {item.descricao.includes('Status de Vagas') ? (
                        <>
-                         <p className="mapa-popup-desc" style={{ WebkitLineClamp: 3 }}>
+                         <p className="mapa-popup-desc truncate-3">
                            {item.descricao.split('Status de Vagas:')[0].trim()}
                          </p>
                          <p className="mapa-popup-status">
@@ -293,14 +293,14 @@ export default function Feed() {
                          </p>
                        </>
                     ) : (
-                       <p className="mapa-popup-desc" style={{ WebkitLineClamp: 4 }}>
+                       <p className="mapa-popup-desc truncate-4">
                          {item.descricao}
                        </p>
                     )}
                     
                     <p className="apoio-endereco">📍 {item.endereco}</p>
                     
-                    <div className="mapa-popup-actions" style={{ marginTop: 12 }}>
+                    <div className="mapa-popup-actions mt-24">
                       {item.latitude && item.longitude && (
                         <a href={gmapsLink} target="_blank" rel="noopener noreferrer" className="mapa-btn-acao secundario">
                           🗺️ Como chegar
@@ -323,8 +323,8 @@ export default function Feed() {
                       {iconeTipo(item.tipo)}{item.tipo}
                     </span>
                     <h3>{item.titulo}</h3>
-                    {item.empresa && <p className="mapa-popup-empresa">{item.empresa}</p>}
-                    <p className="mapa-popup-desc" style={{ WebkitLineClamp: 3 }}>{descricaoLimpa}</p>
+                    {item.empresa && <p className="fd-empresa">{item.empresa}</p>}
+                    <p className="mapa-popup-desc truncate-3">{descricaoLimpa}</p>
                     <div className="fd-card-meta">
                       <span>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -344,8 +344,8 @@ export default function Feed() {
                     {iconeTipo(item.tipo)}{item.tipo}
                   </span>
                   <h3>{item.titulo}</h3>
-                  {item.empresa && <p style={{fontSize:12,color:'var(--texto-suave)',marginBottom:4,marginTop:-4,fontWeight:500}}>{item.empresa}</p>}
-                  <p>{descricaoLimpa}</p>
+                  {item.empresa && <p className="fd-empresa-meta">{item.empresa}</p>}
+                  <p className="mapa-popup-desc truncate-3">{descricaoLimpa}</p>
                   <div className="fd-card-meta">
                     <span>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
