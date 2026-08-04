@@ -5,109 +5,98 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
+// ─── Tipos ───────────────────────────────────────────────────────────────────
 interface Oportunidade {
   id?: number;
   titulo: string;
   descricao: string;
   empresa?: string;
-  tipo: 'Emprego' | 'Curso' | 'Benefício social' | 'Microcrédito' | 'Apoio';
-  fonte: string;
-  link_inscricao: string;
-  bairro: string;
-  endereco: string;
+  tipo: 'Emprego' | 'Curso' | 'Benefício social' | 'Microcrédito' | 'Apoio' | string;
+  fonte?: string;
+  link_inscricao?: string;
+  bairro?: string;
+  endereco?: string;
+  endereco_completo?: string;
   latitude: number | null;
   longitude: number | null;
-  horario: string;
-  data_inicio_inscricao: string;
-  data_fim_inscricao: string;
+  horario?: string;
+  isOnline?: boolean;
+  data_inicio_inscricao?: string;
+  data_fim_inscricao?: string;
 }
 
-// ─── Helpers: Haversine e Cores ──────────────────────────────────────────────
-function calcularDistancia(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Raio da Terra em km
-  const dLat = (lat2 - lat1) * (Math.PI / 180);
-  const dLon = (lon2 - lon1) * (Math.PI / 180);
-  const a = 
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
-    Math.sin(dLon / 2) * Math.sin(dLon / 2); 
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
-  return R * c; // Distância em km
-}
-
-const coresPin: Record<string, string> = {
-  'Emprego': '#2563eb', // Azul
-  'Curso': '#16a34a', // Verde
-  'Benefício social': '#ea580c', // Laranja
-  'Microcrédito': '#db2777', // Rosa
-  'Apoio': '#9333ea', // Roxo
+// ─── Paleta de cores por categoria ──────────────────────────────────────────
+const CONFIG_TIPO: Record<string, { cor: string; corFundo: string; emoji: string; rotulo: string }> = {
+  'Emprego':          { cor: '#2563eb', corFundo: '#dbeafe', emoji: '💼', rotulo: 'Emprego' },
+  'Curso':            { cor: '#16a34a', corFundo: '#dcfce7', emoji: '🎓', rotulo: 'Curso' },
+  'Benefício social': { cor: '#ea580c', corFundo: '#fed7aa', emoji: '🤝', rotulo: 'Benefício' },
+  'Microcrédito':     { cor: '#db2777', corFundo: '#fce7f3', emoji: '💰', rotulo: 'Microcrédito' },
+  'Apoio':            { cor: '#7c3aed', corFundo: '#ede9fe', emoji: '🏠', rotulo: 'Rede de Apoio' },
 };
 
-const iconePin = (tipo: string) => {
-  if (tipo === 'Emprego') return '💼';
-  if (tipo === 'Curso') return '🎓';
-  if (tipo === 'Benefício social') return '🤝';
-  if (tipo === 'Microcrédito') return '💰';
-  return '🏠'; // Apoio
-};
+const getCfg = (tipo: string) => CONFIG_TIPO[tipo] ?? { cor: '#64748b', corFundo: '#f1f5f9', emoji: '📍', rotulo: tipo };
 
+// ─── Ícone circular customizado via L.divIcon ────────────────────────────────
 function criarIcone(tipo: string) {
-  const cor = coresPin[tipo] || '#000';
-  const emoji = iconePin(tipo);
-  
+  const { cor } = getCfg(tipo);
   return L.divIcon({
     className: 'custom-leaflet-icon',
-    html: `<div class="mapa-pin-redondo" style="background-color: ${cor};">${emoji}</div>`,
+    html: `<div class="map-pin" style="background:${cor}"></div>`,
     iconSize: [30, 30],
     iconAnchor: [15, 15],
-    popupAnchor: [0, -15]
+    popupAnchor: [0, -18],
   });
 }
 
 const userIcon = L.divIcon({
-  className: 'user-leaflet-icon',
-  html: `<div class="mapa-pin-redondo user" style="background-color: #ef4444;"></div>`,
-  iconSize: [24, 24],
-  iconAnchor: [12, 12],
-  popupAnchor: [0, -12]
+  className: 'custom-leaflet-icon',
+  html: `<div class="map-pin map-pin--user"></div>`,
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
+  popupAnchor: [0, -16],
 });
 
-// Componente auxiliar para centralizar o mapa na usuária
+// ─── URL do Google Maps para "Como Chegar" ───────────────────────────────────
+function urlComoChegar(op: Oportunidade): string {
+  // Preferência: lat/lng exatos → endereço completo → título
+  if (op.latitude && op.longitude) {
+    return `https://www.google.com/maps/search/?api=1&query=${op.latitude},${op.longitude}`;
+  }
+  const query = encodeURIComponent(
+    op.endereco_completo || op.endereco || op.titulo
+  );
+  return `https://www.google.com/maps/search/?api=1&query=${query}`;
+}
+
+// ─── Filtros do mapa ─────────────────────────────────────────────────────────
+const FILTROS = [
+  { valor: '',                  rotulo: 'Todas',          icone: '🗺️' },
+  { valor: 'Emprego',           rotulo: 'Empregos',       icone: '💼' },
+  { valor: 'Curso',             rotulo: 'Cursos',         icone: '🎓' },
+  { valor: 'Benefício social',  rotulo: 'Benefícios',     icone: '🤝' },
+  { valor: 'Apoio',             rotulo: 'Rede de Apoio',  icone: '🏠' },
+];
+
+// ─── Componente auxiliar: foca o mapa na usuária ─────────────────────────────
 function FocusUser({ position }: { position: [number, number] | null }) {
   const map = useMap();
   useEffect(() => {
-    if (position) {
-      map.setView(position, 14, { animate: true });
-    }
+    if (position) map.setView(position, 15, { animate: true });
   }, [position, map]);
   return null;
 }
 
-const tags = [
-  { valor: '', rotulo: 'Todas' },
-  { valor: 'Emprego', rotulo: 'Empregos' },
-  { valor: 'Curso', rotulo: 'Cursos' },
-  { valor: 'Benefício social', rotulo: 'Benefícios' },
-  { valor: 'Apoio', rotulo: '🏠 Rede de Apoio' },
-];
-
-const distancias = [
-  { valor: 0, rotulo: 'Qualquer distância' },
-  { valor: 2, rotulo: 'Até 2 km' },
-  { valor: 5, rotulo: 'Até 5 km' },
-  { valor: 10, rotulo: 'Até 10 km' },
-];
-
+// ─── Componente principal ─────────────────────────────────────────────────────
 export default function Mapa() {
   const [filtro, setFiltro] = useState('');
-  const [raio, setRaio] = useState<number>(0);
   const [oportunidades, setOportunidades] = useState<Oportunidade[]>([]);
   const [estado, setEstado] = useState<'carregando' | 'erro' | 'ok'>('carregando');
   const [posicaoUsuario, setPosicaoUsuario] = useState<[number, number] | null>(null);
   const toast = useToast();
 
-  const centroRecife: [number, number] = [-8.0476, -34.8770];
 
+
+  // Carga dos dados
   useEffect(() => {
     (async () => {
       setEstado('carregando');
@@ -125,184 +114,194 @@ export default function Mapa() {
     })();
   }, []);
 
+  // Geolocalização
   const obterLocalizacao = () => {
     if (!navigator.geolocation) {
-      toast.erro('Geolocalização não é suportada no seu navegador.');
+      toast.erro('Geolocalização não suportada neste navegador.');
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setPosicaoUsuario([position.coords.latitude, position.coords.longitude]);
-        toast.sucesso('Localização obtida com sucesso!');
+      (pos) => {
+        setPosicaoUsuario([pos.coords.latitude, pos.coords.longitude]);
+        toast.sucesso('Localização obtida!');
       },
-      (error) => {
-        console.error(error);
-        toast.erro('Permissão negada ou falha ao obter localização.');
-      }
+      () => toast.erro('Não foi possível obter a localização.')
     );
   };
 
-  // Filtragem
-  const oportunidadesComCoords = oportunidades.filter(o => o.latitude != null && o.longitude != null);
-  let filtradas = filtro ? oportunidadesComCoords.filter(o => o.tipo === filtro) : oportunidadesComCoords;
+  // ── REGRA GIS: apenas locais físicos com coordenadas válidas e não-online ──
+  const pontosNoMapa = oportunidades.filter(
+    (o) => !o.isOnline && typeof o.latitude === 'number' && typeof o.longitude === 'number'
+  );
+  const filtrados = filtro
+    ? pontosNoMapa.filter((o) => o.tipo === filtro)
+    : pontosNoMapa;
 
-  if (raio > 0 && posicaoUsuario) {
-    filtradas = filtradas.filter(o => {
-      const dist = calcularDistancia(posicaoUsuario[0], posicaoUsuario[1], o.latitude!, o.longitude!);
-      return dist <= raio;
-    });
-  }
+  const total = filtrados.length;
 
   return (
     <>
+      {/* ── Hero / Cabeçalho ── */}
       <section className="mapa-secao">
         <div className="container">
-          <h1 className="mapa-titulo">Mapa de oportunidades</h1>
-          <p className="mapa-subtitulo">Veja empregos, cursos e a rede de apoio perto de você no Recife</p>
-          
-          <div className="mapa-filtros-row">
-            <div className="mp-filtros">
-              {tags.map((t) => (
-                <button key={t.valor} className={`fd-filtro ${filtro === t.valor ? 'ativo' : ''}`} onClick={() => setFiltro(t.valor)}>
-                  {t.rotulo}
-                </button>
-              ))}
-            </div>
+          <h1 className="mapa-titulo">Mapa de Oportunidades</h1>
 
-            <div className="mapa-acoes">
-              <select 
-                value={raio} 
-                onChange={(e) => setRaio(Number(e.target.value))}
-                className="mapa-select"
-              >
-                {distancias.map(d => (
-                  <option key={d.valor} value={d.valor}>{d.rotulo}</option>
-                ))}
-              </select>
-
-              <button 
-                onClick={obterLocalizacao}
-                className="btn-primario mapa-btn-loc"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
-                Usar minha localização
-              </button>
-            </div>
-          </div>
+          {/* Botão de localização */}
+          <button
+            onClick={obterLocalizacao}
+            className={`map-loc-btn ${posicaoUsuario ? 'map-loc-btn--ativo' : ''}`}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+            {posicaoUsuario ? 'Localização ativa ✓' : 'Usar minha localização'}
+          </button>
         </div>
       </section>
 
+      {/* ── Mapa + Filtros flutuantes ── */}
       <section className="container mapa-secao-padding">
         {estado === 'carregando' ? (
-          <div className="mapa-carregando" />
+          <div className="mapa-carregando" aria-label="Carregando mapa…" />
         ) : estado === 'erro' ? (
-          <div className="fd-vazio mapa-erro">
-            <h3>Erro ao carregar mapa</h3>
-            <p>Não foi possível carregar as oportunidades.</p>
-            <button className="btn-secundario" onClick={() => window.location.reload()}>Tentar novamente</button>
+          <div className="fd-vazio">
+            <h3>Erro ao carregar</h3>
+            <p>Não foi possível carregar os pontos do mapa.</p>
+            <button className="btn-secundario" onClick={() => window.location.reload()}>
+              Tentar novamente
+            </button>
           </div>
         ) : (
-          <div className="mapa-wrapper">
-            <MapContainer 
-              center={centroRecife} 
-              zoom={13} 
+          <div className="mapa-wrapper" style={{ display: 'flex', flexDirection: 'column', flexGrow: 1, height: '100vh', width: '100%' }}>
+            {/* ── Barra de filtros flutuante sobre o mapa ── */}
+            <div className="map-filtros-flutuante">
+              {FILTROS.map((f) => {
+                const cfg = f.valor ? getCfg(f.valor) : null;
+                const ativo = filtro === f.valor;
+                return (
+                  <button
+                    key={f.valor}
+                    className={`map-filtro-btn ${ativo ? 'map-filtro-btn--ativo' : ''}`}
+                    onClick={() => setFiltro(f.valor)}
+                    style={ativo && cfg ? {
+                      background: cfg.cor,
+                      borderColor: cfg.cor,
+                      color: '#fff',
+                    } : undefined}
+                    aria-pressed={ativo}
+                  >
+                    <span className="map-filtro-icone">{f.icone}</span>
+                    <span className="map-filtro-rotulo">{f.rotulo}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <MapContainer
+              center={[-8.0476, -34.8770]}
+              zoom={13}
               className="mapa-container-interno"
+              zoomControl={false}
+              style={{ height: '70vh', minHeight: '500px', width: '100%', zIndex: 0, borderRadius: '12px' }}
             >
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
-              
+
               <FocusUser position={posicaoUsuario} />
 
+              {/* Pino da usuária */}
               {posicaoUsuario && (
                 <Marker position={posicaoUsuario} icon={userIcon}>
                   <Popup>
-                    <strong>Você está aqui!</strong>
+                    <div className="mapa-popup-content">
+                      <p style={{ margin: 0, fontWeight: 700, fontSize: 14 }}>📍 Você está aqui</p>
+                    </div>
                   </Popup>
                 </Marker>
               )}
 
-              {filtradas.map((op, idx) => {
-                const key = op.id != null ? `int-${op.id}` : `ext-${idx}`;
-                const gmapsLink = `https://www.google.com/maps/dir/?api=1&destination=${op.latitude},${op.longitude}`;
+              {/* Pinos das oportunidades */}
+              {filtrados.map((op, idx) => {
+                if (typeof op.latitude !== 'number' || typeof op.longitude !== 'number') return null;
                 
+                const key = op.id != null ? `int-${op.id}` : `ext-${idx}`;
+                const cfg = getCfg(op.tipo);
+                const gmaps = urlComoChegar(op);
+                const enderecoExibido = op.endereco_completo || op.endereco || '';
+
                 return (
-                  <Marker 
-                    key={key} 
-                    position={[op.latitude!, op.longitude!]} 
+                  <Marker
+                    key={key}
+                    position={[op.latitude!, op.longitude!]}
                     icon={criarIcone(op.tipo)}
                   >
-                    <Popup>
+                    <Popup minWidth={240} maxWidth={280}>
                       <div className="mapa-popup-content">
-                        <span className="mapa-popup-tag" style={{ color: coresPin[op.tipo] }}>
-                          {op.tipo}
+                        {/* Tag de categoria */}
+                        <span
+                          className="mapa-popup-tag"
+                          style={{ color: cfg.cor, background: cfg.corFundo }}
+                        >
+                          {cfg.emoji} {cfg.rotulo}
                         </span>
+
+                        {/* Título */}
                         <h3 className="mapa-popup-titulo">{op.titulo}</h3>
-                        {op.empresa && <p className="mapa-popup-empresa">{op.empresa}</p>}
-                        
-                        {/* Se tiver "Status de Vagas" na descrição (Creches) */}
-                        {op.descricao.includes('Status de Vagas') ? (
-                           <>
-                             <p className="mapa-popup-desc truncate-2">
-                               {op.descricao.split('Status de Vagas:')[0].trim()}
-                             </p>
-                             <p className="mapa-popup-status">
-                               Status de Vagas: {op.descricao.split('Status de Vagas:')[1].trim()}
-                             </p>
-                           </>
-                        ) : (
-                           <p className="mapa-popup-desc">
-                             {op.descricao}
-                           </p>
+
+                        {/* Empresa */}
+                        {op.empresa && (
+                          <p className="mapa-popup-empresa">{op.empresa}</p>
                         )}
-                        
-                        <p className="mapa-popup-end">📍 {op.endereco}</p>
-                        
-                        <div className="mapa-popup-actions">
-                          <a href={gmapsLink} target="_blank" rel="noopener noreferrer" className="mapa-btn-acao secundario">
-                            🗺️ Como chegar
+
+                        {/* Endereço compacto */}
+                        {enderecoExibido && (
+                          <p className="mapa-popup-end">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            {enderecoExibido}
+                          </p>
+                        )}
+
+                        {/* CTA "Como Chegar" — largo e proeminente */}
+                        <a
+                          href={gmaps}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mapa-btn-chegar"
+                        >
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                          Como Chegar
+                        </a>
+
+                        {/* Link secundário discreto */}
+                        {op.link_inscricao && (
+                          <a
+                            href={op.link_inscricao}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mapa-btn-detalhes"
+                          >
+                            Ver detalhes →
                           </a>
-                          {op.link_inscricao && (
-                            <a href={op.link_inscricao} target="_blank" rel="noopener noreferrer" className="mapa-btn-acao primario">
-                              Detalhes
-                            </a>
-                          )}
-                        </div>
+                        )}
                       </div>
                     </Popup>
                   </Marker>
                 );
               })}
             </MapContainer>
-            
-            {/* Aviso caso o raio seja filtrado mas a usuária não tenha dado permissão */}
-            {raio > 0 && !posicaoUsuario && (
-              <div className="mapa-aviso-localizacao">
-                Clique em "Usar minha localização" para ativar o filtro de {raio}km.
+
+            {/* Legenda de contagem */}
+            {total === 0 && estado === 'ok' && (
+              <div className="map-sem-resultados">
+                Nenhum local físico encontrado para este filtro.
               </div>
             )}
           </div>
         )}
-        
-        {/* Card Educativo (Guia de Vagas Oficiais) */}
-        {(filtro === '' || filtro === 'Emprego') && estado === 'ok' && (
-          <div className="fd-grade mt-24">
-            <div className="fd-card surgir fd-card-alerta">
-              <span className="fd-card-tag tag-alerta">
-                ⚠️ Guia de Vagas Oficiais
-              </span>
-              <h3 className="alerta-titulo">Portal Emprega Brasil / Agência do Trabalho PE</h3>
-              <p className="alerta-texto">
-                As vagas oficiais do estado são atualizadas diariamente no portal do governo. Siga os passos: 1. Clique no botão abaixo. 2. Acesse com seu Gov.br. 3. No filtro de cidade, digite 'Recife' e busque pela sua área de interesse.
-              </p>
-              <a href="https://servicos.mte.gov.br/" target="_blank" rel="noopener noreferrer" className="btn-alerta">
-                Acessar Portal de Vagas
-              </a>
-            </div>
-          </div>
-        )}
       </section>
+
       {toast.container}
     </>
   );
