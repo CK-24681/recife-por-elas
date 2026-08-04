@@ -55,8 +55,13 @@ async function fetchComTimeout(url: string, opts: RequestInit = {}): Promise<Res
   }
 }
 
-// ─── ARBEITNOW (vagas remotas/flexíveis — aberto, sem chave) ───
+// ─── ARBEITNOW — DESATIVADO v1 ──────────────────────────────────────────────
+// Razão: vagas remotas de tecnologia (dev, SEO, marketing digital) são fora
+// do escopo da persona v1 (mães solo, baixa renda, Recife presencial/híbrido).
+// Reativar na v2 quando houver filtro de perfil digital/remoto.
+// ─────────────────────────────────────────────────────────────────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function buscarArbeitnow(): Promise<OportunidadeExterna[]> {
   const data = await fetchJSON('https://www.arbeitnow.com/api/job-board-api');
   if (!data) return [];
@@ -78,8 +83,12 @@ async function buscarArbeitnow(): Promise<OportunidadeExterna[]> {
   }));
 }
 
-// ─── REMOTIVE (vagas 100% remotas — aberto, público) ───
+// ─── REMOTIVE — DESATIVADO v1 ───────────────────────────────────────────────
+// Razão: vagas 100% remotas exigem infraestrutura (internet estável, computador)
+// que a persona v1 tipicamente não possui. Fora do escopo.
+// ─────────────────────────────────────────────────────────────────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function buscarRemotive(): Promise<OportunidadeExterna[]> {
   const data = await fetchJSON('https://remotive.com/api/remote-jobs');
   if (!data) return [];
@@ -130,8 +139,12 @@ async function buscarAdzuna(): Promise<OportunidadeExterna[]> {
   }));
 }
 
-// ─── THE MUSE (vagas por localização — X-Muse-Api-Key via env) ───
+// ─── THE MUSE — DESATIVADO v1 ───────────────────────────────────────────────
+// Razão: retorna predominantemente vagas internacionais (EUA, Europa) com
+// salários em dólar/euro — confuso e irrelevante para a persona.
+// ─────────────────────────────────────────────────────────────────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function buscarTheMuse(): Promise<OportunidadeExterna[]> {
   const apiKey = process.env.THE_MUSE_API_KEY;
   if (!apiKey) return [];
@@ -443,22 +456,22 @@ export async function buscarOportunidadesExternas(
   filtros?: { tipo?: string; bairro?: string; horario?: string }
 ): Promise<OportunidadeExterna[]> {
   try {
-    // Lança todas as integrações em paralelo — cada uma falha isoladamente
+    // Lança todas as integrações ativas em paralelo — cada uma falha isoladamente.
+    // Prioridade v1: Recife presencial → APIs governamentais → cursos online.
+    // Arbeitnow, Remotive e The Muse DESATIVADOS v1 (vagas remotas/internacionais).
     const resultados = await Promise.allSettled([
-      // Emprego
-      buscarArbeitnow(),
-      buscarRemotive(),
-      buscarAdzuna(),
-      buscarTheMuse(),
-      // Cursos
-      buscarEVG(),
-      buscarEdX(),
-      buscarCoursera(),
-      // Benefícios
-      buscarDATASUS(),
+      // ── EMPREGO (Recife, presencial/híbrido) ──
+      buscarAdzuna(),           // geolocalizado em Recife, vagas operacionais
+      // ── BENEFÍCIOS SOCIAIS (Gov Federal) ──
       buscarBolsaFamilia(),
       buscarBPC(),
       buscarPETI(),
+      // ── CURSOS GRATUITOS ──
+      buscarEVG(),              // ENAP — Escola Virtual de Governo
+      buscarEdX(),              // cursos livres com certificado
+      buscarCoursera(),         // especializações acessíveis
+      // ── SAÚDE / REDE DE APOIO ──
+      buscarDATASUS(),          // postos de saúde para o Mapa
     ]);
 
     // Achata resultados bem-sucedidos

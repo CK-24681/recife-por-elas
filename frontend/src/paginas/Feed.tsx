@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { Link } from '../roteador';
 import { apiJSON } from '../api';
 import { useToast } from '../toast';
+import { useSessao } from '../sessao';
 
 interface Oportunidade {
   id?: number;
@@ -20,6 +21,26 @@ interface Oportunidade {
   data_fim_inscricao: string;
 }
 
+// ─── Helper: decodifica entidades HTML e remove tags residuais ───────────────
+// Seguro contra XSS: usa DOMParser isolado, nunca injeta no DOM real.
+function decodeHtml(raw: string): string {
+  if (!raw) return '';
+  // Remove tags HTML primeiro
+  const semTags = raw.replace(/<[^>]*>/g, ' ');
+  // Decodifica entidades comuns sem usar innerHTML
+  return semTags
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&apos;/g, "'")
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 const tags: { valor: string; rotulo: string }[] = [
   { valor: '', rotulo: 'Todas' },
   { valor: 'Emprego', rotulo: 'Empregos' },
@@ -27,6 +48,8 @@ const tags: { valor: string; rotulo: string }[] = [
   { valor: 'Benefício social', rotulo: 'Benefícios' },
   { valor: 'Microcrédito', rotulo: 'Microcrédito' },
 ];
+
+const TURNOS = ['Manhã', 'Tarde', 'Noite', 'Manhã e tarde', 'Horário flexível'];
 
 const iconeTipo = (tipo: string) => {
   if (tipo === 'Emprego') return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>;
@@ -42,12 +65,95 @@ const tagClass = (tipo: string) => {
   return 'credito';
 };
 
+// Empty state específico por filtro
+const emptyStateMensagem = (filtro: string): { titulo: string; texto: string } => {
+  if (filtro === 'Curso') return {
+    titulo: 'Nenhum curso disponível agora',
+    texto: 'A plataforma EV.G (ENAP) e outros parceiros são consultados em tempo real. As vagas de cursos gratuitos costumam ser publicadas em lotes — tente novamente em instantes.',
+  };
+  if (filtro === 'Benefício social') return {
+    titulo: 'Informações de benefícios indisponíveis',
+    texto: 'O Portal da Transparência do Governo Federal está temporariamente sem resposta. As informações sobre Bolsa Família, BPC e PETI devem voltar em breve.',
+  };
+  if (filtro === 'Emprego') return {
+    titulo: 'Nenhuma vaga em Recife agora',
+    texto: 'A busca em tempo real não retornou vagas no momento. Novas oportunidades em Recife são publicadas todos os dias — volte mais tarde ou ajuste o filtro.',
+  };
+  return {
+    titulo: 'Nenhuma oportunidade encontrada',
+    texto: 'As fontes públicas são consultadas em tempo real. Tente novamente em alguns instantes, ajuste os filtros ou experimente uma categoria diferente.',
+  };
+};
+
+// Card rápido de turno — permite alterar sem sair do feed
+function CardTurnoRapido() {
+  const { usuario } = useSessao();
+  const toast = useToast();
+  const [turno, setTurno] = useState('');
+  const [salvando, setSalvando] = useState(false);
+  const [carregado, setCarregado] = useState(false);
+
+  useEffect(() => {
+    if (!usuario) return;
+    apiJSON<{ turno_disponivel: string }>('/perfil')
+      .then((d) => { setTurno(d.turno_disponivel || ''); setCarregado(true); })
+      .catch(() => setCarregado(true));
+  }, [usuario]);
+
+  const salvarTurno = async (e: FormEvent<HTMLSelectElement>) => {
+    const novoTurno = e.currentTarget.value;
+    setTurno(novoTurno);
+    setSalvando(true);
+    try {
+      await apiJSON('/perfil', { method: 'PUT', corpo: { turno_disponivel: novoTurno } });
+      toast.sucesso('Turno atualizado!');
+    } catch {
+      toast.erro('Não foi possível salvar. Tente novamente.');
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  if (!carregado) return null;
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
+      background: 'var(--fundo-suave)', border: '1px solid var(--borda)',
+      borderRadius: 10, padding: '10px 16px', marginTop: 16, maxWidth: 440,
+    }}>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--cor-primaria)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+      <span style={{ fontSize: 13, color: 'var(--texto-suave)', whiteSpace: 'nowrap' }}>Seu turno disponível:</span>
+      <select
+        id="turno-rapido"
+        value={turno}
+        onChange={salvarTurno}
+        disabled={salvando}
+        aria-label="Alterar turno disponível"
+        style={{
+          fontSize: 13, fontFamily: 'var(--fonte-corpo)', border: '1px solid var(--borda)',
+          borderRadius: 6, padding: '4px 8px', background: '#fff',
+          color: 'var(--texto)', cursor: 'pointer', flex: 1, minWidth: 140,
+        }}
+      >
+        <option value="">Não informado</option>
+        {TURNOS.map((t) => <option key={t} value={t}>{t}</option>)}
+      </select>
+      {salvando && <span style={{ fontSize: 12, color: 'var(--texto-suave)' }}>Salvando…</span>}
+    </div>
+  );
+}
+
 export default function Feed() {
   const [filtro, setFiltro] = useState('');
   const [busca, setBusca] = useState('');
   const [oportunidades, setOportunidades] = useState<Oportunidade[]>([]);
   const [estado, setEstado] = useState<'carregando' | 'erro' | 'ok'>('carregando');
   const toast = useToast();
+  const { estado: estadoSessao } = useSessao();
+  const logada = estadoSessao === 'logado';
 
   const carregar = async () => {
     setEstado('carregando');
@@ -71,11 +177,13 @@ export default function Feed() {
 
   useEffect(() => { carregar(); }, [filtro]);
 
-  // Filtro local por busca (título) — complementa o filtro de bairro do backend
+  // Filtro local por busca (título/bairro) — complementa o filtro de tipo do backend
   const filtradas = oportunidades.filter((o) => {
     if (busca && !o.titulo.toLowerCase().includes(busca.toLowerCase()) && !o.bairro.toLowerCase().includes(busca.toLowerCase())) return false;
     return true;
   });
+
+  const { titulo: emptyTitulo, texto: emptyTexto } = emptyStateMensagem(filtro);
 
   return (
     <>
@@ -99,6 +207,8 @@ export default function Feed() {
               onBlur={(e) => { (e.target as HTMLInputElement).style.borderColor = 'var(--borda)'; }}
             />
           </div>
+          {/* Card de turno rápido — apenas para usuárias logadas */}
+          {logada && <CardTurnoRapido />}
           <div className="fd-filtros surgir">
             {tags.map((t) => (
               <button key={t.valor} className={`fd-filtro ${filtro === t.valor ? 'ativo' : ''}`} onClick={() => setFiltro(t.valor)}>
@@ -135,10 +245,13 @@ export default function Feed() {
             <div style={{width:64,height:64,borderRadius:'50%',background:'var(--cor-primaria-suave)',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--cor-primaria)'}}>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             </div>
-            <h3>Nenhuma oportunidade encontrada</h3>
-            <p>As fontes públicas são consultadas em tempo real. Tente novamente em alguns instantes, ajuste os filtros ou crie uma conta para receber oportunidades personalizadas.</p>
+            <h3>{emptyTitulo}</h3>
+            <p>{emptyTexto}</p>
             <div style={{display:'flex',gap:10,flexWrap:'wrap',justifyContent:'center'}}>
-              <a href="/cadastro" className="btn-primario">Criar minha conta gratuita</a>
+              {/* CTA de cadastro visível apenas para usuárias NÃO logadas */}
+              {!logada && (
+                <a href="/cadastro" className="btn-primario">Criar minha conta gratuita</a>
+              )}
               <button className="btn-secundario" onClick={carregar}>Tentar novamente</button>
             </div>
           </div>
@@ -146,6 +259,8 @@ export default function Feed() {
           <div className="fd-grade">
             {filtradas.map((item: Oportunidade, i: number) => {
               const externo = item.link_inscricao && !item.id;
+              // Descrição decodificada e limpa — seguro contra XSS
+              const descricaoLimpa = decodeHtml(item.descricao);
               if (externo) {
                 return (
                   <a key={`ext-${i}`} href={item.link_inscricao} target="_blank" rel="noopener noreferrer" className="fd-card surgir">
@@ -154,7 +269,7 @@ export default function Feed() {
                     </span>
                     <h3>{item.titulo}</h3>
                     {item.empresa && <p style={{fontSize:12,color:'var(--texto-suave)',marginBottom:4,marginTop:-4,fontWeight:500}}>{item.empresa}</p>}
-                    <p>{item.descricao}</p>
+                    <p>{descricaoLimpa}</p>
                     <div className="fd-card-meta">
                       <span>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -175,7 +290,7 @@ export default function Feed() {
                   </span>
                   <h3>{item.titulo}</h3>
                   {item.empresa && <p style={{fontSize:12,color:'var(--texto-suave)',marginBottom:4,marginTop:-4,fontWeight:500}}>{item.empresa}</p>}
-                  <p>{item.descricao}</p>
+                  <p>{descricaoLimpa}</p>
                   <div className="fd-card-meta">
                     <span>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>

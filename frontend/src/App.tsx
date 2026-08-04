@@ -450,10 +450,10 @@ function HeaderLanding({ estado, encerrar }: { estado: string; encerrar: () => v
       <div className="container hn-linha">
         <a href="/" className="hn-logo">Recife<strong>PorElas</strong></a>
         <nav className="hn-nav">
-          <a href="#como-funciona">Como funciona</a>
-          <a href="#recursos">Recursos</a>
-          <a href="#depoimentos">Depoimentos</a>
-          <a href="#faq">Dúvidas</a>
+          <a href="/#como-funciona">Como funciona</a>
+          <a href="/#recursos">Recursos</a>
+          <a href="/#depoimentos">Depoimentos</a>
+          <a href="/#faq">Dúvidas</a>
         </nav>
         <div className="hn-acoes">
           {estado === 'logado' ? (
@@ -470,10 +470,10 @@ function HeaderLanding({ estado, encerrar }: { estado: string; encerrar: () => v
           </label>
         </div>
         <nav className="hn-nav-movel">
-          <a href="#como-funciona">Como funciona</a>
-          <a href="#recursos">Recursos</a>
-          <a href="#depoimentos">Depoimentos</a>
-          <a href="#faq">Dúvidas</a>
+          <a href="/#como-funciona">Como funciona</a>
+          <a href="/#recursos">Recursos</a>
+          <a href="/#depoimentos">Depoimentos</a>
+          <a href="/#faq">Dúvidas</a>
           {estado === 'logado' ? (
             <>
               <a href="/perfil">Meu perfil</a>
@@ -500,9 +500,9 @@ function FooterLanding() {
           </div>
           <nav className="rp-col">
             <h4>Plataforma</h4>
-            <a href="#como-funciona">Como funciona</a>
-            <a href="#recursos">Recursos</a>
-            <a href="#faq">Dúvidas</a>
+            <a href="/#como-funciona">Como funciona</a>
+            <a href="/#recursos">Recursos</a>
+            <a href="/#faq">Dúvidas</a>
             <a href="/mapa">Mapa</a>
           </nav>
           <nav className="rp-col">
