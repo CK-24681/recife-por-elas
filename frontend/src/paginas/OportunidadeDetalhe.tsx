@@ -67,18 +67,18 @@ export default function OportunidadeDetalhe() {
 
   if (estado === 'carregando') {
     return (
-      <div className="container" style={{paddingBlock:80,textAlign:'center'}}>
-        <div className="sessao-spinner" style={{margin:'0 auto 16px'}} />
-        <p style={{color:'var(--texto-suave)'}}>Carregando oportunidade…</p>
+      <div className="container dt-status-container">
+        <div className="sessao-spinner dt-status-spinner" />
+        <p className="dt-status-texto">Carregando oportunidade…</p>
       </div>
     );
   }
 
   if (estado === 'erro' || !op) {
     return (
-      <div className="container" style={{paddingBlock:80,textAlign:'center'}}>
-        <h2 style={{marginBottom:12}}>Oportunidade não encontrada</h2>
-        <p style={{color:'var(--texto-suave)',marginBottom:24}}>Esta vaga pode ter expirado ou o link está incorreto.</p>
+      <div className="container dt-status-container">
+        <h2 className="dt-erro-titulo">Oportunidade não encontrada</h2>
+        <p className="dt-erro-texto">Esta vaga pode ter expirado ou o link está incorreto.</p>
         <Link to="/" className="btn-primario">Voltar para o feed</Link>
       </div>
     );
@@ -110,12 +110,12 @@ export default function OportunidadeDetalhe() {
               <h4>Candidatar-se</h4>
               <span className={`dt-card-tag ${tagClass(op.tipo)}`}>{op.tipo}</span>
               {enviado ? (
-                <div style={{textAlign:'center',padding:'16px 0'}}>
-                  <div style={{width:40,height:40,borderRadius:'50%',background:'#ecfdf5',display:'flex',alignItems:'center',justifyContent:'center',color:'#047857',margin:'0 auto 10px'}}>
+                <div className="dt-sucesso-container">
+                  <div className="dt-sucesso-icone">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                   </div>
-                  <p style={{fontSize:13,color:'#047857',fontWeight:600}}>Candidatura enviada!</p>
-                  <Link to="/candidaturas" style={{fontSize:13,color:'var(--cor-primaria)',fontWeight:600,textDecoration:'none'}}>Acompanhar status</Link>
+                  <p className="dt-sucesso-texto">Candidatura enviada!</p>
+                  <Link to="/candidaturas" className="dt-sucesso-link">Acompanhar status</Link>
                 </div>
               ) : mostrarForm ? (
                 <form className="dt-app-form" onSubmit={candidatar}>
@@ -124,9 +124,9 @@ export default function OportunidadeDetalhe() {
                     onChange={(e) => setMensagem(e.target.value)}
                     placeholder="Escreva uma mensagem para a empresa ou instituição (opcional) — conte um pouco sobre você e por que esta oportunidade combina com seu momento."
                   />
-                  <div style={{display:'flex',gap:8}}>
-                    <button type="button" className="btn-secundario" style={{flex:1,fontSize:14}} onClick={() => setMostrarForm(false)}>Cancelar</button>
-                    <button type="submit" className="btn-primario" style={{flex:1,fontSize:14}} disabled={enviando}>
+                  <div className="dt-form-acoes">
+                    <button type="button" className="btn-secundario dt-btn-metade" onClick={() => setMostrarForm(false)}>Cancelar</button>
+                    <button type="submit" className="btn-primario dt-btn-metade" disabled={enviando}>
                       {enviando ? 'Enviando…' : 'Candidatar-se'}
                     </button>
                   </div>

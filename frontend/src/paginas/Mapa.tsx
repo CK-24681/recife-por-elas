@@ -57,19 +57,26 @@ function criarIcone(tipo: string) {
   
   return L.divIcon({
     className: 'custom-leaflet-icon',
-    html: `<div style="background-color: ${cor}; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); font-size: 16px;">${emoji}</div>`,
-    iconSize: [32, 32],
-    iconAnchor: [16, 32],
-    popupAnchor: [0, -32]
+    html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 40" width="32" height="40" style="filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3));">
+      <path d="M16 0C7.163 0 0 7.163 0 16c0 10.45 16 24 16 24s16-13.55 16-24C32 7.163 24.837 0 16 0z" fill="${cor}" stroke="white" stroke-width="1.5" />
+      <circle cx="16" cy="15" r="10" fill="white" />
+      <text x="16" y="19" font-size="12" text-anchor="middle" font-family="sans-serif">${emoji}</text>
+    </svg>`,
+    iconSize: [32, 40],
+    iconAnchor: [16, 40],
+    popupAnchor: [0, -40]
   });
 }
 
 const userIcon = L.divIcon({
   className: 'user-leaflet-icon',
-  html: `<div style="background-color: #ef4444; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(239,68,68,0.8);"></div>`,
-  iconSize: [24, 24],
-  iconAnchor: [12, 12],
-  popupAnchor: [0, -12]
+  html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 32" width="24" height="32" style="filter: drop-shadow(0px 0px 8px rgba(239,68,68,0.8));">
+    <path d="M12 0C5.373 0 0 5.373 0 12c0 7.838 12 20 12 20s12-12.162 12-20C24 5.373 18.627 0 12 0z" fill="#ef4444" stroke="white" stroke-width="2" />
+    <circle cx="12" cy="11" r="5" fill="white" />
+  </svg>`,
+  iconSize: [24, 32],
+  iconAnchor: [12, 32],
+  popupAnchor: [0, -32]
 });
 
 // Componente auxiliar para centralizar o mapa na usuária
@@ -155,12 +162,12 @@ export default function Mapa() {
 
   return (
     <>
-      <section style={{background:'var(--fundo-suave)',borderBottom:'1px solid var(--borda)',paddingBlock:'clamp(28px,4vw,48px)'}}>
+      <section className="mapa-secao">
         <div className="container">
-          <h1 style={{fontSize:'clamp(1.5rem,3vw,2rem)',fontWeight:700,marginBottom:6}}>Mapa de oportunidades</h1>
-          <p style={{color:'var(--texto-suave)',fontSize:15}}>Veja empregos, cursos e a rede de apoio perto de você no Recife</p>
+          <h1 className="mapa-titulo">Mapa de oportunidades</h1>
+          <p className="mapa-subtitulo">Veja empregos, cursos e a rede de apoio perto de você no Recife</p>
           
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginTop: 24, alignItems: 'center' }}>
+          <div className="mapa-filtros-row">
             <div className="mp-filtros" style={{ margin: 0 }}>
               {tags.map((t) => (
                 <button key={t.valor} className={`fd-filtro ${filtro === t.valor ? 'ativo' : ''}`} onClick={() => setFiltro(t.valor)}>
@@ -169,11 +176,11 @@ export default function Mapa() {
               ))}
             </div>
 
-            <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="mapa-acoes">
               <select 
                 value={raio} 
                 onChange={(e) => setRaio(Number(e.target.value))}
-                style={{ padding: '8px 12px', borderRadius: 20, border: '1px solid var(--borda)', background: '#fff', fontSize: 14 }}
+                className="mapa-select"
               >
                 {distancias.map(d => (
                   <option key={d.valor} value={d.valor}>{d.rotulo}</option>
@@ -182,7 +189,8 @@ export default function Mapa() {
 
               <button 
                 onClick={obterLocalizacao}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 20, background: 'var(--cor-primaria)', color: '#fff', border: 'none', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}
+                className="btn-primario"
+                style={{ borderRadius: 20, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', fontSize: 14 }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
                 Usar minha localização
@@ -192,17 +200,17 @@ export default function Mapa() {
         </div>
       </section>
 
-      <section className="container" style={{paddingBlock:'clamp(28px,5vw,56px)'}}>
+      <section className="container" style={{ paddingBlock: 'clamp(28px,5vw,56px)' }}>
         {estado === 'carregando' ? (
-          <div style={{ width: '100%', height: 600, borderRadius: 16, background: '#e5e7eb', animation: 'pulse 2s infinite' }} />
+          <div className="mapa-carregando" />
         ) : estado === 'erro' ? (
-          <div className="fd-vazio" style={{ height: 600 }}>
+          <div className="fd-vazio mapa-erro">
             <h3>Erro ao carregar mapa</h3>
             <p>Não foi possível carregar as oportunidades.</p>
             <button className="btn-secundario" onClick={() => window.location.reload()}>Tentar novamente</button>
           </div>
         ) : (
-          <div style={{ width: '100%', height: 600, borderRadius: 16, overflow: 'hidden', border: '1px solid var(--borda)', position: 'relative', zIndex: 1 }}>
+          <div className="mapa-wrapper">
             <MapContainer 
               center={centroRecife} 
               zoom={13} 
@@ -235,36 +243,36 @@ export default function Mapa() {
                   >
                     <Popup>
                       <div style={{ minWidth: 200 }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: coresPin[op.tipo], display: 'block', marginBottom: 4 }}>
+                        <span className="mapa-popup-tag" style={{ color: coresPin[op.tipo] }}>
                           {op.tipo}
                         </span>
-                        <h3 style={{ margin: '0 0 8px 0', fontSize: 15, color: 'var(--texto)' }}>{op.titulo}</h3>
-                        {op.empresa && <p style={{ fontSize: 12, color: '#666', margin: '0 0 8px 0', fontWeight: 600 }}>{op.empresa}</p>}
+                        <h3 className="mapa-popup-titulo">{op.titulo}</h3>
+                        {op.empresa && <p className="mapa-popup-empresa">{op.empresa}</p>}
                         
                         {/* Se tiver "Status de Vagas" na descrição (Creches) */}
                         {op.descricao.includes('Status de Vagas') ? (
                            <>
-                             <p style={{ fontSize: 12, color: '#4b5563', margin: '0 0 4px 0', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                             <p className="mapa-popup-desc" style={{ WebkitLineClamp: 2 }}>
                                {op.descricao.split('Status de Vagas:')[0].trim()}
                              </p>
-                             <p style={{ fontSize: 12, margin: '0 0 8px 0', padding: 6, background: '#f3f4f6', borderRadius: 6, fontWeight: 500, color: '#374151' }}>
+                             <p className="mapa-popup-status">
                                Status de Vagas: {op.descricao.split('Status de Vagas:')[1].trim()}
                              </p>
                            </>
                         ) : (
-                           <p style={{ fontSize: 12, color: '#4b5563', margin: '0 0 8px 0', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                           <p className="mapa-popup-desc">
                              {op.descricao}
                            </p>
                         )}
                         
-                        <p style={{ fontSize: 11, color: '#666', margin: '0 0 12px 0' }}>📍 {op.endereco}</p>
+                        <p className="mapa-popup-end">📍 {op.endereco}</p>
                         
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <a href={gmapsLink} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', flex: 1, textAlign: 'center', padding: '6px 0', background: '#3b82f6', color: '#fff', borderRadius: 6, fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
+                        <div className="mapa-popup-actions">
+                          <a href={gmapsLink} target="_blank" rel="noopener noreferrer" className="mapa-btn-acao secundario">
                             🗺️ Como chegar
                           </a>
                           {op.link_inscricao && (
-                            <a href={op.link_inscricao} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', flex: 1, textAlign: 'center', padding: '6px 0', background: 'var(--cor-primaria)', color: '#fff', borderRadius: 6, fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
+                            <a href={op.link_inscricao} target="_blank" rel="noopener noreferrer" className="mapa-btn-acao primario">
                               Detalhes
                             </a>
                           )}
@@ -278,7 +286,7 @@ export default function Mapa() {
             
             {/* Aviso caso o raio seja filtrado mas a usuária não tenha dado permissão */}
             {raio > 0 && !posicaoUsuario && (
-              <div style={{ position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)', background: '#fee2e2', color: '#991b1b', padding: '8px 16px', borderRadius: 20, fontSize: 13, fontWeight: 600, zIndex: 1000, boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+              <div className="mapa-aviso-localizacao">
                 Clique em "Usar minha localização" para ativar o filtro de {raio}km.
               </div>
             )}
@@ -288,15 +296,15 @@ export default function Mapa() {
         {/* Card Educativo (Guia de Vagas Oficiais) */}
         {(filtro === '' || filtro === 'Emprego') && estado === 'ok' && (
           <div className="fd-grade" style={{ marginTop: 24 }}>
-            <div className="fd-card surgir" style={{ background: '#fdf8f6', borderColor: '#fed7aa' }}>
-              <span className="fd-card-tag" style={{ background: '#ea580c', color: '#fff', border: 'none' }}>
+            <div className="fd-card surgir fd-card-alerta">
+              <span className="fd-card-tag tag-alerta">
                 ⚠️ Guia de Vagas Oficiais
               </span>
-              <h3 style={{ color: '#9a3412', marginTop: 8 }}>Portal Emprega Brasil / Agência do Trabalho PE</h3>
-              <p style={{ color: '#7c2d12', fontWeight: 500 }}>
+              <h3 className="alerta-titulo">Portal Emprega Brasil / Agência do Trabalho PE</h3>
+              <p className="alerta-texto">
                 As vagas oficiais do estado são atualizadas diariamente no portal do governo. Siga os passos: 1. Clique no botão abaixo. 2. Acesse com seu Gov.br. 3. No filtro de cidade, digite 'Recife' e busque pela sua área de interesse.
               </p>
-              <a href="https://servicos.mte.gov.br/" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: 12, padding: '8px 16px', background: '#ea580c', color: '#fff', borderRadius: 6, fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
+              <a href="https://servicos.mte.gov.br/" target="_blank" rel="noopener noreferrer" className="btn-alerta">
                 Acessar Portal de Vagas
               </a>
             </div>

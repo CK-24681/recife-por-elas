@@ -46,7 +46,7 @@ const tags: { valor: string; rotulo: string }[] = [
   { valor: 'Emprego', rotulo: 'Empregos' },
   { valor: 'Curso', rotulo: 'Cursos' },
   { valor: 'Benefício social', rotulo: 'Benefícios' },
-  { valor: 'Microcrédito', rotulo: 'Microcrédito' },
+  { valor: 'Apoio', rotulo: 'Rede de Apoio' },
 ];
 
 const TURNOS = ['Manhã', 'Tarde', 'Noite', 'Manhã e tarde', 'Horário flexível'];
@@ -55,6 +55,7 @@ const iconeTipo = (tipo: string) => {
   if (tipo === 'Emprego') return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>;
   if (tipo === 'Curso') return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
   if (tipo === 'Benefício social') return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
+  if (tipo === 'Apoio') return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
   return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg>;
 };
 
@@ -62,6 +63,7 @@ const tagClass = (tipo: string) => {
   if (tipo === 'Emprego') return 'emprego';
   if (tipo === 'Curso') return 'curso';
   if (tipo === 'Benefício social') return 'beneficio';
+  if (tipo === 'Apoio') return 'apoio';
   return 'credito';
 };
 
@@ -191,20 +193,14 @@ export default function Feed() {
         <div className="container">
           <h1 className="fd-hero-titulo">Oportunidades para você</h1>
           <p className="fd-hero-sub">{estado === 'carregando' ? 'Carregando oportunidades…' : `Encontramos ${filtradas.length} oportunidade${filtradas.length !== 1 ? 's' : ''} que combinam com seu perfil.`}</p>
-          <div style={{position:'relative',maxWidth:440,marginTop:20}}>
-            <svg style={{position:'absolute',left:14,top:'50%',transform:'translateY(-50%)',color:'var(--texto-suave)',pointerEvents:'none'}} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+          <div className="fd-hero-busca-container">
+            <svg className="fd-hero-busca-icone" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
             <input
               type="text"
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               placeholder="Buscar por título ou bairro…"
-              style={{
-                width:'100%',fontFamily:'var(--fonte-corpo)',fontSize:14,
-                padding:'12px 14px 12px 40px',border:'1px solid var(--borda)',
-                borderRadius:999,background:'#fff',outline:'none'
-              }}
-              onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = 'var(--cor-primaria)'; }}
-              onBlur={(e) => { (e.target as HTMLInputElement).style.borderColor = 'var(--borda)'; }}
+              className="fd-hero-busca-input"
             />
           </div>
           {/* Card de turno rápido — apenas para usuárias logadas */}
@@ -233,7 +229,7 @@ export default function Feed() {
           </div>
         ) : estado === 'erro' ? (
           <div className="fd-vazio">
-            <div style={{width:56,height:56,borderRadius:'50%',background:'var(--fundo-suave)',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--texto-suave)'}}>
+            <div className="fd-vazio-icone">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             </div>
             <h3>Erro ao carregar</h3>
@@ -242,12 +238,12 @@ export default function Feed() {
           </div>
         ) : filtradas.length === 0 ? (
           <div className="fd-vazio">
-            <div style={{width:64,height:64,borderRadius:'50%',background:'var(--cor-primaria-suave)',display:'flex',alignItems:'center',justifyContent:'center',color:'var(--cor-primaria)'}}>
+            <div className="fd-vazio-icone-destaque">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             </div>
             <h3>{emptyTitulo}</h3>
             <p>{emptyTexto}</p>
-            <div style={{display:'flex',gap:10,flexWrap:'wrap',justifyContent:'center'}}>
+            <div className="fd-vazio-acoes">
               {/* CTA de cadastro visível apenas para usuárias NÃO logadas */}
               {!logada && (
                 <a href="/cadastro" className="btn-primario">Criar minha conta gratuita</a>
@@ -258,15 +254,15 @@ export default function Feed() {
         ) : (
           <div className="fd-grade">
             {(filtro === '' || filtro === 'Emprego') && (
-              <div className="fd-card surgir" style={{ background: '#fdf8f6', borderColor: '#fed7aa' }}>
-                <span className="fd-card-tag" style={{ background: '#ea580c', color: '#fff', border: 'none' }}>
+              <div className="fd-card surgir fd-card-alerta">
+                <span className="fd-card-tag tag-alerta">
                   ⚠️ Guia de Vagas Oficiais
                 </span>
-                <h3 style={{ color: '#9a3412', marginTop: 8 }}>Portal Emprega Brasil / Agência do Trabalho PE</h3>
-                <p style={{ color: '#7c2d12', fontWeight: 500 }}>
+                <h3 className="alerta-titulo">Portal Emprega Brasil / Agência do Trabalho PE</h3>
+                <p className="alerta-texto">
                   As vagas oficiais do estado são atualizadas diariamente no portal do governo. Siga os passos: 1. Clique no botão abaixo. 2. Acesse com seu Gov.br. 3. No filtro de cidade, digite 'Recife' e busque pela sua área de interesse.
                 </p>
-                <a href="https://servicos.mte.gov.br/" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: 12, padding: '8px 16px', background: '#ea580c', color: '#fff', borderRadius: 6, fontSize: 13, fontWeight: 600, textDecoration: 'none' }}>
+                <a href="https://servicos.mte.gov.br/" target="_blank" rel="noopener noreferrer" className="btn-alerta">
                   Acessar Portal de Vagas
                 </a>
               </div>
@@ -275,6 +271,51 @@ export default function Feed() {
               const externo = item.link_inscricao && !item.id;
               // Descrição decodificada e limpa — seguro contra XSS
               const descricaoLimpa = decodeHtml(item.descricao);
+
+              if (item.tipo === 'Apoio') {
+                const gmapsLink = `https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}`;
+                return (
+                  <div key={`apoio-${i}`} className="fd-card surgir">
+                    <span className={`fd-card-tag ${tagClass(item.tipo)}`}>
+                      {iconeTipo(item.tipo)}{item.tipo}
+                    </span>
+                    <h3>{item.titulo}</h3>
+                    {item.empresa && <p className="mapa-popup-empresa">{item.empresa}</p>}
+                    
+                    {/* Se tiver "Status de Vagas" na descrição (Creches) */}
+                    {item.descricao.includes('Status de Vagas') ? (
+                       <>
+                         <p className="mapa-popup-desc" style={{ WebkitLineClamp: 3 }}>
+                           {item.descricao.split('Status de Vagas:')[0].trim()}
+                         </p>
+                         <p className="mapa-popup-status">
+                           Status de Vagas: {item.descricao.split('Status de Vagas:')[1].trim()}
+                         </p>
+                       </>
+                    ) : (
+                       <p className="mapa-popup-desc" style={{ WebkitLineClamp: 4 }}>
+                         {item.descricao}
+                       </p>
+                    )}
+                    
+                    <p className="apoio-endereco">📍 {item.endereco}</p>
+                    
+                    <div className="mapa-popup-actions" style={{ marginTop: 12 }}>
+                      {item.latitude && item.longitude && (
+                        <a href={gmapsLink} target="_blank" rel="noopener noreferrer" className="mapa-btn-acao secundario">
+                          🗺️ Como chegar
+                        </a>
+                      )}
+                      {item.link_inscricao && (
+                        <a href={item.link_inscricao} target="_blank" rel="noopener noreferrer" className="mapa-btn-acao primario">
+                          Entrar em contato
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+
               if (externo) {
                 return (
                   <a key={`ext-${i}`} href={item.link_inscricao} target="_blank" rel="noopener noreferrer" className="fd-card surgir">
@@ -282,8 +323,8 @@ export default function Feed() {
                       {iconeTipo(item.tipo)}{item.tipo}
                     </span>
                     <h3>{item.titulo}</h3>
-                    {item.empresa && <p style={{fontSize:12,color:'var(--texto-suave)',marginBottom:4,marginTop:-4,fontWeight:500}}>{item.empresa}</p>}
-                    <p>{descricaoLimpa}</p>
+                    {item.empresa && <p className="mapa-popup-empresa">{item.empresa}</p>}
+                    <p className="mapa-popup-desc" style={{ WebkitLineClamp: 3 }}>{descricaoLimpa}</p>
                     <div className="fd-card-meta">
                       <span>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
