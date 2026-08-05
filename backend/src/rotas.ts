@@ -93,7 +93,8 @@ export async function inicializarBanco(pool: Pool, schema: string): Promise<void
       filhos          INTEGER DEFAULT 0,
       idades_filhos   TEXT DEFAULT '',
       turno_disponivel TEXT DEFAULT '',
-      interesses      TEXT DEFAULT ''
+      interesses      TEXT DEFAULT '',
+      photo_url       TEXT DEFAULT ''
     )`);
 
   await pool.query(`
@@ -101,7 +102,8 @@ export async function inicializarBanco(pool: Pool, schema: string): Promise<void
     ADD COLUMN IF NOT EXISTS sobre_mim TEXT DEFAULT '',
     ADD COLUMN IF NOT EXISTS experiencias TEXT DEFAULT '[]',
     ADD COLUMN IF NOT EXISTS cursos TEXT DEFAULT '[]',
-    ADD COLUMN IF NOT EXISTS habilidades TEXT DEFAULT '[]'
+    ADD COLUMN IF NOT EXISTS habilidades TEXT DEFAULT '[]',
+    ADD COLUMN IF NOT EXISTS photo_url TEXT DEFAULT ''
   `);
 
   await pool.query(`
@@ -112,9 +114,19 @@ export async function inicializarBanco(pool: Pool, schema: string): Promise<void
       bairro      TEXT NOT NULL,
       tipo        TEXT NOT NULL DEFAULT 'postagem' CHECK (tipo IN ('postagem','pedido')),
       categoria   TEXT NOT NULL DEFAULT '',
+      media_url   TEXT NOT NULL DEFAULT '',
+      media_tipo  TEXT NOT NULL DEFAULT '',
+      media_nome  TEXT NOT NULL DEFAULT '',
       texto       TEXT NOT NULL,
       criado_em   TIMESTAMPTZ NOT NULL DEFAULT now()
     )`);
+
+  await pool.query(`
+    ALTER TABLE mural_posts
+    ADD COLUMN IF NOT EXISTS media_url TEXT NOT NULL DEFAULT '',
+    ADD COLUMN IF NOT EXISTS media_tipo TEXT NOT NULL DEFAULT '',
+    ADD COLUMN IF NOT EXISTS media_nome TEXT NOT NULL DEFAULT ''
+  `);
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS mural_comments (
@@ -392,6 +404,9 @@ export function registrarRotas(app: Express, pool: Pool): void {
       const bairroCorpo = String(req.body?.bairro || '').trim();
       const tipo = String(req.body?.tipo || 'postagem').trim();
       const categoria = String(req.body?.categoria || '').trim();
+      const media_url = String(req.body?.media_url || '').trim();
+      const media_tipo = String(req.body?.media_tipo || '').trim();
+      const media_nome = String(req.body?.media_nome || '').trim();
 
       if (!texto) return res.status(400).json({ erro: 'escreva uma mensagem' });
       if (!isMuralTipo(tipo)) return res.status(400).json({ erro: 'tipo de publicação inválido' });
@@ -400,10 +415,10 @@ export function registrarRotas(app: Express, pool: Pool): void {
       const bairro = bairroCorpo || autor.bairro || 'Recife';
 
       const { rows } = await pool.query(
-        `INSERT INTO mural_posts (usuario_id, autor_nome, bairro, tipo, categoria, texto)
-         VALUES ($1, $2, $3, $4, $5, $6)
+        `INSERT INTO mural_posts (usuario_id, autor_nome, bairro, tipo, categoria, media_url, media_tipo, media_nome, texto)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          RETURNING *`,
-        [req.usuarioId, autor.nome, bairro, tipo, categoria, texto],
+        [req.usuarioId, autor.nome, bairro, tipo, categoria, media_url, media_tipo, media_nome, texto],
       );
 
       res.status(201).json({ ...rows[0], likes_count: 0, comments_count: 0, me_liked: false });
@@ -531,6 +546,7 @@ export function registrarRotas(app: Express, pool: Pool): void {
           idades_filhos: '',
           turno_disponivel: '',
           interesses: '',
+          photo_url: '',
           sobre_mim: '',
           experiencias: '[]',
           cursos: '[]',
@@ -547,15 +563,15 @@ export function registrarRotas(app: Express, pool: Pool): void {
 
   app.put('/api/perfil', autenticar, async (req: ReqAuth, res: Response) => {
     try {
-      const { nome, email, telefone, cpf, data_nascimento, bairro, filhos, idades_filhos, turno_disponivel, interesses, sobre_mim, experiencias, cursos, habilidades } = req.body || {};
+      const { nome, email, telefone, cpf, data_nascimento, bairro, filhos, idades_filhos, turno_disponivel, interesses, photo_url, sobre_mim, experiencias, cursos, habilidades } = req.body || {};
 
       if (nome && typeof nome === 'string' && nome.trim()) {
         await pool.query('UPDATE usuarios SET nome=$1 WHERE id=$2', [nome.trim(), req.usuarioId]);
       }
 
       await pool.query(
-        `INSERT INTO perfil (usuario_id, telefone, cpf, data_nascimento, bairro, filhos, idades_filhos, turno_disponivel, interesses, sobre_mim, experiencias, cursos, habilidades)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        `INSERT INTO perfil (usuario_id, telefone, cpf, data_nascimento, bairro, filhos, idades_filhos, turno_disponivel, interesses, photo_url, sobre_mim, experiencias, cursos, habilidades)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
          ON CONFLICT (usuario_id) DO UPDATE SET
            telefone=EXCLUDED.telefone,
            cpf=EXCLUDED.cpf,
@@ -565,6 +581,7 @@ export function registrarRotas(app: Express, pool: Pool): void {
            idades_filhos=EXCLUDED.idades_filhos,
            turno_disponivel=EXCLUDED.turno_disponivel,
            interesses=EXCLUDED.interesses,
+           photo_url=EXCLUDED.photo_url,
            sobre_mim=EXCLUDED.sobre_mim,
            experiencias=EXCLUDED.experiencias,
            cursos=EXCLUDED.cursos,
@@ -579,6 +596,7 @@ export function registrarRotas(app: Express, pool: Pool): void {
           String(idades_filhos || ''),
           String(turno_disponivel || ''),
           String(interesses || ''),
+          String(photo_url || ''),
           String(sobre_mim || ''),
           String(experiencias || '[]'),
           String(cursos || '[]'),
