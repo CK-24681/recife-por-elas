@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import 'leaflet/dist/leaflet.css';
 import { apiJSON } from '../api';
 import { useToast } from '../toast';
-import { Map, Marker, Overlay } from 'pigeon-maps';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 interface Oportunidade {
@@ -47,37 +49,50 @@ const FILTROS = [
   { valor: 'Apoio',             rotulo: 'Rede de Apoio',  icone: '🤝', corAtiva: '#db2777' },
 ];
 
+function MapUpdater({ center, zoom }: { center: [number, number], zoom: number }) {
+  const map = useMap();
+  useEffect(() => {
+    map.setView(center, zoom);
+  }, [center, zoom, map]);
+  return null;
+}
+
 export default function Mapa() {
   const [filtro, setFiltro] = useState('');
   const [oportunidades, setOportunidades] = useState<Oportunidade[]>([]);
   const [estado, setEstado] = useState<'carregando' | 'erro' | 'ok'>('ok');
   
-  // Para gerenciar o popup do Pigeon Maps (que será um Overlay)
-  const [pinoSelecionado, setPinoSelecionado] = useState<Oportunidade | null>(null);
-
   const [center, setCenter] = useState<[number, number]>([-8.0476, -34.8770]);
   const [zoom, setZoom] = useState(13);
   const [posicaoUsuario, setPosicaoUsuario] = useState<[number, number] | null>(null);
 
   const toast = useToast();
 
-  // Carga dos dados
+  // Carga dos dados com proteção contra loop infinito (array vazio = run on mount only)
   useEffect(() => {
-    (async () => {
-      setEstado('carregando');
+    let mounted = true;
+    const fetchData = async () => {
+      if (mounted) setEstado('carregando');
       try {
         const [internas, externas] = await Promise.all([
           apiJSON<Oportunidade[]>('/oportunidades').catch(() => [] as Oportunidade[]),
           apiJSON<Oportunidade[]>('/oportunidades/externas').catch(() => [] as Oportunidade[]),
         ]);
-        setOportunidades([...internas, ...externas]);
-        setEstado('ok');
-      } catch {
-        setEstado('erro');
-        toast.erro('Erro ao carregar oportunidades.');
+        if (mounted) {
+          setOportunidades([...internas, ...externas]);
+          setEstado('ok');
+        }
+      } catch (error) {
+        if (mounted) {
+          setEstado('erro');
+          setOportunidades([]); // Fallback seguro
+          toast.erro('Erro ao carregar oportunidades.');
+        }
       }
-    })();
-  }, [toast]);
+    };
+    fetchData();
+    return () => { mounted = false; };
+  }, []); // <--- ESTE ARRAY VAZIO É INEGOCIÁVEL
 
   // Geolocalização
   const obterLocalizacao = () => {
@@ -137,7 +152,7 @@ export default function Mapa() {
             </button>
           </div>
         ) : (
-          <div className="mapa-wrapper" style={{ height: '75vh', width: '100%', minHeight: '500px', display: 'flex', flexDirection: 'column', borderRadius: '12px', overflow: 'hidden', position: 'relative' }}>
+          <div className="mapa-wrapper" style={{ display: 'flex', flexDirection: 'column', borderRadius: '12px', overflow: 'hidden', position: 'relative' }}>
             <div className="map-filtros-flutuante" style={{ zIndex: 10 }}>
               {FILTROS.map((f) => {
                 const ativo = filtro === f.valor;
@@ -147,7 +162,6 @@ export default function Mapa() {
                     className={`map-filtro-btn ${ativo ? 'map-filtro-btn--ativo' : ''}`}
                     onClick={() => {
                        setFiltro(f.valor);
-                       setPinoSelecionado(null);
                     }}
                     style={ativo ? {
                       background: f.corAtiva,
@@ -163,21 +177,16 @@ export default function Mapa() {
               })}
             </div>
 
-            <div style={{ flexGrow: 1, position: 'relative', zIndex: 0 }}>
-              <Map 
-                center={center} 
-                zoom={zoom} 
-                onBoundsChanged={({ center, zoom }) => { 
-                  setCenter(center); 
-                  setZoom(zoom); 
-                }}
-              >
+            {/* ESTRUTURA BLINDADA DO MAPA (JSX) OBRIGATÓRIA PARA EVITAR COLAPSO */}
+            <div style={{ height: '75vh', minHeight: '500px', width: '100%', borderRadius: '12px', overflow: 'hidden', position: 'relative', zIndex: 0 }}>
+              <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%' }}>
+                <MapUpdater center={center} zoom={zoom} />
+                <TileLayer attribution="&copy; OpenStreetMap" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
+                
                 {posicaoUsuario && (
-                  <Marker 
-                    anchor={posicaoUsuario} 
-                    color="#2563eb" 
-                    width={40}
-                  />
+                  <Marker position={posicaoUsuario}>
+                    <Popup>Você está aqui</Popup>
+                  </Marker>
                 )}
 
                 {filtrados.map((op, idx) => {
@@ -193,108 +202,65 @@ export default function Mapa() {
                   else if (t.includes('CURSO')) cor = '#15803d'; // Verde
                   else if (t.includes('BENEF')) cor = '#ea580c'; // Laranja
 
+                  const cfg = getCfg(op.tipo);
+                  const enderecoExibido = op.endereco_completo || op.endereco || '';
+
+                  // Marker icon personalizado
+                  const markerIcon = L.divIcon({
+                    className: 'custom-leaflet-marker',
+                    html: `<div style="background-color: ${cor}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12]
+                  });
+
                   return (
                     <Marker
                       key={key}
-                      anchor={[lat, lng]}
-                      color={cor}
-                      width={40}
-                      onClick={() => setPinoSelecionado(op)}
-                    />
-                  );
-                })}
-
-                {pinoSelecionado && (
-                  (() => {
-                    const lat = Number((pinoSelecionado as any).latitude || (pinoSelecionado as any).localizacao?.lat);
-                    const lng = Number((pinoSelecionado as any).longitude || (pinoSelecionado as any).localizacao?.lng);
-                    if (isNaN(lat) || isNaN(lng)) return null;
-
-                    const cfg = getCfg(pinoSelecionado.tipo);
-                    const enderecoExibido = pinoSelecionado.endereco_completo || pinoSelecionado.endereco || '';
-
-                    return (
-                      <Overlay anchor={[lat, lng]} offset={[120, 260]}>
-                        <div 
-                          className="mapa-popup-content" 
-                          style={{ 
-                            background: '#fff', 
-                            padding: '16px', 
-                            borderRadius: '8px', 
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                            width: '240px',
-                            position: 'relative'
-                          }}
-                        >
-                          <button 
-                            onClick={() => setPinoSelecionado(null)}
-                            style={{
-                              position: 'absolute',
-                              top: '8px',
-                              right: '8px',
-                              background: 'none',
-                              border: 'none',
-                              fontSize: '16px',
-                              cursor: 'pointer',
-                              color: '#64748b'
-                            }}
-                          >
-                            ✖
-                          </button>
-                          
-                          <span
-                            className="mapa-popup-tag"
-                            style={{ color: cfg.cor, background: cfg.corFundo, display: 'inline-block', padding: '4px 8px', borderRadius: '12px', fontSize: '12px', marginBottom: '8px', fontWeight: 600 }}
-                          >
+                      position={[lat, lng]}
+                      icon={markerIcon}
+                    >
+                      <Popup>
+                        <div style={{ minWidth: '200px' }}>
+                          <span style={{ color: cfg.cor, background: cfg.corFundo, display: 'inline-block', padding: '4px 8px', borderRadius: '12px', fontSize: '12px', marginBottom: '8px', fontWeight: 600 }}>
                             {cfg.emoji} {cfg.rotulo}
                           </span>
-
-                          <h3 className="mapa-popup-titulo" style={{ margin: '0 0 8px 0', fontSize: '16px' }}>
-                            <strong>{pinoSelecionado.titulo}</strong>
+                          <h3 style={{ margin: '0 0 8px 0', fontSize: '16px' }}>
+                            <strong>{op.titulo}</strong>
                           </h3>
-
-                          {pinoSelecionado.empresa && (
-                            <p className="mapa-popup-empresa" style={{ margin: '0 0 8px 0', color: '#475569', fontSize: '14px' }}>
-                              {pinoSelecionado.empresa}
+                          {op.empresa && (
+                            <p style={{ margin: '0 0 8px 0', color: '#475569', fontSize: '14px' }}>
+                              {op.empresa}
                             </p>
                           )}
-
                           {enderecoExibido && (
-                            <p className="mapa-popup-end" style={{ margin: '0 0 12px 0', color: '#64748b', fontSize: '13px', display: 'flex', gap: '4px', alignItems: 'flex-start' }}>
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: '2px' }}>
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-                              </svg>
-                              {enderecoExibido}
+                            <p style={{ margin: '0 0 12px 0', color: '#64748b', fontSize: '13px', display: 'flex', gap: '4px', alignItems: 'flex-start' }}>
+                              📍 {enderecoExibido}
                             </p>
                           )}
-
                           <a 
                             href={`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`} 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="btn-primario"
-                            style={{ display: 'block', textAlign: 'center', textDecoration: 'none', padding: '8px', borderRadius: '4px', background: '#2563eb', color: '#fff', fontSize: '14px', fontWeight: 500 }}
+                            style={{ display: 'block', textAlign: 'center', textDecoration: 'none', padding: '8px', borderRadius: '4px', background: '#2563eb', color: '#fff', fontSize: '14px', fontWeight: 500, marginBottom: '8px' }}
                           >
                             Como Chegar
                           </a>
-
-                          {pinoSelecionado.link_inscricao && (
+                          {op.link_inscricao && (
                             <a
-                              href={pinoSelecionado.link_inscricao}
+                              href={op.link_inscricao}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="mapa-btn-detalhes"
-                              style={{ display: 'block', textAlign: 'center', marginTop: '8px', textDecoration: 'none', color: '#2563eb', fontSize: '14px' }}
+                              style={{ display: 'block', textAlign: 'center', textDecoration: 'none', color: '#2563eb', fontSize: '14px' }}
                             >
                               Ver detalhes →
                             </a>
                           )}
                         </div>
-                      </Overlay>
-                    );
-                  })()
-                )}
-              </Map>
+                      </Popup>
+                    </Marker>
+                  );
+                })}
+              </MapContainer>
             </div>
 
             {total === 0 && estado === 'ok' && (
