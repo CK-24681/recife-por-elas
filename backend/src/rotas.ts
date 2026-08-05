@@ -128,10 +128,20 @@ export function registrarRotas(app: Express, pool: Pool): void {
     }
   });
 
+  let cacheOportunidades = {
+    dados: null as any,
+    ultimaAtualizacao: 0
+  };
+  const TEMPO_CACHE = 60 * 60 * 1000; // 1 hora em milissegundos
+
   // GET /api/oportunidades/externas — dados de APIs públicas (Arbeitnow, Remotive, EV.G, DATASUS, etc.)
   // ⚠️ REGISTRADA ANTES de /:id para que "externas" não seja capturado como :id.
   app.get('/api/oportunidades/externas', async (req: Request, res: Response) => {
     try {
+      if (cacheOportunidades.dados && (Date.now() - cacheOportunidades.ultimaAtualizacao < TEMPO_CACHE)) {
+        return res.status(200).json(cacheOportunidades.dados);
+      }
+
       const tipo = String(req.query.tipo || '').trim();
       const bairro = String(req.query.bairro || '').trim();
       const horario = String(req.query.horario || '').trim();
@@ -141,6 +151,10 @@ export function registrarRotas(app: Express, pool: Pool): void {
         bairro: bairro || undefined,
         horario: horario || undefined,
       });
+
+      cacheOportunidades.dados = data;
+      cacheOportunidades.ultimaAtualizacao = Date.now();
+
       res.json(data);
     } catch (e) {
       console.error('oportunidades externas', e);

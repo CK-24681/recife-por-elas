@@ -26,6 +26,8 @@ const HASH_ISCA = hashSenha('isca-constante-para-tempo-constante');
 function rateLimit(maxTentativas: number, janelaMs: number) {
   const baldes = new Map<string, number[]>();
   return (req: Request, res: Response, next: NextFunction) => {
+    if (process.env.NODE_ENV !== 'production') return next();
+    
     const xff = req.headers['x-forwarded-for'];
     // Conexão LOCAL direta (sem passar pelo Nginx → sem X-Forwarded-For) é de
     // quem já está DENTRO do servidor: os testes E2E da plataforma. Sem este

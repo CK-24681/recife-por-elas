@@ -42,14 +42,18 @@ const limiterGlobal = rateLimit({
   max: 1000, // Limite global
   message: { erro: 'Muitas requisições. Tente novamente mais tarde.' }
 });
-app.use('/api/', limiterGlobal);
+if (process.env.NODE_ENV === 'production') {
+  app.use('/api/', limiterGlobal);
+}
 
 const limiterAuth = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 15, // Anti brute-force e enumeração
   message: { erro: 'Muitas tentativas. Bloqueio temporário por segurança.' }
 });
-app.use('/api/auth/', limiterAuth);
+if (process.env.NODE_ENV === 'production') {
+  app.use('/api/auth/', limiterAuth);
+}
 // ------------------------------
 // Upload de imagem (GET estático + POST com parser próprio de 8mb) ANTES do json
 // global de 1mb — assim só a rota de upload aceita corpos grandes (base64).
