@@ -178,10 +178,10 @@ export default function Mapa() {
             </div>
 
             {/* ESTRUTURA BLINDADA DO MAPA (JSX) OBRIGATÓRIA PARA EVITAR COLAPSO */}
-            <div style={{ height: '70vh', minHeight: '500px', width: '100%', borderRadius: '12px', overflow: 'hidden', zIndex: 0 }}>
-              <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%' }}>
+            <div style={{ height: '75vh', minHeight: '500px', width: '100%', borderRadius: '12px', overflow: 'hidden', position: 'relative', zIndex: 0 }}>
+              <MapContainer center={[-8.0476, -34.8770]} zoom={13} style={{ height: '100%', width: '100%' }}>
                 <MapUpdater center={center} zoom={zoom} />
-                <TileLayer attribution="&copy; OpenStreetMap" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
+                <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
                 
                 {posicaoUsuario && (
                   <Marker position={posicaoUsuario}>
