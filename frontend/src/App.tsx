@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { checarSaude, apiJSON } from './api';
-import Auth from './Auth';
-import { Link, navegar, useCaminho } from './roteador';
-import { SessaoProvider, useSessao, Protegido } from './sessao';
+import { checarSaude, apiJSON } from './services/api';
+import Auth from './components/Auth';
+import { Link, navegar, useCaminho } from './utils/roteador';
+import { SessaoProvider, useSessao, Protegido } from './context/sessao';
 import Feed from './paginas/Feed';
 import OportunidadeDetalhe from './paginas/OportunidadeDetalhe';
 import Mapa from './paginas/Mapa';

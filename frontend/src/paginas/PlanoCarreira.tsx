@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { apiJSON } from '../api';
-import { Link } from '../roteador';
+import { apiJSON } from '../services/api';
+import { Link } from '../utils/roteador';
 
 interface Oportunidade {
   id?: number;

@@ -16,6 +16,7 @@
 // pedir; estados gravando (timer) / preview / enviando / erro; permissão negada
 // mostra aviso claro (não quebra a tela).
 export type TipoGravacao = 'audio' | 'video';
+import { BASE } from './api';
 
 function melhorMime(tipo: TipoGravacao): string {
   const candidatos =
@@ -154,7 +155,7 @@ export function enviarArquivo(
 ): Promise<ArquivoEnviado> {
   return new Promise((resolver, rejeitar) => {
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', '/api/arquivos');
+    xhr.open('POST', `${BASE}/arquivos`);
     const tipo = arquivo.type || 'application/octet-stream';
     xhr.setRequestHeader('Content-Type', tipo);
     if (xhr.upload && onProgresso) {

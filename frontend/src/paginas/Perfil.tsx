@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { apiJSON } from '../api';
-import { useSessao } from '../sessao';
-import { useToast } from '../toast';
-import { enviarImagem } from '../upload';
+import { apiJSON } from '../services/api';
+import { useSessao } from '../context/sessao';
+import { useToast } from '../utils/toast';
+import { enviarImagem } from '../services/upload';
 
 interface Experiencia {
   id: string;

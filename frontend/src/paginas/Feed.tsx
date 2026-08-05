@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Link } from '../roteador';
-import { apiJSON } from '../api';
-import { useToast } from '../toast';
-import { useSessao } from '../sessao';
+import { Link } from '../utils/roteador';
+import { apiJSON } from '../services/api';
+import { useToast } from '../utils/toast';
+import { useSessao } from '../context/sessao';
 
 interface Oportunidade {
   id?: number;

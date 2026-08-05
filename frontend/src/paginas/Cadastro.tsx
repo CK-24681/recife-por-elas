@@ -1,8 +1,8 @@
 import { useState, type FormEvent } from 'react';
-import { Link } from '../roteador';
-import { cadastrar, apiJSON } from '../api';
-import { useSessao } from '../sessao';
-import { useToast } from '../toast';
+import { Link } from '../utils/roteador';
+import { cadastrar, apiJSON } from '../services/api';
+import { useSessao } from '../context/sessao';
+import { useToast } from '../utils/toast';
 
 type Passo = 'criar-conta' | 'dados-pessoais' | 'contexto' | 'concluido';
 

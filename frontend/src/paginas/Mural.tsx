@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
-import { apiJSON } from '../api';
-import { enviarArquivo } from '../midia';
-import { enviarImagem } from '../upload';
-import { useSessao } from '../sessao';
-import { useToast } from '../toast';
+import { apiJSON } from '../services/api';
+import { enviarArquivo } from '../services/midia';
+import { enviarImagem } from '../services/upload';
+import { useSessao } from '../context/sessao';
+import { useToast } from '../utils/toast';
 
 type MuralTipo = 'postagem' | 'pedido';
 type FiltroFeed = 'todas' | 'postagem' | 'pedido' | 'bairro';

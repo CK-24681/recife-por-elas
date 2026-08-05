@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { apiJSON } from '../api';
-import { useToast } from '../toast';
+import { apiJSON } from '../services/api';
+import { useToast } from '../utils/toast';
 
 interface Oportunidade {
   id?: number;

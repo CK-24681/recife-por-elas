@@ -1,4 +1,4 @@
-import { getToken } from './api';
+import { getToken, BASE } from './api';
 
 // pingar registra UM pageview no backend (POST /api/acessos). Best-effort:
 // telemetria nunca quebra nem atrasa o app (erros são ignorados).
@@ -7,7 +7,7 @@ function pingar(): void {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     const t = getToken();
     if (t) headers.Authorization = `Bearer ${t}`;
-    void fetch('/api/acessos', {
+    void fetch(`${BASE}/acessos`, {
       method: 'POST',
       headers,
       body: JSON.stringify({
