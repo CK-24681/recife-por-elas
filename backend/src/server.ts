@@ -26,6 +26,7 @@ const origensPermitidas = process.env.APP_BASE_URL ? [process.env.APP_BASE_URL] 
 app.use(cors({ origin: origensPermitidas, optionsSuccessStatus: 200 }));
 
 app.use(helmet({
+  hsts: false, // Desabilita o Strict-Transport-Security (HSTS), que força HTTPS
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
