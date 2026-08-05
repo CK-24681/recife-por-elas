@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { apiJSON } from '../api';
+import { enviarArquivo } from '../midia';
+import { enviarImagem } from '../upload';
 import { useSessao } from '../sessao';
 import { useToast } from '../toast';
 
@@ -13,6 +15,9 @@ interface MuralPost {
   bairro: string;
   tipo: MuralTipo;
   categoria: string;
+  media_url: string;
+  media_tipo: string;
+  media_nome: string;
   texto: string;
   criado_em: string;
   likes_count: number;
@@ -107,6 +112,9 @@ export default function Mural() {
   const [texto, setTexto] = useState('');
   const [filtroFeed, setFiltroFeed] = useState<FiltroFeed>('todas');
   const [mostrarAjuda, setMostrarAjuda] = useState(false);
+  const [anexo, setAnexo] = useState<File | null>(null);
+  const [anexoPreview, setAnexoPreview] = useState('');
+  const [anexoErro, setAnexoErro] = useState('');
 
   const destaque = useMemo(() => {
     if (modoNovo === 'pedido') {
@@ -127,6 +135,16 @@ export default function Mural() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (!anexo) {
+      setAnexoPreview('');
+      return;
+    }
+    const preview = URL.createObjectURL(anexo);
+    setAnexoPreview(preview);
+    return () => URL.revokeObjectURL(preview);
+  }, [anexo]);
 
   const carregarFeed = async () => {
     setEstado('carregando');
@@ -155,6 +173,24 @@ export default function Mural() {
     if (!textoLimpo) return;
     setPublicando(true);
     try {
+      let media_url = '';
+      let media_tipo = '';
+      let media_nome = '';
+
+      if (anexo) {
+        if (anexo.type.startsWith('image/')) {
+          media_url = await enviarImagem(anexo);
+          media_tipo = anexo.type;
+        } else if (anexo.type.startsWith('video/')) {
+          const enviado = await enviarArquivo(anexo);
+          media_url = enviado.url;
+          media_tipo = enviado.tipo;
+        } else {
+          throw new Error('envie uma imagem ou vídeo válido');
+        }
+        media_nome = anexo.name;
+      }
+
       await apiJSON('/mural', {
         method: 'POST',
         corpo: {
@@ -162,12 +198,17 @@ export default function Mural() {
           bairro: bairroPublicacao.trim() || bairroBase,
           tipo: modoNovo,
           categoria: modoNovo === 'pedido' ? categoriaPedido : '',
+          media_url,
+          media_tipo,
+          media_nome,
         },
       });
       toast.sucesso(modoNovo === 'pedido' ? 'Pedido publicado!' : 'Postagem publicada!');
       setTexto('');
       setModoNovo('postagem');
       setCategoriaPedido(categoriasPedido[0]);
+      setAnexo(null);
+      setAnexoErro('');
       await carregarFeed();
     } catch (err) {
       toast.erro(err instanceof Error ? err.message : 'Erro ao publicar.');
@@ -283,6 +324,51 @@ export default function Mural() {
             rows={5}
             required
           />
+
+          <div className="mural-anexo-area">
+            <label className="mural-anexo-btn">
+              <input
+                type="file"
+                accept="image/*,video/*"
+                onChange={(e) => {
+                  const arquivo = e.target.files?.[0] || null;
+                  setAnexoErro('');
+                  if (arquivo && !arquivo.type.startsWith('image/') && !arquivo.type.startsWith('video/')) {
+                    setAnexo(null);
+                    setAnexoErro('Selecione uma imagem ou vídeo.');
+                    return;
+                  }
+                  setAnexo(arquivo);
+                }}
+              />
+              {anexo ? 'Trocar anexo' : 'Adicionar imagem ou vídeo'}
+            </label>
+            {anexo && (
+              <button
+                type="button"
+                className="mural-anexo-limpar"
+                onClick={() => setAnexo(null)}
+              >
+                Remover anexo
+              </button>
+            )}
+          </div>
+
+          {anexoErro ? <p className="mural-anexo-erro">{anexoErro}</p> : null}
+
+          {anexo && (
+            <div className="mural-anexo-preview">
+              {anexo.type.startsWith('image/') ? (
+                <img src={anexoPreview} alt={`Prévia do anexo ${anexo.name}`} />
+              ) : (
+                <video src={anexoPreview} controls playsInline />
+              )}
+              <div className="mural-anexo-meta">
+                <strong>{anexo.name}</strong>
+                <span>{anexo.type.startsWith('video/') ? 'Vídeo' : 'Imagem'}</span>
+              </div>
+            </div>
+          )}
 
           <div className="mural-composer-actions">
             <label className="mural-campo">
@@ -485,6 +571,17 @@ function PostCard({
       </header>
 
       <p className="mural-texto">{post.texto}</p>
+
+      {post.media_url ? (
+        <div className="mural-media">
+          {post.media_tipo.startsWith('video/') ? (
+            <video src={post.media_url} controls playsInline preload="metadata" />
+          ) : (
+            <img src={post.media_url} alt={post.media_nome || `Anexo de ${post.autor_nome}`} />
+          )}
+          {post.media_nome ? <span className="mural-media-legenda">{post.media_nome}</span> : null}
+        </div>
+      ) : null}
 
       <div className="mural-acoes">
         <button

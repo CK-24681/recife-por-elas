@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { checarSaude } from './api';
+import { checarSaude, apiJSON } from './api';
 import Auth from './Auth';
 import { Link, navegar, useCaminho } from './roteador';
 import { SessaoProvider, useSessao, Protegido } from './sessao';
@@ -320,8 +320,24 @@ function Conteudo() {
 function HeaderApp() {
   const { usuario, encerrar } = useSessao();
   const caminho = useCaminho();
+  const [fotoPerfil, setFotoPerfil] = useState('');
   const ativo = (p: string) => caminho === p || (p !== '/' && caminho.startsWith(p));
   const iniciais = (usuario?.nome || 'A').split(' ').map((p: string) => p[0]).slice(0, 2).join('').toUpperCase();
+
+  useEffect(() => {
+    let ativo = true;
+    apiJSON<{ photo_url?: string }>('/perfil')
+      .then((perfil) => {
+        if (ativo) setFotoPerfil(perfil.photo_url || '');
+      })
+      .catch(() => {
+        if (ativo) setFotoPerfil('');
+      });
+    return () => {
+      ativo = false;
+    };
+  }, []);
+
   return (
     <header className="hn-topo-app">
       <div className="container hn-linha-app">
@@ -341,9 +357,11 @@ function HeaderApp() {
           </Link>
         </nav>
         <div className="hn-acoes-app">
-          <Link to="/perfil" className="hn-usuario-app" style={{textDecoration:'none'}}>
-            <span className="hn-avatar-app">{iniciais}</span>
-            <span>{usuario?.nome?.split(' ')[0]}</span>
+          <Link to="/perfil" className="hn-usuario-app hn-usuario-destaque" style={{textDecoration:'none'}}>
+            <span className="hn-avatar-app">
+              {fotoPerfil ? <img src={fotoPerfil} alt={`Foto de perfil de ${usuario?.nome || 'usuária'}`} /> : iniciais}
+            </span>
+            <span>Meu perfil</span>
           </Link>
           <button className="btn-secundario" style={{fontSize:13,padding:'0 12px',minHeight:34}} onClick={encerrar}>Sair</button>
         </div>
