@@ -14,7 +14,7 @@
 //
 // A versão trocada fica em `dist.antigo` — serve pra conferir o que mudou e pra
 // voltar atrás na mão se precisar.
-import { existsSync, renameSync, rmSync } from 'node:fs';
+import { existsSync, rmSync, cpSync } from 'node:fs';
 import { join } from 'node:path';
 
 const raiz = process.cwd();
@@ -31,7 +31,9 @@ if (!existsSync(join(novo, 'index.html'))) {
 
 rmSync(antigo, { recursive: true, force: true });
 if (existsSync(atual)) {
-  renameSync(atual, antigo);
+  cpSync(atual, antigo, { recursive: true });
+  rmSync(atual, { recursive: true, force: true });
 }
-renameSync(novo, atual);
+cpSync(novo, atual, { recursive: true });
+rmSync(novo, { recursive: true, force: true });
 console.log('publicar: nova versão no ar (a anterior ficou em dist.antigo).');

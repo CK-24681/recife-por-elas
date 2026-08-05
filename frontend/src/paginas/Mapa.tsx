@@ -1,9 +1,9 @@
+import 'leaflet/dist/leaflet.css';
 import { useState, useEffect } from 'react';
 import { apiJSON } from '../api';
 import { useToast } from '../toast';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import * as L from 'leaflet';
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 interface Oportunidade {
@@ -23,7 +23,26 @@ interface Oportunidade {
   isOnline?: boolean;
   data_inicio_inscricao?: string;
   data_fim_inscricao?: string;
+  localizacao?: {
+    lat: number;
+    lng: number;
+  };
 }
+
+// ─── Ícone Fixo ─────────────────────────────────────────────────────────────
+const customPin = L.divIcon({
+  className: 'custom-pin',
+  html: '<div style="background-color: #e91e63; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.3);"></div>',
+  iconSize: [30, 30],
+  iconAnchor: [15, 15]
+});
+
+const userPin = L.divIcon({
+  className: 'custom-pin',
+  html: '<div style="background-color: #2563eb; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.3);"></div>',
+  iconSize: [30, 30],
+  iconAnchor: [15, 15]
+});
 
 // ─── Paleta de cores por categoria ──────────────────────────────────────────
 const CONFIG_TIPO: Record<string, { cor: string; corFundo: string; emoji: string; rotulo: string }> = {
@@ -36,29 +55,8 @@ const CONFIG_TIPO: Record<string, { cor: string; corFundo: string; emoji: string
 
 const getCfg = (tipo: string) => CONFIG_TIPO[tipo] ?? { cor: '#64748b', corFundo: '#f1f5f9', emoji: '📍', rotulo: tipo };
 
-// ─── Ícone circular customizado via L.divIcon ────────────────────────────────
-function criarIcone(tipo: string) {
-  const { cor } = getCfg(tipo);
-  return L.divIcon({
-    className: 'custom-leaflet-icon',
-    html: `<div class="map-pin" style="background:${cor}"></div>`,
-    iconSize: [30, 30],
-    iconAnchor: [15, 15],
-    popupAnchor: [0, -18],
-  });
-}
-
-const userIcon = L.divIcon({
-  className: 'custom-leaflet-icon',
-  html: `<div class="map-pin map-pin--user"></div>`,
-  iconSize: [28, 28],
-  iconAnchor: [14, 14],
-  popupAnchor: [0, -16],
-});
-
 // ─── URL do Google Maps para "Como Chegar" ───────────────────────────────────
 function urlComoChegar(op: Oportunidade): string {
-  // Preferência: lat/lng exatos → endereço completo → título
   if (op.latitude && op.longitude) {
     return `https://www.google.com/maps/search/?api=1&query=${op.latitude},${op.longitude}`;
   }
@@ -90,11 +88,9 @@ function FocusUser({ position }: { position: [number, number] | null }) {
 export default function Mapa() {
   const [filtro, setFiltro] = useState('');
   const [oportunidades, setOportunidades] = useState<Oportunidade[]>([]);
-  const [estado, setEstado] = useState<'carregando' | 'erro' | 'ok'>('carregando');
+  const [estado, setEstado] = useState<'carregando' | 'erro' | 'ok'>('ok');
   const [posicaoUsuario, setPosicaoUsuario] = useState<[number, number] | null>(null);
   const toast = useToast();
-
-
 
   // Carga dos dados
   useEffect(() => {
@@ -141,12 +137,10 @@ export default function Mapa() {
 
   return (
     <>
-      {/* ── Hero / Cabeçalho ── */}
       <section className="mapa-secao">
         <div className="container">
           <h1 className="mapa-titulo">Mapa de Oportunidades</h1>
 
-          {/* Botão de localização */}
           <button
             onClick={obterLocalizacao}
             className={`map-loc-btn ${posicaoUsuario ? 'map-loc-btn--ativo' : ''}`}
@@ -159,7 +153,6 @@ export default function Mapa() {
         </div>
       </section>
 
-      {/* ── Mapa + Filtros flutuantes ── */}
       <section className="container mapa-secao-padding">
         {estado === 'carregando' ? (
           <div className="mapa-carregando" aria-label="Carregando mapa…" />
@@ -172,8 +165,7 @@ export default function Mapa() {
             </button>
           </div>
         ) : (
-          <div className="mapa-wrapper">
-            {/* ── Barra de filtros flutuante sobre o mapa ── */}
+          <div className="mapa-wrapper" style={{ border: '5px solid blue', width: '800px', height: '600px', backgroundColor: '#eee', flex: 'none', margin: '0 auto' }}>
             <div className="map-filtros-flutuante">
               {FILTROS.map((f) => {
                 const cfg = f.valor ? getCfg(f.valor) : null;
@@ -197,101 +189,92 @@ export default function Mapa() {
               })}
             </div>
 
-            <MapContainer
-              center={[-8.0476, -34.8770]}
-              zoom={13}
-              className="mapa-container-interno"
-              zoomControl={false}
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
+            <div style={{ height: '600px', width: '800px', zIndex: 1 }}>
+              <MapContainer
+                center={[-8.0476, -34.8770]}
+                zoom={13}
+                style={{ height: '600px', width: '800px' }}
+                zoomControl={true}
+              >
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <FocusUser position={posicaoUsuario} />
 
-              <FocusUser position={posicaoUsuario} />
-
-              {/* Pino da usuária */}
-              {posicaoUsuario && (
-                <Marker position={posicaoUsuario} icon={userIcon}>
-                  <Popup>
-                    <div className="mapa-popup-content">
-                      <p style={{ margin: 0, fontWeight: 700, fontSize: 14 }}>📍 Você está aqui</p>
-                    </div>
-                  </Popup>
-                </Marker>
-              )}
-
-              {/* Pinos das oportunidades */}
-              {filtrados.map((op, idx) => {
-                if (typeof op.latitude !== 'number' || typeof op.longitude !== 'number') return null;
-                
-                const key = op.id != null ? `int-${op.id}` : `ext-${idx}`;
-                const cfg = getCfg(op.tipo);
-                const gmaps = urlComoChegar(op);
-                const enderecoExibido = op.endereco_completo || op.endereco || '';
-
-                return (
-                  <Marker
-                    key={key}
-                    position={[op.latitude!, op.longitude!]}
-                    icon={criarIcone(op.tipo)}
-                  >
-                    <Popup minWidth={240} maxWidth={280}>
+                {posicaoUsuario && (
+                  <Marker position={posicaoUsuario} icon={userPin}>
+                    <Popup>
                       <div className="mapa-popup-content">
-                        {/* Tag de categoria */}
-                        <span
-                          className="mapa-popup-tag"
-                          style={{ color: cfg.cor, background: cfg.corFundo }}
-                        >
-                          {cfg.emoji} {cfg.rotulo}
-                        </span>
-
-                        {/* Título */}
-                        <h3 className="mapa-popup-titulo">{op.titulo}</h3>
-
-                        {/* Empresa */}
-                        {op.empresa && (
-                          <p className="mapa-popup-empresa">{op.empresa}</p>
-                        )}
-
-                        {/* Endereço compacto */}
-                        {enderecoExibido && (
-                          <p className="mapa-popup-end">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                            {enderecoExibido}
-                          </p>
-                        )}
-
-                        {/* CTA "Como Chegar" — largo e proeminente */}
-                        <a
-                          href={gmaps}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mapa-btn-chegar"
-                        >
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-                          Como Chegar
-                        </a>
-
-                        {/* Link secundário discreto */}
-                        {op.link_inscricao && (
-                          <a
-                            href={op.link_inscricao}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mapa-btn-detalhes"
-                          >
-                            Ver detalhes →
-                          </a>
-                        )}
+                        <p style={{ margin: 0, fontWeight: 700, fontSize: 14 }}>📍 Você está aqui</p>
                       </div>
                     </Popup>
                   </Marker>
-                );
-              })}
-            </MapContainer>
+                )}
 
-            {/* Legenda de contagem */}
+                {filtrados.map((op, idx) => {
+                  const lat = Number(op.localizacao?.lat || op.latitude);
+                  const lng = Number(op.localizacao?.lng || op.longitude);
+                  if (isNaN(lat) || isNaN(lng)) return null;
+                  
+                  const key = op.id != null ? `int-${op.id}` : `ext-${idx}`;
+                  const cfg = getCfg(op.tipo);
+                  const gmaps = urlComoChegar(op);
+                  const enderecoExibido = op.endereco_completo || op.endereco || '';
+
+                  return (
+                    <Marker
+                      key={key}
+                      position={[lat, lng]}
+                      icon={customPin}
+                    >
+                      <Popup minWidth={240} maxWidth={280}>
+                        <div className="mapa-popup-content">
+                          <span
+                            className="mapa-popup-tag"
+                            style={{ color: cfg.cor, background: cfg.corFundo }}
+                          >
+                            {cfg.emoji} {cfg.rotulo}
+                          </span>
+
+                          <h3 className="mapa-popup-titulo">{op.titulo}</h3>
+
+                          {op.empresa && (
+                            <p className="mapa-popup-empresa">{op.empresa}</p>
+                          )}
+
+                          {enderecoExibido && (
+                            <p className="mapa-popup-end">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                              {enderecoExibido}
+                            </p>
+                          )}
+
+                          <a
+                            href={gmaps}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mapa-btn-chegar"
+                          >
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                            Como Chegar
+                          </a>
+
+                          {op.link_inscricao && (
+                            <a
+                              href={op.link_inscricao}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mapa-btn-detalhes"
+                            >
+                              Ver detalhes →
+                            </a>
+                          )}
+                        </div>
+                      </Popup>
+                    </Marker>
+                  );
+                })}
+              </MapContainer>
+            </div>
+
             {total === 0 && estado === 'ok' && (
               <div className="map-sem-resultados">
                 Nenhum local físico encontrado para este filtro.

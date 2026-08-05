@@ -15,4 +15,5 @@ export default defineConfig({
   // pra `dist` derrubava a aplicação durante todo o build — e a deixava
   // derrubada PARA SEMPRE quando o build falhava no meio.
   build: { outDir: 'dist.novo', emptyOutDir: true },
+  resolve: { dedupe: ['react', 'react-dom'] },
 });
