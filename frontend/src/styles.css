@@ -1738,35 +1738,424 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
   font-size: 13px; color: var(--texto-suave); font-weight: 600;
 }
 
-/* ——— MURAL ——— */
-.ml-form {
-  background: #fff; border: 1px solid var(--borda);
-  border-radius: var(--raio-m); padding: 20px;
-  display: grid; gap: 12px;
-  margin-bottom: 24px;
+/* --- MURAL --- */
+.mural-cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
 }
-.ml-form textarea {
-  font-family: var(--fonte-corpo); font-size: 14px;
-  padding: 12px; border: 1px solid var(--borda);
-  border-radius: var(--raio-s); resize: vertical;
-  min-height: 80px; line-height: 1.6;
+.mural-titulo {
+  margin-top: 8px;
+  font-family: var(--fonte-destaque);
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  line-height: 1.05;
 }
-.ml-form textarea:focus { outline: none; border-color: var(--cor-primaria); }
-.ml-feed {
-  display: flex; flex-direction: column; gap: 16px;
+.mural-subtitulo {
+  margin-top: 8px;
+  color: var(--texto-suave);
+  font-size: 14px;
 }
-.ml-msg {
-  background: #fff; border: 1px solid var(--borda);
-  border-radius: var(--raio-m); padding: 20px;
+.mural-ajuda-btn {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--borda);
+  background: #fff;
+  color: var(--texto);
+  font-weight: 700;
+  font-size: 13px;
+  white-space: nowrap;
 }
-.ml-msg-topo {
-  display: flex; justify-content: space-between; align-items: center;
-  gap: 12px; margin-bottom: 10px;
+.mural-ajuda-card {
+  padding: 18px 20px;
 }
-.ml-msg-autor { font-size: 14px; font-weight: 700; color: var(--tinta); }
-.ml-msg-data { font-size: 12px; color: var(--texto-suave); white-space: nowrap; }
-.ml-msg-texto { font-size: 14.5px; color: var(--texto); line-height: 1.65; }
-
+.mural-hero {
+  padding: clamp(28px, 5vw, 56px) 0;
+  background:
+    radial-gradient(circle at top left, rgba(219, 39, 119, 0.12), transparent 28%),
+    linear-gradient(180deg, #fff8fb 0%, #ffffff 70%);
+  border-bottom: 1px solid var(--borda);
+}
+.mural-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+  gap: 24px;
+  align-items: stretch;
+}
+.mural-hero-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--cor-primaria-suave);
+  color: var(--cor-primaria);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.mural-hero-title {
+  margin-top: 14px;
+  font-family: var(--fonte-destaque);
+  font-size: clamp(1.9rem, 4vw, 3.1rem);
+  line-height: 1.06;
+  max-width: 10ch;
+}
+.mural-hero-text {
+  margin-top: 14px;
+  max-width: 56ch;
+  color: var(--texto-suave);
+  font-size: 15.5px;
+  line-height: 1.8;
+}
+.mural-hero-metas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+.mural-hero-metas span {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--borda);
+  background: #fff;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+.mural-hero-card {
+  background: rgba(255, 255, 255, .92);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--borda);
+  border-radius: 28px;
+  padding: 22px;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, .08);
+}
+.mural-hero-card-linha {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.mural-hero-card-linha strong { font-size: 15px; }
+.mural-hero-card-linha span { font-size: 13px; color: var(--texto-suave); }
+.mural-hero-lista {
+  margin: 16px 0 0;
+  padding-left: 18px;
+  color: var(--texto-suave);
+  display: grid;
+  gap: 10px;
+  line-height: 1.6;
+}
+.mural-conteudo {
+  padding-block: clamp(24px, 4vw, 44px);
+  display: grid;
+  gap: 18px;
+}
+.mural-composer,
+.mural-card {
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-radius: 28px;
+  box-shadow: 0 16px 48px rgba(15, 23, 42, .05);
+}
+.mural-composer {
+  padding: clamp(18px, 3vw, 24px);
+  display: grid;
+  gap: 16px;
+}
+.mural-tabs,
+.mural-filtros,
+.mural-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.mural-tab,
+.mural-filtro,
+.mural-chip,
+.mural-miniacao {
+  border: 1px solid var(--borda);
+  background: #fff;
+  color: var(--texto);
+  border-radius: 999px;
+  font-weight: 600;
+  transition: .18s ease;
+}
+.mural-tab,
+.mural-filtro {
+  padding: 10px 14px;
+  font-size: 13px;
+}
+.mural-chip {
+  padding: 9px 12px;
+  font-size: 12.5px;
+}
+.mural-tab.ativo,
+.mural-filtro.ativo,
+.mural-chip.ativo,
+.mural-miniacao.ativo {
+  background: var(--cor-primaria);
+  border-color: var(--cor-primaria);
+  color: #fff;
+}
+.mural-tab:hover,
+.mural-filtro:hover,
+.mural-chip:hover,
+.mural-miniacao:hover {
+  transform: translateY(-1px);
+}
+.mural-composer-topo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.mural-composer-topo strong { display: block; font-size: 15px; }
+.mural-composer-topo p { margin-top: 4px; font-size: 13px; color: var(--texto-suave); line-height: 1.5; }
+.mural-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--cor-primaria-suave);
+  color: var(--cor-primaria);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  flex: 0 0 auto;
+}
+.mural-avatar.grande {
+  width: 48px;
+  height: 48px;
+}
+.mural-composer textarea,
+.mural-resposta textarea {
+  width: 100%;
+  border: 1px solid var(--borda);
+  border-radius: 18px;
+  padding: 14px 15px;
+  resize: vertical;
+  min-height: 118px;
+  line-height: 1.7;
+  font-family: var(--fonte-corpo);
+  font-size: 14.5px;
+}
+.mural-composer textarea:focus,
+.mural-resposta textarea:focus,
+.mural-campo input:focus {
+  outline: none;
+  border-color: var(--cor-primaria);
+  box-shadow: 0 0 0 3px rgba(219, 39, 119, .12);
+}
+.mural-composer-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: end;
+}
+.mural-campo {
+  display: grid;
+  gap: 6px;
+}
+.mural-campo span {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--texto-suave);
+}
+.mural-campo input {
+  min-height: 46px;
+  border: 1px solid var(--borda);
+  border-radius: 14px;
+  padding: 0 14px;
+  font-size: 14px;
+}
+.mural-botoes {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.mural-feed {
+  display: grid;
+  gap: 18px;
+}
+.mural-card {
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+.mural-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: flex-start;
+}
+.mural-autor {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.mural-autor strong { font-size: 15px; }
+.mural-autor p { margin-top: 3px; font-size: 12.5px; color: var(--texto-suave); }
+.mural-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.mural-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+.mural-badge.postagem { background: #eef2ff; color: #4338ca; }
+.mural-badge.pedido { background: #fff7ed; color: #c2410c; }
+.mural-badge.neutro { background: #f4f4f5; color: #52525b; }
+.mural-texto {
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--texto);
+  white-space: pre-wrap;
+}
+.mural-acoes,
+.mural-comentario-acoes,
+.mural-resposta-acoes {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.mural-acao,
+.mural-miniacao {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+}
+.mural-acao {
+  border: 1px solid var(--borda);
+  background: #fff;
+  color: var(--texto);
+  border-radius: 999px;
+  font-weight: 600;
+}
+.mural-comentarios {
+  display: grid;
+  gap: 14px;
+  padding-top: 4px;
+  border-top: 1px solid var(--borda);
+}
+.mural-comentarios-lista,
+.mural-comentarios-filhos {
+  display: grid;
+  gap: 12px;
+}
+.mural-comentarios-vazio {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--fundo-suave);
+  color: var(--texto-suave);
+  font-size: 13.5px;
+}
+.mural-resposta {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 20px;
+  background: #fafafa;
+  border: 1px solid var(--borda);
+}
+.mural-resposta-contexto {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  font-size: 13px;
+  color: var(--texto-suave);
+}
+.mural-resposta-contexto button {
+  border: 0;
+  background: transparent;
+  color: var(--cor-primaria);
+  font-weight: 700;
+}
+.mural-comentario {
+  border-left: 2px solid rgba(219, 39, 119, .16);
+  padding-left: 14px;
+}
+.mural-comentario-topo {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.mural-comentario-topo strong { font-size: 13.5px; }
+.mural-comentario-topo span {
+  display: block;
+  font-size: 11.5px;
+  color: var(--texto-suave);
+  margin-top: 2px;
+}
+.mural-comentario-texto {
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: var(--texto);
+  white-space: pre-wrap;
+}
+.mural-miniacao {
+  border: 1px solid var(--borda);
+  background: #fff;
+  color: var(--texto-suave);
+}
+.mural-loading {
+  display: grid;
+  gap: 16px;
+}
+.mural-card.skeleton {
+  min-height: 210px;
+}
+.mural-skeleton-header,
+.mural-skeleton-line {
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f1f5f9, #e2e8f0, #f1f5f9);
+  background-size: 200% 100%;
+  animation: mural-skeleton 1.4s infinite linear;
+}
+.mural-skeleton-header {
+  width: 48%;
+  height: 18px;
+}
+.mural-skeleton-line {
+  height: 14px;
+}
+.mural-skeleton-line.curta { width: 68%; }
+@keyframes mural-skeleton {
+  0% { background-position: 0 0; }
+  100% { background-position: 200% 0; }
+}
+@media (max-width: 900px) {
+  .mural-cabecalho { flex-direction: column; }
+  .mural-hero-grid { grid-template-columns: 1fr; }
+  .mural-composer-actions { grid-template-columns: 1fr; }
+  .mural-botoes { justify-content: stretch; }
+  .mural-botoes .btn-primario,
+  .mural-botoes .btn-secundario { flex: 1 1 0; justify-content: center; }
+}
+@media (max-width: 640px) {
+  .mural-header,
+  .mural-autor { flex-direction: column; align-items: flex-start; }
+  .mural-badges { justify-content: flex-start; }
+  .mural-comentario { padding-left: 12px; }
+}
 /* ——— PERFIL ——— */
 .pf-grid {
   display: grid; grid-template-columns: 280px 1fr;

@@ -5,7 +5,6 @@ import { Link, navegar, useCaminho } from './roteador';
 import { SessaoProvider, useSessao, Protegido } from './sessao';
 import Feed from './paginas/Feed';
 import OportunidadeDetalhe from './paginas/OportunidadeDetalhe';
-import Candidaturas from './paginas/Candidaturas';
 import Mapa from './paginas/Mapa';
 import Mural from './paginas/Mural';
 import Perfil from './paginas/Perfil';
@@ -52,19 +51,6 @@ function Conteudo() {
         <div className="pagina-topo">
           <HeaderApp />
           <OportunidadeDetalhe />
-          <FooterLanding />
-        </div>
-      </Protegido>
-    );
-  }
-
-  // ── /candidaturas ──
-  if (caminho === '/candidaturas') {
-    return (
-      <Protegido>
-        <div className="pagina-topo">
-          <HeaderApp />
-          <Candidaturas />
           <FooterLanding />
         </div>
       </Protegido>
@@ -349,10 +335,6 @@ function HeaderApp() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/></svg>
             <span>Mapa</span>
           </Link>
-          <Link to="/candidaturas" className={ativo('/candidaturas') ? 'ativo' : ''}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <span>Candidaturas</span>
-          </Link>
           <Link to="/mural" className={ativo('/mural') ? 'ativo' : ''}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             <span>Rede</span>
@@ -401,7 +383,6 @@ function HeaderLanding({ estado, encerrar }: { estado: string; encerrar: () => v
           {estado === 'logado' ? (
             <>
               <a href="/perfil">Meu perfil</a>
-              <a href="/candidaturas">Minhas candidaturas</a>
               <a href="/mural">Rede de apoio</a>
             </>
           ) : (
@@ -432,7 +413,6 @@ function FooterLanding() {
           <nav className="rp-col">
             <h4>Para você</h4>
             <a href="/cadastro">Criar conta</a>
-            <a href="/candidaturas">Candidaturas</a>
             <a href="/mural">Rede de apoio</a>
           </nav>
           <nav className="rp-col">
