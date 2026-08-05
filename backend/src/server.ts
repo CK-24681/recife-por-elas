@@ -23,7 +23,11 @@ const app = express();
 
 // --- BLINDAGEM DE SEGURANÇA ---
 // Permite acesso de qualquer origem, já que o app na Vercel fará chamadas cross-origin
-app.use(cors({ origin: true, optionsSuccessStatus: 200 }));
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(helmet({
   hsts: false, // Desabilita o Strict-Transport-Security (HSTS), que força HTTPS
