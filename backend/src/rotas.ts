@@ -1,23 +1,28 @@
 // Rotas da aplicação Recife Por Elas: oportunidades, candidaturas, mural, perfil.
 // Toda rota de dado do usuário exige token (401 sem token) e filtra por
-// usuario_id do TOKEN — nunca um id vindo do cliente.
+// usuario_id do TOKEN - nunca um id vindo do cliente.
 import type { Express, Request, Response, NextFunction } from 'express';
 import type { Pool } from 'pg';
 import { validarToken, decifrarEmail } from './auth';
 import { unificarOportunidadesExternas } from './integracoes';
 
-// Extende Request com usuarioId (validado pelo token).
 interface ReqAuth extends Request {
   usuarioId?: string;
 }
 
-// Pool e schema (definidos no server.ts e passados aqui).
 let _pool: Pool | null = null;
 let _schema = '';
 
-export function poolAtual(): Pool | null { return _pool; }
+type MuralTipo = 'postagem' | 'pedido';
 
-/** Middleware: exige token válido (Authorization: Bearer ...). */
+function isMuralTipo(valor: unknown): valor is MuralTipo {
+  return valor === 'postagem' || valor === 'pedido';
+}
+
+export function poolAtual(): Pool | null {
+  return _pool;
+}
+
 function autenticar(req: ReqAuth, res: Response, next: NextFunction) {
   const h = req.headers.authorization || '';
   const id = validarToken(h.startsWith('Bearer ') ? h.slice(7) : '');
@@ -26,31 +31,38 @@ function autenticar(req: ReqAuth, res: Response, next: NextFunction) {
   next();
 }
 
-// ═══ INICIALIZAÇÃO DO BANCO (idempotente) ═══
+function normalizarCurtidas<T extends { likes_count?: unknown; comments_count?: unknown; me_liked?: unknown }>(rows: T[]) {
+  return rows.map((row) => ({
+    ...row,
+    likes_count: Number(row.likes_count || 0),
+    comments_count: Number(row.comments_count || 0),
+    me_liked: Boolean(row.me_liked),
+  }));
+}
 
 export async function inicializarBanco(pool: Pool, schema: string): Promise<void> {
   _pool = pool;
   _schema = schema;
 
-  // tabela oportunidade — compartilhada (sem dono)
+  await pool.query('CREATE EXTENSION IF NOT EXISTS pgcrypto');
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS oportunidade (
-      id            SERIAL PRIMARY KEY,
-      titulo        TEXT NOT NULL,
-      descricao     TEXT NOT NULL,
-      tipo          TEXT NOT NULL CHECK (tipo IN ('Emprego','Curso','Benefício social','Microcrédito')),
-      fonte         TEXT NOT NULL,
-      link_inscricao TEXT DEFAULT '',
-      bairro        TEXT DEFAULT '',
-      endereco      TEXT DEFAULT '',
-      latitude      DOUBLE PRECISION,
-      longitude     DOUBLE PRECISION,
-      horario       TEXT DEFAULT '',
+      id              SERIAL PRIMARY KEY,
+      titulo          TEXT NOT NULL,
+      descricao       TEXT NOT NULL,
+      tipo            TEXT NOT NULL CHECK (tipo IN ('Emprego','Curso','Benefício social','Microcrédito')),
+      fonte           TEXT NOT NULL,
+      link_inscricao  TEXT DEFAULT '',
+      bairro          TEXT DEFAULT '',
+      endereco        TEXT DEFAULT '',
+      latitude        DOUBLE PRECISION,
+      longitude       DOUBLE PRECISION,
+      horario         TEXT DEFAULT '',
       data_inicio_inscricao DATE,
       data_fim_inscricao    DATE
     )`);
 
-  // tabela candidatura — PRIVADA DO DONO
   await pool.query(`
     CREATE TABLE IF NOT EXISTS candidatura (
       id               SERIAL PRIMARY KEY,
@@ -62,7 +74,6 @@ export async function inicializarBanco(pool: Pool, schema: string): Promise<void
       UNIQUE(usuario_id, oportunidade_id)
     )`);
 
-  // tabela mensagem_mural — compartilhada (sem dono)
   await pool.query(`
     CREATE TABLE IF NOT EXISTS mensagem_mural (
       id              SERIAL PRIMARY KEY,
@@ -72,7 +83,6 @@ export async function inicializarBanco(pool: Pool, schema: string): Promise<void
       data_publicacao TIMESTAMPTZ NOT NULL DEFAULT now()
     )`);
 
-  // tabela perfil — PRIVADA DO DONO
   await pool.query(`
     CREATE TABLE IF NOT EXISTS perfil (
       usuario_id      UUID PRIMARY KEY REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -86,7 +96,6 @@ export async function inicializarBanco(pool: Pool, schema: string): Promise<void
       interesses      TEXT DEFAULT ''
     )`);
 
-  // Adiciona novas colunas caso não existam
   await pool.query(`
     ALTER TABLE perfil
     ADD COLUMN IF NOT EXISTS sobre_mim TEXT DEFAULT '',
@@ -94,15 +103,53 @@ export async function inicializarBanco(pool: Pool, schema: string): Promise<void
     ADD COLUMN IF NOT EXISTS cursos TEXT DEFAULT '[]',
     ADD COLUMN IF NOT EXISTS habilidades TEXT DEFAULT '[]'
   `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS mural_posts (
+      id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      usuario_id  UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+      autor_nome  TEXT NOT NULL,
+      bairro      TEXT NOT NULL,
+      tipo        TEXT NOT NULL DEFAULT 'postagem' CHECK (tipo IN ('postagem','pedido')),
+      categoria   TEXT NOT NULL DEFAULT '',
+      texto       TEXT NOT NULL,
+      criado_em   TIMESTAMPTZ NOT NULL DEFAULT now()
+    )`);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS mural_comments (
+      id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      post_id           UUID NOT NULL REFERENCES mural_posts(id) ON DELETE CASCADE,
+      parent_comment_id  UUID REFERENCES mural_comments(id) ON DELETE CASCADE,
+      usuario_id        UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+      autor_nome        TEXT NOT NULL,
+      texto             TEXT NOT NULL,
+      criado_em         TIMESTAMPTZ NOT NULL DEFAULT now()
+    )`);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS mural_post_likes (
+      post_id     UUID NOT NULL REFERENCES mural_posts(id) ON DELETE CASCADE,
+      usuario_id  UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+      criado_em   TIMESTAMPTZ NOT NULL DEFAULT now(),
+      PRIMARY KEY (post_id, usuario_id)
+    )`);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS mural_comment_likes (
+      comment_id  UUID NOT NULL REFERENCES mural_comments(id) ON DELETE CASCADE,
+      usuario_id  UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+      criado_em   TIMESTAMPTZ NOT NULL DEFAULT now(),
+      PRIMARY KEY (comment_id, usuario_id)
+    )`);
+
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_mural_posts_criado_em ON mural_posts (criado_em DESC)`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_mural_posts_bairro ON mural_posts (LOWER(bairro))`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS idx_mural_comments_post_id ON mural_comments (post_id, criado_em ASC)`);
 }
 
-// ═══ REGISTRO DAS ROTAS ═══
-
 export function registrarRotas(app: Express, pool: Pool): void {
-
-  // ── OPORTUNIDADES (compartilhadas, sem dono) ──
-
-  // GET /api/oportunidades?tipo=&bairro=&horario=
+  // OPORTUNIDADES
   app.get('/api/oportunidades', async (_req: Request, res: Response) => {
     if (!pool) return res.status(503).json({ erro: 'banco indisponivel' });
     try {
@@ -119,7 +166,6 @@ export function registrarRotas(app: Express, pool: Pool): void {
       if (horario) { sql += ` AND LOWER(horario) LIKE LOWER($${idx++})`; params.push(`%${horario}%`); }
 
       sql += ' ORDER BY id DESC';
-
       const { rows } = await pool.query(sql, params);
       res.json(rows);
     } catch (e) {
@@ -128,11 +174,8 @@ export function registrarRotas(app: Express, pool: Pool): void {
     }
   });
 
-  let cacheOportunidades = {
-    dados: null as any,
-    ultimaAtualizacao: 0
-  };
-  const TEMPO_CACHE = 60 * 60 * 1000; // 1 hora em milissegundos
+  let cacheOportunidades = { dados: null as any, ultimaAtualizacao: 0 };
+  const TEMPO_CACHE = 60 * 60 * 1000;
 
   function filtrarOportunidadesExternas(
     dados: any[],
@@ -147,9 +190,7 @@ export function registrarRotas(app: Express, pool: Pool): void {
     if (filtros.bairro) {
       const b = filtros.bairro.toLowerCase();
       filtradas = filtradas.filter(
-        (o) =>
-          String(o.bairro || '').toLowerCase().includes(b) ||
-          String(o.endereco || '').toLowerCase().includes(b),
+        (o) => String(o.bairro || '').toLowerCase().includes(b) || String(o.endereco || '').toLowerCase().includes(b),
       );
     }
 
@@ -161,8 +202,6 @@ export function registrarRotas(app: Express, pool: Pool): void {
     return filtradas;
   }
 
-  // GET /api/oportunidades/externas — dados de APIs públicas (Arbeitnow, Remotive, EV.G, DATASUS, etc.)
-  // ⚠️ REGISTRADA ANTES de /:id para que "externas" não seja capturado como :id.
   app.get('/api/oportunidades/externas', async (req: Request, res: Response) => {
     try {
       const tipo = String(req.query.tipo || '').trim();
@@ -190,7 +229,6 @@ export function registrarRotas(app: Express, pool: Pool): void {
     }
   });
 
-  // GET /api/oportunidades/:id
   app.get('/api/oportunidades/:id', async (req: Request, res: Response) => {
     const id = Number(req.params.id);
     if (!Number.isInteger(id) || id < 1) {
@@ -206,9 +244,7 @@ export function registrarRotas(app: Express, pool: Pool): void {
     }
   });
 
-  // ── CANDIDATURAS (privadas do dono) ──
-
-  // GET /api/candidaturas (só as da usuária logada)
+  // CANDIDATURAS
   app.get('/api/candidaturas', autenticar, async (req: ReqAuth, res: Response) => {
     try {
       const { rows } = await pool.query(
@@ -224,7 +260,6 @@ export function registrarRotas(app: Express, pool: Pool): void {
     }
   });
 
-  // POST /api/candidaturas { oportunidade_id, mensagem }
   app.post('/api/candidaturas', autenticar, async (req: ReqAuth, res: Response) => {
     try {
       const oportunidade_id = Number(req.body?.oportunidade_id);
@@ -234,7 +269,6 @@ export function registrarRotas(app: Express, pool: Pool): void {
         return res.status(400).json({ erro: 'informe a oportunidade' });
       }
 
-      // R04: verifica se já se candidatou a esta oportunidade
       const existente = await pool.query(
         'SELECT 1 FROM candidatura WHERE usuario_id=$1 AND oportunidade_id=$2',
         [req.usuarioId, oportunidade_id],
@@ -243,7 +277,6 @@ export function registrarRotas(app: Express, pool: Pool): void {
         return res.status(409).json({ erro: 'você já se candidatou a esta oportunidade' });
       }
 
-      // Verifica se a oportunidade existe
       const op = await pool.query('SELECT 1 FROM oportunidade WHERE id=$1', [oportunidade_id]);
       if (!op.rowCount || op.rowCount === 0) {
         return res.status(404).json({ erro: 'oportunidade não encontrada' });
@@ -264,64 +297,227 @@ export function registrarRotas(app: Express, pool: Pool): void {
     }
   });
 
-  // ── MURAL (compartilhado, sem dono) ──
+  // MURAL NOVO
+  async function obterAutor(usuarioId: string | undefined): Promise<{ nome: string; bairro: string }> {
+    if (!usuarioId) return { nome: 'Anônima', bairro: '' };
+    const u = await pool.query('SELECT nome FROM usuarios WHERE id=$1', [usuarioId]);
+    const p = await pool.query('SELECT bairro FROM perfil WHERE usuario_id=$1', [usuarioId]);
+    return {
+      nome: String(u.rows[0]?.nome || 'Anônima'),
+      bairro: String(p.rows[0]?.bairro || ''),
+    };
+  }
 
-  // GET /api/mural?bairro=
+  async function alternarCurtidaPost(postId: string, usuarioId: string) {
+    const existe = await pool.query(
+      'SELECT 1 FROM mural_post_likes WHERE post_id=$1 AND usuario_id=$2',
+      [postId, usuarioId],
+    );
+    if (existe.rowCount) {
+      await pool.query('DELETE FROM mural_post_likes WHERE post_id=$1 AND usuario_id=$2', [postId, usuarioId]);
+      return false;
+    }
+    await pool.query('INSERT INTO mural_post_likes (post_id, usuario_id) VALUES ($1, $2)', [postId, usuarioId]);
+    return true;
+  }
+
+  async function alternarCurtidaComentario(commentId: string, usuarioId: string) {
+    const existe = await pool.query(
+      'SELECT 1 FROM mural_comment_likes WHERE comment_id=$1 AND usuario_id=$2',
+      [commentId, usuarioId],
+    );
+    if (existe.rowCount) {
+      await pool.query('DELETE FROM mural_comment_likes WHERE comment_id=$1 AND usuario_id=$2', [commentId, usuarioId]);
+      return false;
+    }
+    await pool.query('INSERT INTO mural_comment_likes (comment_id, usuario_id) VALUES ($1, $2)', [commentId, usuarioId]);
+    return true;
+  }
+
   app.get('/api/mural', async (req: Request, res: Response) => {
     try {
       const bairro = String(req.query.bairro || '').trim();
-      if (!bairro) {
-        return res.status(400).json({ erro: 'informe o bairro' });
+      const tipo = String(req.query.tipo || '').trim();
+      const auth = String(req.headers.authorization || '');
+      const usuarioLogado = validarToken(auth.startsWith('Bearer ') ? auth.slice(7) : '');
+
+      let sql = `
+        SELECT
+          p.*,
+          COALESCE(lp.likes_count, 0)::int AS likes_count,
+          COALESCE(cq.comments_count, 0)::int AS comments_count,
+          COALESCE(me.me_liked, false) AS me_liked
+        FROM mural_posts p
+        LEFT JOIN (
+          SELECT post_id, COUNT(*)::int AS likes_count
+          FROM mural_post_likes
+          GROUP BY post_id
+        ) lp ON lp.post_id = p.id
+        LEFT JOIN (
+          SELECT post_id, COUNT(*)::int AS comments_count
+          FROM mural_comments
+          GROUP BY post_id
+        ) cq ON cq.post_id = p.id
+        LEFT JOIN (
+          SELECT post_id, true AS me_liked
+          FROM mural_post_likes
+          WHERE usuario_id = $1
+        ) me ON me.post_id = p.id
+        WHERE 1=1
+      `;
+      const params: any[] = [usuarioLogado || null];
+      let idx = 2;
+
+      if (bairro) {
+        sql += ` AND LOWER(p.bairro) = LOWER($${idx++})`;
+        params.push(bairro);
       }
-      // R05: filtra por bairro (case-insensitive)
-      const { rows } = await pool.query(
-        `SELECT * FROM mensagem_mural WHERE LOWER(bairro) = LOWER($1) ORDER BY data_publicacao DESC`,
-        [bairro],
-      );
-      res.json(rows);
+      if (isMuralTipo(tipo)) {
+        sql += ` AND p.tipo = $${idx++}`;
+        params.push(tipo);
+      }
+
+      sql += ' ORDER BY p.criado_em DESC LIMIT 100';
+      const { rows } = await pool.query(sql, params);
+      res.json(normalizarCurtidas(rows));
     } catch (e) {
       console.error('mural', e);
       res.status(500).json({ erro: 'erro interno' });
     }
   });
 
-  // POST /api/mural { texto, bairro }
   app.post('/api/mural', autenticar, async (req: ReqAuth, res: Response) => {
     try {
       const texto = String(req.body?.texto || '').trim();
-      const bairro = String(req.body?.bairro || '').trim();
+      const bairroCorpo = String(req.body?.bairro || '').trim();
+      const tipo = String(req.body?.tipo || 'postagem').trim();
+      const categoria = String(req.body?.categoria || '').trim();
 
       if (!texto) return res.status(400).json({ erro: 'escreva uma mensagem' });
-      if (!bairro) return res.status(400).json({ erro: 'informe o bairro' });
+      if (!isMuralTipo(tipo)) return res.status(400).json({ erro: 'tipo de publicação inválido' });
 
-      // Pega o nome da usuária
-      const u = await pool.query('SELECT nome FROM usuarios WHERE id=$1', [req.usuarioId]);
-      const autor_nome = u.rows[0]?.nome || 'Anônima';
+      const autor = await obterAutor(req.usuarioId);
+      const bairro = bairroCorpo || autor.bairro || 'Recife';
 
       const { rows } = await pool.query(
-        `INSERT INTO mensagem_mural (bairro, autor_nome, texto)
-         VALUES ($1, $2, $3) RETURNING *`,
-        [bairro, autor_nome, texto],
+        `INSERT INTO mural_posts (usuario_id, autor_nome, bairro, tipo, categoria, texto)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING *`,
+        [req.usuarioId, autor.nome, bairro, tipo, categoria, texto],
       );
-      res.status(201).json(rows[0]);
+
+      res.status(201).json({ ...rows[0], likes_count: 0, comments_count: 0, me_liked: false });
     } catch (e) {
       console.error('mural post', e);
       res.status(500).json({ erro: 'erro interno' });
     }
   });
 
-  // ── PERFIL (privado do dono) ──
+  app.get('/api/mural/:id/comentarios', async (req: Request, res: Response) => {
+    try {
+      const postId = String(req.params.id || '').trim();
+      const auth = String(req.headers.authorization || '');
+      const usuarioLogado = validarToken(auth.startsWith('Bearer ') ? auth.slice(7) : '');
+      if (!postId) return res.status(400).json({ erro: 'id inválido' });
 
-  // GET /api/perfil
+      const post = await pool.query('SELECT 1 FROM mural_posts WHERE id=$1', [postId]);
+      if (!post.rowCount) return res.status(404).json({ erro: 'postagem não encontrada' });
+
+      const { rows } = await pool.query(
+        `
+          SELECT
+            c.*,
+            COALESCE(lq.likes_count, 0)::int AS likes_count,
+            COALESCE(me.me_liked, false) AS me_liked
+          FROM mural_comments c
+          LEFT JOIN (
+            SELECT comment_id, COUNT(*)::int AS likes_count
+            FROM mural_comment_likes
+            GROUP BY comment_id
+          ) lq ON lq.comment_id = c.id
+          LEFT JOIN (
+            SELECT comment_id, true AS me_liked
+            FROM mural_comment_likes
+            WHERE usuario_id = $2
+          ) me ON me.comment_id = c.id
+          WHERE c.post_id = $1
+          ORDER BY c.criado_em ASC
+        `,
+        [postId, usuarioLogado || null],
+      );
+
+      res.json(normalizarCurtidas(rows));
+    } catch (e) {
+      console.error('mural comentarios', e);
+      res.status(500).json({ erro: 'erro interno' });
+    }
+  });
+
+  app.post('/api/mural/:id/comentarios', autenticar, async (req: ReqAuth, res: Response) => {
+    try {
+      const postId = String(req.params.id || '').trim();
+      const texto = String(req.body?.texto || '').trim();
+      const parentCommentId = String(req.body?.parent_comment_id || '').trim();
+      if (!postId) return res.status(400).json({ erro: 'id inválido' });
+      if (!texto) return res.status(400).json({ erro: 'escreva um comentário' });
+
+      const post = await pool.query('SELECT 1 FROM mural_posts WHERE id=$1', [postId]);
+      if (!post.rowCount) return res.status(404).json({ erro: 'postagem não encontrada' });
+
+      if (parentCommentId) {
+        const parent = await pool.query('SELECT 1 FROM mural_comments WHERE id=$1 AND post_id=$2', [parentCommentId, postId]);
+        if (!parent.rowCount) return res.status(404).json({ erro: 'comentário pai não encontrado' });
+      }
+
+      const autor = await obterAutor(req.usuarioId);
+      const { rows } = await pool.query(
+        `INSERT INTO mural_comments (post_id, parent_comment_id, usuario_id, autor_nome, texto)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING *`,
+        [postId, parentCommentId || null, req.usuarioId, autor.nome, texto],
+      );
+
+      res.status(201).json({ ...rows[0], likes_count: 0, me_liked: false });
+    } catch (e) {
+      console.error('mural comentario post', e);
+      res.status(500).json({ erro: 'erro interno' });
+    }
+  });
+
+  app.post('/api/mural/:id/curtir', autenticar, async (req: ReqAuth, res: Response) => {
+    try {
+      const postId = String(req.params.id || '').trim();
+      if (!postId) return res.status(400).json({ erro: 'id inválido' });
+      const curtido = await alternarCurtidaPost(postId, String(req.usuarioId));
+      const total = await pool.query('SELECT COUNT(*)::int AS total FROM mural_post_likes WHERE post_id=$1', [postId]);
+      res.json({ ok: true, curtido, likes_count: Number(total.rows[0]?.total || 0) });
+    } catch (e) {
+      console.error('mural curtir post', e);
+      res.status(500).json({ erro: 'erro interno' });
+    }
+  });
+
+  app.post('/api/mural/comentarios/:id/curtir', autenticar, async (req: ReqAuth, res: Response) => {
+    try {
+      const commentId = String(req.params.id || '').trim();
+      if (!commentId) return res.status(400).json({ erro: 'id inválido' });
+      const curtido = await alternarCurtidaComentario(commentId, String(req.usuarioId));
+      const total = await pool.query('SELECT COUNT(*)::int AS total FROM mural_comment_likes WHERE comment_id=$1', [commentId]);
+      res.json({ ok: true, curtido, likes_count: Number(total.rows[0]?.total || 0) });
+    } catch (e) {
+      console.error('mural curtir comentario', e);
+      res.status(500).json({ erro: 'erro interno' });
+    }
+  });
+
+  // PERFIL
   app.get('/api/perfil', autenticar, async (req: ReqAuth, res: Response) => {
     try {
       const { rows } = await pool.query('SELECT * FROM perfil WHERE usuario_id=$1', [req.usuarioId]);
-      // Pega nome e email dos usuarios
       const u = await pool.query('SELECT nome, email_cifrado FROM usuarios WHERE id=$1', [req.usuarioId]);
       const nome = u.rows[0]?.nome || '';
       const email = u.rows[0]?.email_cifrado ? decifrarEmail(u.rows[0].email_cifrado) : '';
 
-      // Se não existe perfil ainda, retorna um perfil vazio com nome/email do usuario
       if (!rows[0]) {
         return res.json({
           usuario_id: req.usuarioId,
@@ -341,7 +537,7 @@ export function registrarRotas(app: Express, pool: Pool): void {
           habilidades: '[]',
         });
       }
-      // Merge: dados do perfil + nome/email do usuario
+
       res.json({ ...rows[0], nome, email });
     } catch (e) {
       console.error('perfil', e);
@@ -349,25 +545,29 @@ export function registrarRotas(app: Express, pool: Pool): void {
     }
   });
 
-  // PUT /api/perfil
   app.put('/api/perfil', autenticar, async (req: ReqAuth, res: Response) => {
     try {
       const { nome, email, telefone, cpf, data_nascimento, bairro, filhos, idades_filhos, turno_disponivel, interesses, sobre_mim, experiencias, cursos, habilidades } = req.body || {};
 
-      // Atualiza nome na tabela usuarios (se informado)
       if (nome && typeof nome === 'string' && nome.trim()) {
         await pool.query('UPDATE usuarios SET nome=$1 WHERE id=$2', [nome.trim(), req.usuarioId]);
       }
 
-      // R06: UPSERT no perfil da usuária logada
       await pool.query(
         `INSERT INTO perfil (usuario_id, telefone, cpf, data_nascimento, bairro, filhos, idades_filhos, turno_disponivel, interesses, sobre_mim, experiencias, cursos, habilidades)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
          ON CONFLICT (usuario_id) DO UPDATE SET
-           telefone=EXCLUDED.telefone, cpf=EXCLUDED.cpf, data_nascimento=EXCLUDED.data_nascimento,
-           bairro=EXCLUDED.bairro, filhos=EXCLUDED.filhos, idades_filhos=EXCLUDED.idades_filhos,
-           turno_disponivel=EXCLUDED.turno_disponivel, interesses=EXCLUDED.interesses,
-           sobre_mim=EXCLUDED.sobre_mim, experiencias=EXCLUDED.experiencias, cursos=EXCLUDED.cursos,
+           telefone=EXCLUDED.telefone,
+           cpf=EXCLUDED.cpf,
+           data_nascimento=EXCLUDED.data_nascimento,
+           bairro=EXCLUDED.bairro,
+           filhos=EXCLUDED.filhos,
+           idades_filhos=EXCLUDED.idades_filhos,
+           turno_disponivel=EXCLUDED.turno_disponivel,
+           interesses=EXCLUDED.interesses,
+           sobre_mim=EXCLUDED.sobre_mim,
+           experiencias=EXCLUDED.experiencias,
+           cursos=EXCLUDED.cursos,
            habilidades=EXCLUDED.habilidades`,
         [
           req.usuarioId,
@@ -382,9 +582,10 @@ export function registrarRotas(app: Express, pool: Pool): void {
           String(sobre_mim || ''),
           String(experiencias || '[]'),
           String(cursos || '[]'),
-          String(habilidades || '[]')
+          String(habilidades || '[]'),
         ],
       );
+
       res.json({ ok: true });
     } catch (e) {
       console.error('perfil put', e);

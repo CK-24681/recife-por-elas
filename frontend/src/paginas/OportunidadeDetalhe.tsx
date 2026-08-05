@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useCaminho } from '../roteador';
 import { apiJSON } from '../api';
 import { useToast } from '../toast';
@@ -33,10 +33,6 @@ export default function OportunidadeDetalhe() {
 
   const [op, setOp] = useState<Oportunidade | null>(null);
   const [estado, setEstado] = useState<'carregando' | 'erro' | 'ok'>('carregando');
-  const [mensagem, setMensagem] = useState('');
-  const [enviando, setEnviando] = useState(false);
-  const [enviado, setEnviado] = useState(false);
-  const [mostrarForm, setMostrarForm] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -51,25 +47,11 @@ export default function OportunidadeDetalhe() {
     })();
   }, [id]);
 
-  const candidatar = async (e: FormEvent) => {
-    e.preventDefault();
-    setEnviando(true);
-    try {
-      await apiJSON('/candidaturas', { method: 'POST', corpo: { oportunidade_id: Number(id), mensagem } });
-      setEnviado(true);
-      toast.sucesso('Candidatura enviada com sucesso!');
-    } catch (err) {
-      toast.erro(err instanceof Error ? err.message : 'Erro ao se candidatar.');
-    } finally {
-      setEnviando(false);
-    }
-  };
-
   if (estado === 'carregando') {
     return (
       <div className="container dt-status-container">
         <div className="sessao-spinner dt-status-spinner" />
-        <p className="dt-status-texto">Carregando oportunidade…</p>
+        <p className="dt-status-texto">Carregando oportunidade...</p>
       </div>
     );
   }
@@ -107,38 +89,14 @@ export default function OportunidadeDetalhe() {
 
           <aside className="dt-sidebar">
             <div className="dt-card">
-              <h4>Candidatar-se</h4>
+              <h4>Detalhes da oportunidade</h4>
               <span className={`dt-card-tag ${tagClass(op.tipo)}`}>{op.tipo}</span>
-              {enviado ? (
-                <div className="dt-sucesso-container">
-                  <div className="dt-sucesso-icone">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                  </div>
-                  <p className="dt-sucesso-texto">Candidatura enviada!</p>
-                  <Link to="/candidaturas" className="dt-sucesso-link">Acompanhar status</Link>
-                </div>
-              ) : mostrarForm ? (
-                <form className="dt-app-form" onSubmit={candidatar}>
-                  <textarea
-                    value={mensagem}
-                    onChange={(e) => setMensagem(e.target.value)}
-                    placeholder="Escreva uma mensagem para a empresa ou instituição (opcional) — conte um pouco sobre você e por que esta oportunidade combina com seu momento."
-                  />
-                  <div className="dt-form-acoes">
-                    <button type="button" className="btn-secundario dt-btn-metade" onClick={() => setMostrarForm(false)}>Cancelar</button>
-                    <button type="submit" className="btn-primario dt-btn-metade" disabled={enviando}>
-                      {enviando ? 'Enviando…' : 'Candidatar-se'}
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <button className="btn-primario" onClick={() => setMostrarForm(true)}>Quero me candidatar</button>
-              )}
+              <p>Use as informações abaixo para avaliar se essa oportunidade combina com seu momento.</p>
             </div>
 
             <div className="dt-card">
               <h4>Como funciona</h4>
-              <p>Ao se candidatar, seu perfil e sua mensagem são enviados para a {op.fonte}. Você pode acompanhar o status da candidatura na página "Minhas candidaturas".</p>
+              <p>As oportunidades continuam disponíveis no feed e no mapa. Se surgir um meio de contato novo, ele aparece aqui.</p>
             </div>
           </aside>
         </div>
