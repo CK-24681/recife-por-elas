@@ -67,6 +67,40 @@ function getTitulo(op: Oportunidade) {
   return String(op.titulo || 'Oportunidade');
 }
 
+function projectarPonto(
+  coords: Coordenadas,
+  limite: { minLat: number; maxLat: number; minLng: number; maxLng: number },
+) {
+  const largura = Math.max(0.0001, limite.maxLng - limite.minLng);
+  const altura = Math.max(0.0001, limite.maxLat - limite.minLat);
+  const x = ((coords[1] - limite.minLng) / largura) * 100;
+  const y = (1 - (coords[0] - limite.minLat) / altura) * 100;
+  const xAjustado = Math.max(4, Math.min(96, x));
+  const yAjustado = Math.max(4, Math.min(96, y));
+  return { x: xAjustado, y: yAjustado };
+}
+
+function calcularLimites(pontos: Coordenadas[]) {
+  const latitudes = pontos.map(([lat]) => lat);
+  const longitudes = pontos.map(([, lng]) => lng);
+  const minLat = Math.min(...latitudes);
+  const maxLat = Math.max(...latitudes);
+  const minLng = Math.min(...longitudes);
+  const maxLng = Math.max(...longitudes);
+  const paddingLat = Math.max(0.02, (maxLat - minLat) * 0.16 || 0.02);
+  const paddingLng = Math.max(0.02, (maxLng - minLng) * 0.16 || 0.02);
+  return {
+    minLat: minLat - paddingLat,
+    maxLat: maxLat + paddingLat,
+    minLng: minLng - paddingLng,
+    maxLng: maxLng + paddingLng,
+  };
+}
+
+function nomeCurtoLocal(op: Oportunidade) {
+  return op.bairro || op.endereco_completo || op.endereco || 'Recife';
+}
+
 export default function Mapa() {
   const [filtro, setFiltro] = useState('');
   const [oportunidades, setOportunidades] = useState<Oportunidade[]>([]);
@@ -139,13 +173,19 @@ export default function Mapa() {
     }
   }, [selecionado, filtrados]);
 
-  const centro = useMemo(() => {
-    if (selecionadoAtual) return selecionadoAtual.coords;
-    if (posicaoUsuario) return posicaoUsuario;
-    return [-8.0476, -34.877] as Coordenadas;
-  }, [selecionadoAtual, posicaoUsuario]);
-
   const total = filtrados.length;
+  const limites = useMemo(() => {
+    const pontosBase = filtrados.map((item) => item.coords);
+    if (posicaoUsuario) pontosBase.push(posicaoUsuario);
+    if (pontosBase.length === 0) {
+      return { minLat: -8.2, maxLat: -7.9, minLng: -34.95, maxLng: -34.75 };
+    }
+    if (pontosBase.length === 1) {
+      const [lat, lng] = pontosBase[0];
+      return { minLat: lat - 0.04, maxLat: lat + 0.04, minLng: lng - 0.04, maxLng: lng + 0.04 };
+    }
+    return calcularLimites(pontosBase);
+  }, [filtrados, posicaoUsuario]);
 
   return (
     <>
@@ -200,29 +240,93 @@ export default function Mapa() {
                 })}
               </div>
 
-              <div className="mapa-preview">
-                <div className="mapa-preview-badge">Google Maps Street View</div>
-                <h2>Visualização externa do ponto selecionado</h2>
-                <p>
-                  O navegador está bloqueando o embed direto. Aqui no app você ainda vê o ponto escolhido,
-                  e o Street View abre corretamente em nova aba.
-                </p>
-                <div className="mapa-preview-coords">
-                  <strong>{centro[0].toFixed(4)}, {centro[1].toFixed(4)}</strong>
-                  <span>{selecionadoAtual?.op.endereco_completo || selecionadoAtual?.op.endereco || selecionadoAtual?.op.bairro || 'Recife, PE'}</span>
+              <div className="mapa-mapa-real">
+                <div className="mapa-preview-badge">Mapa com pontos de referência</div>
+                <div className="mapa-mapa-topo">
+                  <div>
+                    <h2>Pontos visíveis no mapa</h2>
+                    <p>Clique em um marcador para ver os detalhes e abrir o Street View do local selecionado.</p>
+                  </div>
+                  <div className="mapa-mapa-resumo">
+                    <strong>{total}</strong>
+                    <span>ponto{total === 1 ? '' : 's'} no filtro</span>
+                  </div>
                 </div>
-                <a
-                  className="mapa-preview-btn"
-                  href={linkGoogleMapsExterno(centro[0], centro[1])}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Abrir Street View no Google Maps
-                </a>
-              </div>
 
-              <div className="mapa-badge">
-                {total} ponto{total === 1 ? '' : 's'} com coordenadas no filtro atual
+                <div className="mapa-mapa-superficie">
+                  <svg viewBox="0 0 100 100" className="mapa-svg" role="img" aria-label="Mapa de oportunidades com pontos de referência">
+                    <defs>
+                      <linearGradient id="mapa-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#eff6ff" />
+                        <stop offset="100%" stopColor="#f8fafc" />
+                      </linearGradient>
+                      <radialGradient id="mapa-glow" cx="50%" cy="30%" r="70%">
+                        <stop offset="0%" stopColor="rgba(219,39,119,0.18)" />
+                        <stop offset="100%" stopColor="rgba(219,39,119,0)" />
+                      </radialGradient>
+                    </defs>
+                    <rect x="0" y="0" width="100" height="100" rx="18" fill="url(#mapa-bg)" />
+                    <circle cx="74" cy="24" r="24" fill="url(#mapa-glow)" />
+                    <path d="M8 76 C22 66, 26 78, 36 70 S58 62, 66 68 S80 77, 94 66" fill="none" stroke="#dbeafe" strokeWidth="2.5" strokeLinecap="round" />
+                    <path d="M10 28 C18 24, 24 20, 30 24 S44 38, 52 32 S68 18, 82 28 S92 44, 98 40" fill="none" stroke="#e2e8f0" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M14 52 C24 46, 34 48, 42 55 S58 63, 68 57 S82 48, 92 52" fill="none" stroke="#cbd5e1" strokeWidth="1.8" strokeLinecap="round" strokeDasharray="2 3" />
+                    {filtrados.map((item, index) => {
+                      const key = String(item.op.id ?? item.op.titulo);
+                      const ativo = selecionado === key;
+                      const pos = projectarPonto(item.coords, limites);
+                      const cfg = getCfg(item.op.tipo);
+                      return (
+                        <g
+                          key={key}
+                          className={`mapa-ponto ${ativo ? 'mapa-ponto--ativo' : ''}`}
+                          transform={`translate(${pos.x} ${pos.y})`}
+                          onClick={() => setSelecionado(key)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') setSelecionado(key);
+                          }}
+                        >
+                          <circle cx="0" cy="0" r={ativo ? 2.8 : 2.2} fill={cfg.cor} opacity="0.22" />
+                          <circle cx="0" cy="0" r={ativo ? 2.1 : 1.8} fill={cfg.cor} stroke="#fff" strokeWidth="1.2" />
+                          <circle cx="0" cy="0" r={ativo ? 4.5 : 3.6} fill="transparent" stroke={cfg.cor} strokeWidth={ativo ? 1.4 : 1} opacity="0.8" />
+                          <g transform="translate(0 -5)">
+                            <rect x="-7" y="-8" width="14" height="6" rx="3" fill="#fff" opacity="0.9" />
+                            <text x="0" y="-3.4" textAnchor="middle" fontSize="4" fontWeight="700" fill={cfg.cor}>{index + 1}</text>
+                          </g>
+                          <title>{getTitulo(item.op)}</title>
+                        </g>
+                      );
+                    })}
+                    {posicaoUsuario ? (
+                      <g transform={`translate(${projectarPonto(posicaoUsuario, limites).x} ${projectarPonto(posicaoUsuario, limites).y})`}>
+                        <circle cx="0" cy="0" r="3.8" fill="#ef4444" opacity="0.25" />
+                        <circle cx="0" cy="0" r="2.3" fill="#ef4444" stroke="#fff" strokeWidth="1.2" />
+                      </g>
+                    ) : null}
+                  </svg>
+
+                  <div className="mapa-mapa-overlay">
+                    <div className="mapa-mapa-card">
+                      <strong>{selecionadoAtual ? getTitulo(selecionadoAtual.op) : 'Selecione um ponto'}</strong>
+                      <span>{selecionadoAtual ? nomeCurtoLocal(selecionadoAtual.op) : 'Clique em um marcador para ver o local'}</span>
+                    </div>
+                    {selecionadoAtual ? (
+                      <a
+                        className="mapa-preview-btn mapa-preview-btn--inline"
+                        href={linkGoogleMapsExterno(selecionadoAtual.coords[0], selecionadoAtual.coords[1])}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Abrir Street View
+                      </a>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="mapa-badge">
+                  {total} ponto{total === 1 ? '' : 's'} com coordenadas no filtro atual
+                </div>
               </div>
             </div>
 

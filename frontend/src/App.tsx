@@ -7,6 +7,7 @@ import Feed from './paginas/Feed';
 import OportunidadeDetalhe from './paginas/OportunidadeDetalhe';
 import Mapa from './paginas/Mapa';
 import Mural from './paginas/Mural';
+import PlanoCarreira from './paginas/PlanoCarreira';
 import Perfil from './paginas/Perfil';
 import Cadastro from './paginas/Cadastro';
 
@@ -64,6 +65,19 @@ function Conteudo() {
         <div className="pagina-topo">
           <HeaderApp />
           <Mapa />
+          <FooterLanding />
+        </div>
+      </Protegido>
+    );
+  }
+
+  // ── /plano-carreira ──
+  if (caminho === '/plano-carreira') {
+    return (
+      <Protegido>
+        <div className="pagina-topo">
+          <HeaderApp />
+          <PlanoCarreira />
           <FooterLanding />
         </div>
       </Protegido>
@@ -351,6 +365,10 @@ function HeaderApp() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/></svg>
             <span>Mapa</span>
           </Link>
+          <Link to="/plano-carreira" className={ativo('/plano-carreira') ? 'ativo' : ''}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/><path d="M12 3v4"/><path d="M12 17v4"/><path d="M3 12h4"/><path d="M17 12h4"/></svg>
+            <span>Plano de carreira</span>
+          </Link>
           <Link to="/mural" className={ativo('/mural') ? 'ativo' : ''}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             <span>Rede</span>
@@ -431,6 +449,7 @@ function FooterLanding() {
           <nav className="rp-col">
             <h4>Para você</h4>
             <a href="/cadastro">Criar conta</a>
+            <Link to="/plano-carreira">Plano de carreira</Link>
             <a href="/mural">Rede de apoio</a>
           </nav>
           <nav className="rp-col">
