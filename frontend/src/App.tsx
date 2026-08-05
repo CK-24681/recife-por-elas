@@ -151,10 +151,10 @@ function Conteudo() {
         <div className="container hp-grade">
           <div className="hp-texto entrada-hero">
             <h1 className="hp-titulo">
-              Oportunidades reais para <em>mulheres</em> que fazem o Recife acontecer
+              Apoio e oportunidades reais para <em>mães solo</em> do Recife
             </h1>
             <p className="hp-sub">
-              Conectamos mulheres solo e mães solo a vagas de trabalho, cursos gratuitos, benefícios sociais e uma rede de apoio que entende sua realidade — tudo organizado por bairro e compatível com sua rotina.
+              O <strong>Recife por Elas</strong> é uma plataforma inteligente que resolve o desafio da recolocação e do sustento. Conectamos você a vagas de emprego, cursos, auxílios sociais e redes de apoio que se encaixam na sua rotina e perto de casa.
             </p>
             <div className="hp-ctas">
               <Link to="/cadastro" className="btn-primario">Quero me cadastrar</Link>
@@ -162,15 +162,6 @@ function Conteudo() {
                 Como funciona
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
               </a>
-            </div>
-            <div className="hp-parceiros">
-              <span>Apoiadores:</span>
-              <div className="hp-selos">
-                <span className="hp-selo"><span className="hp-selo-dot" style={{background:'var(--cor-primaria)'}}></span>Programa Recife Resolve</span>
-                <span className="hp-selo"><span className="hp-selo-dot" style={{background:'var(--coral)'}}></span>Prefeitura do Recife</span>
-                <span className="hp-selo"><span className="hp-selo-dot" style={{background:'#214E8A'}}></span>CESAR</span>
-                <span className="hp-selo"><span className="hp-selo-dot" style={{background:'#4A90E2'}}></span>UK-Brazil Tech Hub</span>
-              </div>
             </div>
           </div>
           <div className="hp-foto hover-zoom-foto entrada-hero">
@@ -186,10 +177,23 @@ function Conteudo() {
       {/* IMPACTO E CONTEXTO */}
       <section className="nu-faixa" id="impacto">
         <div className="container">
+          <div className="secao-cabeca surgir" style={{marginBottom: '32px', textAlign: 'center'}}>
+            <h2 className="secao-titulo" style={{color: 'white', marginBottom: '8px'}}>A realidade que queremos transformar</h2>
+            <p className="secao-sub" style={{color: 'rgba(255,255,255,0.9)', maxWidth: '700px', margin: '0 auto'}}>Entendemos os desafios únicos enfrentados diariamente pelas mães solo e criamos o Recife por Elas para ser a ponte para um novo começo.</p>
+          </div>
           <div className="nu-grade surgir">
-            <div className="nu-item"><strong>11,3M</strong><span>de mães solo no Brasil</span></div>
-            <div className="nu-item"><strong>Recife e RMR</strong><span>foco total de atuação</span></div>
-            <div className="nu-item"><strong>100%</strong><span>gratuito para as mães</span></div>
+            <div className="nu-item">
+              <strong>+2 Milhões</strong>
+              <span>de mães solo sem emprego formal no Brasil, buscando recolocação.</span>
+            </div>
+            <div className="nu-item">
+              <strong>63%</strong>
+              <span>das famílias chefiadas por mães solo dependem de auxílios e benefícios sociais.</span>
+            </div>
+            <div className="nu-item">
+              <strong>74%</strong>
+              <span>das mães solo empreendedoras iniciaram seus negócios por necessidade para sustentar a família.</span>
+            </div>
           </div>
         </div>
       </section>
@@ -279,6 +283,15 @@ function Conteudo() {
 
 
 
+      {/* CTA FINAL */}
+      <section className="ct-faixa" id="comecar">
+        <div className="container ct-caixa">
+          <h2 className="ct-titulo surgir">Ajude a construir essa comunidade</h2>
+          <p className="ct-sub surgir">Estamos em fase inicial de testes. Cadastre-se para ser uma das nossas primeiras usuárias e ajude a moldar uma plataforma que respeita sua rotina e seu bairro.</p>
+          <Link to="/cadastro" className="btn-secundario surgir">Fazer parte agora</Link>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section className="secao" id="faq">
         <div className="container fq-caixa">
@@ -308,15 +321,6 @@ function Conteudo() {
               <p>O app mostra vagas próximas, organizadas por distância. Você também pode buscar em bairros vizinhos. E se não houver nada no momento, a plataforma sugere cursos e capacitações enquanto novas vagas surgem.</p>
             </details>
           </div>
-        </div>
-      </section>
-
-      {/* CTA FINAL */}
-      <section className="ct-faixa" id="comecar">
-        <div className="container ct-caixa">
-          <h2 className="ct-titulo surgir">Ajude a construir essa comunidade</h2>
-          <p className="ct-sub surgir">Estamos em fase inicial de testes. Cadastre-se para ser uma das nossas primeiras usuárias e ajude a moldar uma plataforma que respeita sua rotina e seu bairro.</p>
-          <Link to="/cadastro" className="btn-secundario surgir">Fazer parte agora</Link>
         </div>
       </section>
 
@@ -434,6 +438,15 @@ function FooterLanding() {
   return (
     <footer className="rp-rodape">
       <div className="container">
+        <div className="rp-apoiadores" style={{ paddingBottom: '32px', marginBottom: '32px', borderBottom: '1px solid var(--borda-card)', textAlign: 'center' }}>
+          <h4 style={{ color: 'var(--texto-suave)', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>Apoiadores e Parceiros Institucionais</h4>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '24px', alignItems: 'center' }}>
+            <span className="hp-selo" style={{ background: 'var(--fundo-card)', padding: '8px 16px', borderRadius: '100px', fontSize: '14px', fontWeight: '500', color: 'var(--texto-base)', border: '1px solid var(--borda-card)', display: 'inline-flex', alignItems: 'center' }}><span className="hp-selo-dot" style={{background:'var(--cor-primaria)', display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', marginRight: '8px'}}></span>Programa Recife Resolve</span>
+            <span className="hp-selo" style={{ background: 'var(--fundo-card)', padding: '8px 16px', borderRadius: '100px', fontSize: '14px', fontWeight: '500', color: 'var(--texto-base)', border: '1px solid var(--borda-card)', display: 'inline-flex', alignItems: 'center' }}><span className="hp-selo-dot" style={{background:'var(--coral)', display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', marginRight: '8px'}}></span>Prefeitura do Recife</span>
+            <span className="hp-selo" style={{ background: 'var(--fundo-card)', padding: '8px 16px', borderRadius: '100px', fontSize: '14px', fontWeight: '500', color: 'var(--texto-base)', border: '1px solid var(--borda-card)', display: 'inline-flex', alignItems: 'center' }}><span className="hp-selo-dot" style={{background:'#214E8A', display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', marginRight: '8px'}}></span>CESAR</span>
+            <span className="hp-selo" style={{ background: 'var(--fundo-card)', padding: '8px 16px', borderRadius: '100px', fontSize: '14px', fontWeight: '500', color: 'var(--texto-base)', border: '1px solid var(--borda-card)', display: 'inline-flex', alignItems: 'center' }}><span className="hp-selo-dot" style={{background:'#4A90E2', display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', marginRight: '8px'}}></span>UK-Brazil Tech Hub</span>
+          </div>
+        </div>
         <div className="rp-grade">
           <div className="rp-marca">
             <a href="/" className="rp-logo">Recife<strong>PorElas</strong></a>
