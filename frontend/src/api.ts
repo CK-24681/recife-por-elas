@@ -1,5 +1,5 @@
-// Chama o backend via proxy da Vercel no mesmo domínio
-const BASE = '/api';
+// Chama o backend configurado via VITE_API_URL ou fallback para /api
+const BASE = import.meta.env.VITE_API_URL || '/api';
 const CHAVE_TOKEN = 'app_token';
 
 export function getToken(): string | null {
