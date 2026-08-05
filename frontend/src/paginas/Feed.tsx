@@ -90,10 +90,9 @@ function CardGuiaVagas() {
 }
 
 function CardApoio({ item }: { item: Oportunidade }) {
-  const destination = item.latitude && item.longitude 
-    ? `${item.latitude},${item.longitude}`
-    : encodeURIComponent(item.endereco || '');
-  const gmapsLink = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
+  const linkMapa = item.latitude && item.longitude
+    ? `https://www.google.com/maps/search/?api=1&query=${item.latitude},${item.longitude}`
+    : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.endereco || item.titulo)}`;
   const descricaoLimpa = decodeHtml(item.descricao);
 
   return (
@@ -113,8 +112,8 @@ function CardApoio({ item }: { item: Oportunidade }) {
       {item.endereco && <p className="apoio-endereco">📍 {item.endereco}</p>}
       
       <div className="fd-card-acoes">
-        <a href={gmapsLink} target="_blank" rel="noopener noreferrer" className="btn-secundario btn-mapa">
-          🗺️ Como chegar
+        <a href={linkMapa} target="_blank" rel="noopener noreferrer" className="btn-secundario btn-mapa">
+          🗺️ Ver no Google Maps
         </a>
         {item.link_inscricao && (
           <a href={item.link_inscricao} target="_blank" rel="noopener noreferrer" className="btn-primario btn-contato">
@@ -206,8 +205,14 @@ export default function Feed() {
     carregar();
   }, [filtro]);
 
-  // Filtro local por busca (título/bairro)
+  const normalizarTipo = (tipo: string) => String(tipo || '').trim().toLowerCase();
+  const filtroAtivo = normalizarTipo(filtro);
+
+  // Filtro local por tipo + busca (título/bairro)
   const filtradas = oportunidades.filter((o) => {
+    if (filtroAtivo && normalizarTipo(o.tipo) !== filtroAtivo) {
+      return false;
+    }
     if (busca) {
       const termo = busca.toLowerCase();
       const matchTitulo = o.titulo.toLowerCase().includes(termo);
@@ -218,6 +223,8 @@ export default function Feed() {
   });
 
   const isEmpregoEmptyFallback = (estado === 'erro' || (estado === 'ok' && filtradas.length === 0)) && filtro === 'Emprego';
+  const mostrarGuiaEmprego = filtro === '';
+  const mostrarListagem = filtro === '' || filtradas.length > 0;
 
   return (
     <>
@@ -298,9 +305,9 @@ export default function Feed() {
         ) : (
           <div className="fd-grade">
             {/* Sempre mostra o Guia de Vagas primeiro se estiver buscando por Emprego ou Todas */}
-            {(filtro === '' || filtro === 'Emprego') && <CardGuiaVagas />}
+            {mostrarGuiaEmprego && <CardGuiaVagas />}
             
-            {filtradas.map((item, i) => {
+            {mostrarListagem && filtradas.map((item, i) => {
               if (!item) return null;
               const key = item.id ? `item-${item.id}` : `idx-${i}`;
               if (item.tipo === 'Apoio') {

@@ -134,28 +134,56 @@ export function registrarRotas(app: Express, pool: Pool): void {
   };
   const TEMPO_CACHE = 60 * 60 * 1000; // 1 hora em milissegundos
 
+  function filtrarOportunidadesExternas(
+    dados: any[],
+    filtros: { tipo?: string; bairro?: string; horario?: string },
+  ): any[] {
+    let filtradas = Array.isArray(dados) ? [...dados] : [];
+
+    if (filtros.tipo) {
+      filtradas = filtradas.filter((o) => o.tipo === filtros.tipo);
+    }
+
+    if (filtros.bairro) {
+      const b = filtros.bairro.toLowerCase();
+      filtradas = filtradas.filter(
+        (o) =>
+          String(o.bairro || '').toLowerCase().includes(b) ||
+          String(o.endereco || '').toLowerCase().includes(b),
+      );
+    }
+
+    if (filtros.horario) {
+      const h = filtros.horario.toLowerCase();
+      filtradas = filtradas.filter((o) => String(o.horario || '').toLowerCase().includes(h));
+    }
+
+    return filtradas;
+  }
+
   // GET /api/oportunidades/externas — dados de APIs públicas (Arbeitnow, Remotive, EV.G, DATASUS, etc.)
   // ⚠️ REGISTRADA ANTES de /:id para que "externas" não seja capturado como :id.
   app.get('/api/oportunidades/externas', async (req: Request, res: Response) => {
     try {
-      if (cacheOportunidades.dados && (Date.now() - cacheOportunidades.ultimaAtualizacao < TEMPO_CACHE)) {
-        return res.status(200).json(cacheOportunidades.dados);
-      }
-
       const tipo = String(req.query.tipo || '').trim();
       const bairro = String(req.query.bairro || '').trim();
       const horario = String(req.query.horario || '').trim();
-
-      const data = await unificarOportunidadesExternas({
+      const filtros = {
         tipo: tipo || undefined,
         bairro: bairro || undefined,
         horario: horario || undefined,
-      });
+      };
 
-      cacheOportunidades.dados = data;
-      cacheOportunidades.ultimaAtualizacao = Date.now();
+      let dadosBase = cacheOportunidades.dados;
+      const cacheValido = dadosBase && (Date.now() - cacheOportunidades.ultimaAtualizacao < TEMPO_CACHE);
 
-      res.json(data);
+      if (!cacheValido) {
+        dadosBase = await unificarOportunidadesExternas();
+        cacheOportunidades.dados = dadosBase;
+        cacheOportunidades.ultimaAtualizacao = Date.now();
+      }
+
+      res.json(filtrarOportunidadesExternas(dadosBase || [], filtros));
     } catch (e) {
       console.error('oportunidades externas', e);
       res.status(500).json({ erro: 'erro ao buscar oportunidades externas' });
