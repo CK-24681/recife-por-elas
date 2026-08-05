@@ -22,8 +22,8 @@ const HOST = process.env.HOST || '127.0.0.1';
 const app = express();
 
 // --- BLINDAGEM DE SEGURANÇA ---
-const origensPermitidas = process.env.APP_BASE_URL ? [process.env.APP_BASE_URL] : ['http://localhost:8080', 'http://localhost:5173', 'http://127.0.0.1:8080'];
-app.use(cors({ origin: origensPermitidas, optionsSuccessStatus: 200 }));
+// Permite acesso de qualquer origem, já que o app na Vercel fará chamadas cross-origin
+app.use(cors({ origin: true, optionsSuccessStatus: 200 }));
 
 app.use(helmet({
   hsts: false, // Desabilita o Strict-Transport-Security (HSTS), que força HTTPS
