@@ -235,32 +235,44 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
 }
 
 /* ——— HEADER / NAV ——— */
-.hn-topo {
+.hn-topo, .hn-topo-app {
   position: sticky; top: 0; z-index: 50;
   background: rgba(250, 249, 247, .88);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--borda);
+  overflow: visible;
 }
-.hn-linha {
+.hn-linha, .hn-linha-app {
   display: flex; align-items: center; justify-content: space-between;
-  gap: 24px; min-height: 68px; position: relative;
+  gap: 24px; min-height: 90px; position: relative; overflow: visible;
 }
 .hn-logo, .hn-logo-app, .rp-logo, .auth-logo, .cd-onboard-logo {
-  display: inline-flex; align-items: center;
-  text-decoration: none; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  text-decoration: none; line-height: 1; overflow: visible;
 }
 .brand-logo-img {
-  height: clamp(42px, 5vw, 52px);
+  height: 64px;
   width: auto;
-  max-width: 240px;
   object-fit: contain;
   display: block;
   transition: transform 0.2s ease;
 }
 .hn-logo:hover .brand-logo-img,
 .hn-logo-app:hover .brand-logo-img,
-.rp-logo:hover .brand-logo-img {
+.rp-logo:hover .brand-logo-img,
+.cd-onboard-logo:hover .brand-logo-img,
+.auth-logo:hover .brand-logo-img {
   transform: scale(1.03);
+}
+
+/* Logos no rodapé, autenticação (login/senha) e cadastro (onboarding) */
+.rp-logo .brand-logo-img,
+.auth-logo .brand-logo-img,
+.cd-onboard-logo .brand-logo-img,
+.auth-card .brand-logo-img,
+.rp-marca .brand-logo-img {
+  height: 80px;
+  width: auto;
 }
 .hn-nav { display: flex; align-items: center; gap: 28px; }
 .hn-nav a {
@@ -361,6 +373,10 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
   color: var(--tinta);
   text-align: center;
   letter-spacing: -0.02em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
 }
 .auth-logo strong { color: var(--cor-primaria); }
 .auth-voltar {
@@ -2459,12 +2475,14 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
     transparent 65%);
 }
 .cd-onboard-topo {
-  padding: 24px clamp(20px,5vw,40px);
+  padding: 16px clamp(20px,5vw,40px);
+  min-height: 90px;
   border-bottom: 1px solid var(--borda);
   display: flex; align-items: center; gap: 16px;
   position: relative; z-index: 2;
   background: rgba(255,255,255,.88);
   backdrop-filter: blur(8px);
+  overflow: visible;
 }
 .cd-onboard-logo {
   font-family: var(--fonte-titulo); font-weight: 800; font-size: 20px;
