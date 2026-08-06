@@ -8,6 +8,7 @@ on:
 
 jobs:
   deploy:
+    name: Deploy via SSH to Oracle Cloud
     runs-on: ubuntu-latest
     steps:
       - name: Executar Deploy via SSH
@@ -16,7 +17,11 @@ jobs:
           host: 163.176.158.165
           username: ubuntu
           key: ${{ secrets.ORACLE_SSH_KEY }}
+          port: 22
+          script_stop: true
+          command_timeout: 10m
           script: |
             cd ~/recife-por-elas
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
             docker compose up -d --build
