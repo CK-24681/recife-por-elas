@@ -21,7 +21,6 @@ jobs:
           script_stop: true
           command_timeout: 20m
           script: |
-            # 1. Garantir arquivo SWAP de 2GB se ainda não existir na máquina
             if [ $(swapon --show | wc -l) -le 1 ]; then
               sudo fallocate -l 2G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=2048
               sudo chmod 600 /swapfile
@@ -29,11 +28,7 @@ jobs:
               sudo swapon /swapfile
               echo '/swapfile swap swap defaults 0 0' | sudo tee -a /etc/fstab || true
             fi
-
-            # 2. Otimizar build e implantar via Docker Compose
             cd ~/recife-por-elas
-            git fetch origin main && git reset --hard origin/main
-            docker compose down || true
-            DOCKER_BUILDKIT=1 docker compose build --no-cache
-            docker compose up -d
-            docker system prune -f
+            git fetch origin main
+            git reset --hard origin/main
+            docker compose up -d --build
