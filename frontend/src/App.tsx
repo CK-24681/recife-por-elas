@@ -487,7 +487,7 @@ function FooterLanding() {
     { logo: '/logos/recife-resolve.png' },
     { logo: '/logos/c.e.s.a.r.png' },
     { logo: '/logos/uk-brazil-tech-hub.png' },
-    { logo: '/logos/uk-governament.png' }
+    { logo: '/logos/uk-government.png' }
   ];
 
   return (
