@@ -176,68 +176,100 @@ function Conteudo() {
       {/* IMPACTO E CONTEXTO */}
       <section className="nu-faixa" id="impacto">
         <div className="container">
-          <div className="secao-cabeca surgir" style={{marginBottom: '32px', textAlign: 'center'}}>
-           <h2 className="secao-titulo">A realidade que queremos transformar</h2>
-            <p className="secao-sub">Entendemos os desafios únicos enfrentados diariamente pelas mães solo e criamos o Recife por Elas para ser a ponte para um novo começo.</p>
+          <div className="secao-cabeca surgir" style={{ marginBottom: '40px', textAlign: 'center' }}>
+            <span className="secao-etiqueta">Dados que transformam</span>
+            <h2 className="secao-titulo">A realidade que queremos transformar</h2>
+            <p className="secao-sub">
+              Entendemos os desafios únicos enfrentados diariamente pelas mães solo e criamos o Recife por Elas para ser a ponte para um novo começo.
+            </p>
           </div>
-          <div className="nu-grade surgir">
-            <div className="nu-item">
-              <strong>+11 Milhões</strong>
-              <span>de mães solo no Brasil cuidando de lares inteiros sozinhas.</span>
-              <small style={{display: 'block', marginTop: '8px', fontSize: '12px', opacity: 0.7}}>Fonte: IBGE / Censo Demográfico</small>
+          <div className="nu-grade-3col surgir">
+            <div className="nu-item-card">
+              <strong className="nu-item-numero">+11 Milhões</strong>
+              <span className="nu-item-texto">de mães solo no Brasil cuidando de lares inteiros sozinhas.</span>
+              <div className="nu-item-fonte">
+                <span>Fonte:</span> IBGE / Censo Demográfico
+              </div>
             </div>
-            <div className="nu-item">
-              <strong>47%</strong>
-              <span>das famílias chefiadas por mulheres vivem em situação de vulnerabilidade ou extrema pobreza.</span>
-              <small style={{display: 'block', marginTop: '8px', fontSize: '12px', opacity: 0.7}}>Fonte: FGV Social</small>
+            <div className="nu-item-card">
+              <strong className="nu-item-numero">47%</strong>
+              <span className="nu-item-texto">das famílias chefiadas por mulheres vivem em situação de vulnerabilidade ou extrema pobreza.</span>
+              <div className="nu-item-fonte">
+                <span>Fonte:</span> FGV Social
+              </div>
             </div>
-            <div className="nu-item">
-              <strong>63%</strong>
-              <span>dos lares chefiados por mães solo dependem diretamente de auxílios e benefícios sociais.</span>
-              <small style={{display: 'block', marginTop: '8px', fontSize: '12px', opacity: 0.7}}>Fonte: CadÚnico / MDS</small>
+            <div className="nu-item-card">
+              <strong className="nu-item-numero">63%</strong>
+              <span className="nu-item-texto">dos lares chefiados por mães solo dependem diretamente de auxílios e benefícios sociais.</span>
+              <div className="nu-item-fonte">
+                <span>Fonte:</span> CadÚnico / MDS
+              </div>
             </div>
-            <div className="nu-item">
-              <strong>74%</strong>
-              <span>das mães empreendedoras abriram o próprio negócio por absoluta necessidade de sustento.</span>
-              <small style={{display: 'block', marginTop: '8px', fontSize: '12px', opacity: 0.7}}>Fonte: Sebrae / GEM</small>
+            <div className="nu-item-card">
+              <strong className="nu-item-numero">74%</strong>
+              <span className="nu-item-texto">das mães empreendedoras abriram o próprio negócio por absoluta necessidade de sustento.</span>
+              <div className="nu-item-fonte">
+                <span>Fonte:</span> Sebrae / GEM
+              </div>
             </div>
-            <div className="nu-item">
-              <strong>Elevada</strong>
-              <span>taxa de desemprego entre mulheres com filhos pequenos, superando a média nacional.</span>
-              <small style={{display: 'block', marginTop: '8px', fontSize: '12px', opacity: 0.7}}>Fonte: DIEESE / PNAD Contínua</small>
+            <div className="nu-item-card">
+              <strong className="nu-item-numero">Elevada</strong>
+              <span className="nu-item-texto">taxa de desemprego entre mulheres com filhos pequenos, superando a média nacional.</span>
+              <div className="nu-item-fonte">
+                <span>Fonte:</span> DIEESE / PNAD Contínua
+              </div>
             </div>
-            <div className="nu-item">
-              <strong>+80%</strong>
-              <span>relatam falta crônica de rede de apoio para conseguir trabalhar ou estudar em paz.</span>
-              <small style={{display: 'block', marginTop: '8px', fontSize: '12px', opacity: 0.7}}>Fonte: Instituto Mãe / Pesquisa Nacional</small>
+            <div className="nu-item-card">
+              <strong className="nu-item-numero">+80%</strong>
+              <span className="nu-item-texto">relatam falta crônica de rede de apoio para conseguir trabalhar ou estudar em paz.</span>
+              <div className="nu-item-fonte">
+                <span>Fonte:</span> Instituto Mãe / Pesquisa Nacional
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* POR QUE USAR O NOSSO SITE */}
-      <section className="secao cf-secao" id="por-que-usar">
+      {/* POR QUE USAR O NOSSO SITE - SEÇÃO DE APELO / CONVERSÃO */}
+      <section className="secao apelo-secao" id="por-que-usar">
         <div className="container">
-          <div className="secao-cabeca surgir">
-            <span className="secao-etiqueta">Um convite para você</span>
-            <h2 className="secao-titulo">Por que você tem que usar o nosso site?</h2>
-            <p className="secao-sub">Sabemos que sua rotina é exaustiva e que falta tempo. O Recife por Elas foi feito sob medida para acolher você e aliviar essa carga.</p>
-          </div>
-          <div className="cf-grade">
-            <div className="cf-passo surgir">
-              <span className="cf-num">1</span>
-              <h3>Nós enxergamos o seu valor</h3>
-              <p>Esqueça os processos seletivos frios que julgam sua maternidade. Aqui, conectamos você a empresas que valorizam a força, a garra e a resiliência que só uma mãe solo tem.</p>
+          <div className="apelo-card surgir">
+            <div className="apelo-badge">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+              </svg>
+              <span>Um convite ao seu recomeço</span>
             </div>
-            <div className="cf-passo surgir surgir-2">
-              <span className="cf-num">2</span>
-              <h3>Vagas na sua realidade</h3>
-              <p>Acabou a frustração de achar a vaga ideal do outro lado da cidade. Ofertamos oportunidades no seu bairro, respeitando os horários escolares e a sua carga de cuidados.</p>
+
+            <h2 className="apelo-titulo">
+              Sua maternidade é sua maior força. Não caminhe mais sozinha.
+            </h2>
+
+            <div className="apelo-texto-corrido">
+              <p className="apelo-destaque-inicial">
+                Ser mãe solo no Recife é um ato diário de coragem, resiliência e amor incondicional. Mas nós sabemos o quanto a rotina pode ser exaustiva e como, muitas vezes, parece que o mundo não foi desenhado para acolher o seu tempo e as suas necessidades.
+              </p>
+
+              <p>
+                O <strong>Recife por Elas</strong> não é apenas mais um site — é um movimento criado sob medida para devolver o seu protagonismo. Nós acreditamos com convicção que cuidar da sua família não deve significar abrir mão dos seus sonhos ou da sua independência financeira. Cada funcionalidade da nossa plataforma foi pensada para abrir portas reais no seu próprio bairro, respeitando os horários dos seus filhos e a sua jornada.
+              </p>
+
+              <blockquote className="apelo-citacao">
+                "Você já sustentou lares inteiros no amor e na raça. Agora, permita que uma rede inteira de oportunidades e mulheres segure a sua mão."
+              </blockquote>
+
+              <p>
+                Conectamos você a <strong>oportunidades de trabalho acolhedoras</strong>, <strong>cursos de capacitação gratuitos</strong>, <strong>orientação descomplicada para benefícios sociais</strong> e uma comunidade vibrante de mulheres que entendem exatamente o que você vive. Dê hoje o passo que vai transformar não apenas o seu futuro, mas a história da sua família.
+              </p>
             </div>
-            <div className="cf-passo surgir surgir-3">
-              <span className="cf-num">3</span>
-              <h3>Você não está mais sozinha</h3>
-              <p>Dê o primeiro passo para o recomeço que você e seus filhos merecem. Aqui você terá apoio real, orientação social e uma rede de mulheres prontas para segurar a sua mão.</p>
+
+            <div className="apelo-acoes">
+              <Link to="/cadastro" className="btn-primario apelo-btn">
+                Quero me cadastrar agora
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>
+                </svg>
+              </Link>
             </div>
           </div>
         </div>
@@ -298,9 +330,16 @@ function Conteudo() {
         </div>
       </section>
 
+      {/* CTA FINAL */}
+      <section className="ct-faixa" id="comecar">
+        <div className="container ct-caixa">
+          <h2 className="ct-titulo surgir">Ajude a construir essa comunidade</h2>
+          <p className="ct-sub surgir">Estamos em fase inicial de testes. Cadastre-se para ser uma das nossas primeiras usuárias e ajude a moldar uma plataforma que respeita sua rotina e seu bairro.</p>
+          <Link to="/cadastro" className="btn-secundario surgir">Fazer parte agora</Link>
+        </div>
+      </section>
 
-
-      {/* FAQ */}
+      {/* FAQ (POSICIONADO ESTRATEGICAMENTE POR ÚLTIMO, IMEDIATAMENTE ANTES DO RODAPÉ) */}
       <section className="secao" id="faq">
         <div className="container fq-caixa">
           <div className="secao-cabeca surgir">
@@ -329,15 +368,6 @@ function Conteudo() {
               <p>O app mostra vagas próximas, organizadas por distância. Você também pode buscar em bairros vizinhos. E se não houver nada no momento, a plataforma sugere cursos e capacitações enquanto novas vagas surgem.</p>
             </details>
           </div>
-        </div>
-      </section>
-
-      {/* CTA FINAL */}
-      <section className="ct-faixa" id="comecar">
-        <div className="container ct-caixa">
-          <h2 className="ct-titulo surgir">Ajude a construir essa comunidade</h2>
-          <p className="ct-sub surgir">Estamos em fase inicial de testes. Cadastre-se para ser uma das nossas primeiras usuárias e ajude a moldar uma plataforma que respeita sua rotina e seu bairro.</p>
-          <Link to="/cadastro" className="btn-secundario surgir">Fazer parte agora</Link>
         </div>
       </section>
 
@@ -452,16 +482,40 @@ function HeaderLanding({ estado, encerrar }: { estado: string; encerrar: () => v
 }
 
 function FooterLanding() {
+  const parceiros = [
+    { nome: 'Prefeitura do Recife', logo: '/logos/prefeitura-recife.png' },
+    { nome: 'Programa Recife Resolve', logo: '/logos/recife-resolve.png' },
+    { nome: 'CESAR', logo: '/logos/cesar.png' },
+    { nome: 'UK Brazil Tech Hub', logo: '/logos/uk-brazil-tech-hub.png' },
+  ];
+
   return (
     <footer className="rp-rodape">
       <div className="container">
-        <div className="rp-apoiadores" style={{ paddingBottom: '32px', marginBottom: '32px', borderBottom: '1px solid var(--borda-card)', textAlign: 'center' }}>
-          <h4 style={{ color: 'var(--texto-suave)', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '24px' }}>Apoiadores e Parceiros Institucionais</h4>
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '40px', alignItems: 'center' }}>
-            <img src="/logos/recife-resolve.png" alt="Programa Recife Resolve" style={{ height: '40px', objectFit: 'contain' }} />
-            <img src="/logos/prefeitura-recife.png" alt="Prefeitura do Recife" style={{ height: '45px', objectFit: 'contain' }} />
-            <img src="/logos/cesar.png" alt="CESAR" style={{ height: '35px', objectFit: 'contain' }} />
-            <img src="/logos/uk-brazil-tech-hub.png" alt="UK Brazil Tech Hub" style={{ height: '45px', objectFit: 'contain' }} />
+        <div className="rp-apoiadores-container">
+          <div className="rp-apoiadores-cabeca">
+            <span className="rp-apoiadores-tag">Rede de Apoio e Parcerias</span>
+            <h4 className="rp-apoiadores-titulo">Apoiadores e Parceiros Institucionais</h4>
+          </div>
+          <div className="rp-apoiadores-grade">
+            {parceiros.map((item, idx) => (
+              <div key={idx} className="rp-apoiador-card" title={item.nome}>
+                <img
+                  src={item.logo}
+                  alt={item.nome}
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                    const parent = e.currentTarget.parentElement;
+                    if (parent && !parent.querySelector('.rp-apoiador-fallback')) {
+                      const span = document.createElement('span');
+                      span.className = 'rp-apoiador-fallback';
+                      span.innerText = item.nome;
+                      parent.appendChild(span);
+                    }
+                  }}
+                />
+              </div>
+            ))}
           </div>
         </div>
         <div className="rp-grade">

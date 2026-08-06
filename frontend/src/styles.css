@@ -3598,3 +3598,263 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
     align-items: flex-start;
   }
 }
+
+/* ==========================================================================
+   MELHORIAS DA LANDING PAGE (SEÇÃO IMPACTO, APELO, FAQ & APOIADORES)
+   ========================================================================== */
+
+/* 1. SEÇÃO DE IMPACTO - 3 COLUNAS E CARDS ELEGANTES */
+.nu-grade-3col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+@media (max-width: 992px) {
+  .nu-grade-3col {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .nu-grade-3col {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.nu-item-card {
+  background: #ffffff;
+  border: 1px solid var(--borda, #e2e8f0);
+  border-radius: 20px;
+  padding: 32px 24px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.nu-item-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+  border-color: var(--cor-primaria, #e11d48);
+}
+
+.nu-item-numero {
+  display: block;
+  font-family: var(--fonte-titulo);
+  font-size: clamp(32px, 3.5vw, 46px);
+  font-weight: 800;
+  color: var(--cor-primaria, #e11d48);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+
+.nu-item-texto {
+  display: block;
+  font-size: 15px;
+  color: var(--texto, #334155);
+  line-height: 1.6;
+  font-weight: 500;
+  margin-bottom: 20px;
+  flex-grow: 1;
+}
+
+.nu-item-fonte {
+  font-size: 12px;
+  color: var(--texto-suave, #64748b);
+  padding-top: 14px;
+  border-top: 1px dashed var(--borda, #e2e8f0);
+  width: 100%;
+  text-align: center;
+  font-weight: 500;
+}
+
+.nu-item-fonte span {
+  font-weight: 600;
+  color: var(--texto, #475569);
+  margin-right: 4px;
+}
+
+
+/* 2. SEÇÃO DE APELO / CONVERSÃO - TEXTO CORRIDO E DESTAQUE ROSA */
+.apelo-secao {
+  padding-block: clamp(48px, 6vw, 80px);
+}
+
+.apelo-card {
+  background: linear-gradient(135deg, #fff0f5 0%, #fce7f3 45%, #fbcfe8 100%);
+  border: 1px solid #f472b6;
+  border-radius: 28px;
+  padding: clamp(32px, 5vw, 56px) clamp(24px, 5vw, 48px);
+  box-shadow: 0 16px 40px rgba(225, 29, 72, 0.08);
+  position: relative;
+  overflow: hidden;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.apelo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #be123c;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 8px rgba(190, 18, 60, 0.1);
+  margin-bottom: 24px;
+}
+
+.apelo-titulo {
+  font-family: var(--fonte-titulo);
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 800;
+  color: #881337;
+  line-height: 1.25;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+}
+
+.apelo-texto-corrido {
+  font-size: clamp(16px, 2vw, 18px);
+  color: #4c0519;
+  line-height: 1.85;
+}
+
+.apelo-destaque-inicial {
+  font-size: clamp(17px, 2.2vw, 20px);
+  font-weight: 600;
+  color: #9f1239;
+  margin-bottom: 20px;
+}
+
+.apelo-texto-corrido p {
+  margin-bottom: 20px;
+}
+
+.apelo-citacao {
+  margin: 28px 0;
+  padding: 20px 24px;
+  background: rgba(255, 255, 255, 0.75);
+  border-left: 5px solid #e11d48;
+  border-radius: 0 16px 16px 0;
+  font-style: italic;
+  font-weight: 600;
+  color: #9f1239;
+  font-size: clamp(16px, 2vw, 19px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.apelo-acoes {
+  margin-top: 36px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.apelo-btn {
+  font-size: 16px;
+  padding: 14px 32px;
+  min-height: 52px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 20px rgba(225, 29, 72, 0.3);
+}
+
+
+/* 4. ÁREA DOS APOIADORES (RODAPÉ) */
+.rp-apoiadores-container {
+  padding-bottom: 40px;
+  margin-bottom: 40px;
+  border-bottom: 1px solid var(--borda-card, rgba(0, 0, 0, 0.08));
+  text-align: center;
+}
+
+.rp-apoiadores-cabeca {
+  margin-bottom: 28px;
+}
+
+.rp-apoiadores-tag {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--cor-primaria, #e11d48);
+  margin-bottom: 6px;
+}
+
+.rp-apoiadores-titulo {
+  color: var(--texto-suave, #64748b);
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin: 0;
+}
+
+.rp-apoiadores-grade {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 20px 24px;
+}
+
+.rp-apoiador-card {
+  background: #ffffff;
+  border: 1px solid var(--borda, #e2e8f0);
+  border-radius: 14px;
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 170px;
+  min-height: 64px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s ease;
+}
+
+.rp-apoiador-card:hover {
+  border-color: var(--cor-primaria, #e11d48);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+}
+
+.rp-apoiador-card img {
+  max-height: 42px;
+  max-width: 140px;
+  object-fit: contain;
+  filter: grayscale(40%);
+  opacity: 0.85;
+  transition: filter 0.25s ease, opacity 0.25s ease;
+}
+
+.rp-apoiador-card:hover img {
+  filter: grayscale(0%);
+  opacity: 1;
+}
+
+.rp-apoiador-fallback {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--texto, #334155);
+  letter-spacing: -0.01em;
+}
+
