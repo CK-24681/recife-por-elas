@@ -230,47 +230,38 @@ function Conteudo() {
         </div>
       </section>
 
-      {/* POR QUE USAR O NOSSO SITE - SEÇÃO DE APELO / CONVERSÃO */}
-      <section className="secao apelo-secao" id="por-que-usar">
-        <div className="container">
-          <div className="apelo-card surgir">
-            <div className="apelo-badge">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+      {/* POR QUE USAR O NOSSO SITE - FAIXA DE APELO / CONVERSÃO */}
+      <section className="apelo-faixa-destaque" id="por-que-usar">
+        <div className="container apelo-conteudo-centralizado surgir">
+          <h2 className="apelo-titulo-faixa">
+            Sua maternidade é sua maior força. Não caminhe mais sozinha.
+          </h2>
+
+          <div className="apelo-texto-corrido-faixa">
+            <p className="apelo-destaque-inicial-faixa">
+              Ser mãe solo no Recife é um ato diário de coragem, resiliência e amor incondicional. Mas nós sabemos o quanto a rotina pode ser exaustiva e como, muitas vezes, parece que o mundo não foi desenhado para acolher o seu tempo e as suas necessidades.
+            </p>
+
+            <p>
+              O <strong>Recife por Elas</strong> não é apenas mais um site — é um movimento criado sob medida para devolver o seu protagonismo. Nós acreditamos com convicção que cuidar da sua família não deve significar abrir mão dos seus sonhos ou da sua independência financeira. Cada funcionalidade da nossa plataforma foi pensada para abrir portas reais no seu próprio bairro, respeitando os horários dos seus filhos e a sua jornada.
+            </p>
+
+            <blockquote className="apelo-citacao-faixa">
+              "Você já sustentou lares inteiros no amor e na raça. Agora, permita que uma rede inteira de oportunidades e mulheres segure a sua mão."
+            </blockquote>
+
+            <p>
+              Conectamos você a <strong>oportunidades de trabalho acolhedoras</strong>, <strong>cursos de capacitação gratuitos</strong>, <strong>orientação descomplicada para benefícios sociais</strong> e uma comunidade vibrante de mulheres que entendem exatamente o que você vive. Dê hoje o passo que vai transformar não apenas o seu futuro, mas a história da sua família.
+            </p>
+          </div>
+
+          <div className="apelo-acoes-faixa">
+            <Link to="/cadastro" className="btn-secundario apelo-btn-faixa">
+              Quero me cadastrar agora
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>
               </svg>
-              <span>Um convite ao seu recomeço</span>
-            </div>
-
-            <h2 className="apelo-titulo">
-              Sua maternidade é sua maior força. Não caminhe mais sozinha.
-            </h2>
-
-            <div className="apelo-texto-corrido">
-              <p className="apelo-destaque-inicial">
-                Ser mãe solo no Recife é um ato diário de coragem, resiliência e amor incondicional. Mas nós sabemos o quanto a rotina pode ser exaustiva e como, muitas vezes, parece que o mundo não foi desenhado para acolher o seu tempo e as suas necessidades.
-              </p>
-
-              <p>
-                O <strong>Recife por Elas</strong> não é apenas mais um site — é um movimento criado sob medida para devolver o seu protagonismo. Nós acreditamos com convicção que cuidar da sua família não deve significar abrir mão dos seus sonhos ou da sua independência financeira. Cada funcionalidade da nossa plataforma foi pensada para abrir portas reais no seu próprio bairro, respeitando os horários dos seus filhos e a sua jornada.
-              </p>
-
-              <blockquote className="apelo-citacao">
-                "Você já sustentou lares inteiros no amor e na raça. Agora, permita que uma rede inteira de oportunidades e mulheres segure a sua mão."
-              </blockquote>
-
-              <p>
-                Conectamos você a <strong>oportunidades de trabalho acolhedoras</strong>, <strong>cursos de capacitação gratuitos</strong>, <strong>orientação descomplicada para benefícios sociais</strong> e uma comunidade vibrante de mulheres que entendem exatamente o que você vive. Dê hoje o passo que vai transformar não apenas o seu futuro, mas a história da sua família.
-              </p>
-            </div>
-
-            <div className="apelo-acoes">
-              <Link to="/cadastro" className="btn-primario apelo-btn">
-                Quero me cadastrar agora
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>
-                </svg>
-              </Link>
-            </div>
+            </Link>
           </div>
         </div>
       </section>
