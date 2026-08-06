@@ -483,11 +483,11 @@ function HeaderLanding({ estado, encerrar }: { estado: string; encerrar: () => v
 
 function FooterLanding() {
   const parceiros = [
-    { logo: '/logos/prefeitura-recife.png' },
-    { logo: '/logos/recife-resolve.png' },
-    { logo: '/logos/c.e.s.a.r.png' },
-    { logo: '/logos/uk-brazil-tech-hub.png' },
-    { logo: '/logos/uk-government.png' }
+    { logo: '/logos/1.png' },
+    { logo: '/logos/2.png' },
+    { logo: '/logos/3.png' },
+    { logo: '/logos/4.png' },
+    { logo: '/logos/5.png' }
   ];
 
   return (
