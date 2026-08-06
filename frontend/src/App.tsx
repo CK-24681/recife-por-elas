@@ -483,10 +483,11 @@ function HeaderLanding({ estado, encerrar }: { estado: string; encerrar: () => v
 
 function FooterLanding() {
   const parceiros = [
-    { nome: 'Prefeitura do Recife', logo: '/logos/prefeitura-recife.png' },
-    { nome: 'Programa Recife Resolve', logo: '/logos/recife-resolve.png' },
-    { nome: 'CESAR', logo: '/logos/cesar.png' },
-    { nome: 'UK Brazil Tech Hub', logo: '/logos/uk-brazil-tech-hub.png' },
+    { logo: '/logos/prefeitura-recife.png' },
+    { logo: '/logos/recife-resolve.png' },
+    { logo: '/logos/c.e.s.a.r.png' },
+    { logo: '/logos/uk-brazil-tech-hub.png' },
+    { logo: '/logos/uk-governament.png' }
   ];
 
   return (
@@ -499,21 +500,8 @@ function FooterLanding() {
           </div>
           <div className="rp-apoiadores-grade">
             {parceiros.map((item, idx) => (
-              <div key={idx} className="rp-apoiador-card" title={item.nome}>
-                <img
-                  src={item.logo}
-                  alt={item.nome}
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    const parent = e.currentTarget.parentElement;
-                    if (parent && !parent.querySelector('.rp-apoiador-fallback')) {
-                      const span = document.createElement('span');
-                      span.className = 'rp-apoiador-fallback';
-                      span.innerText = item.nome;
-                      parent.appendChild(span);
-                    }
-                  }}
-                />
+              <div key={idx} className="rp-apoiador-card">
+                <img src={item.logo} alt={`Parceiro ${idx}`} />
               </div>
             ))}
           </div>
