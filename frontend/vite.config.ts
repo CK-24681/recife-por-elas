@@ -7,6 +7,7 @@ const proxy = { '/api': 'http://127.0.0.1:3000' };
 // Base Alfaia. PWA configurado à mão em public/manifest.webmanifest + public/sw.js
 // (registrado em src/main.tsx) — sem depender de plugin externo.
 export default defineConfig({
+  base: './',
   plugins: [react()],
   server: { proxy },
   preview: { proxy },

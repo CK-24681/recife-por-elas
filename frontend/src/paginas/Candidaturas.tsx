@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link } from '../roteador';
-import { apiJSON } from '../api';
-import { useToast } from '../toast';
+import { Link } from '../utils/roteador';
+import { apiJSON } from '../services/api';
+import { useToast } from '../utils/toast';
 
 interface Candidatura {
   id: number;

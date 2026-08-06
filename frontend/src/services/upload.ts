@@ -2,12 +2,13 @@
 // Redimensiona no cliente (até ~1600px, JPEG q0.85) pra não estourar tamanho.
 // SEM dependência. Use em qualquer formulário que aceite imagem do usuário final:
 //   const url = await enviarImagem(arquivo);  // guarde 'url' no banco
+import { BASE } from './api';
 const MAX_LADO = 1600;
 
 export async function enviarImagem(file: File): Promise<string> {
   if (!file.type.startsWith('image/')) throw new Error('o arquivo não é uma imagem');
   const dados = await paraDataUrl(file);
-  const r = await fetch('/api/uploads', {
+  const r = await fetch(`${BASE}/uploads`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ dados }),

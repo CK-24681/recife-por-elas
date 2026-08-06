@@ -46,13 +46,19 @@ self.addEventListener('fetch', (event) => {
     caches.match(request).then(
       (cached) =>
         cached ||
-        fetch(request).then((res) => {
-          if (res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put(request, copy));
-          }
-          return res;
-        }),
+        fetch(request)
+          .then((res) => {
+            if (res.ok) {
+              const copy = res.clone();
+              caches.open(CACHE).then((c) => c.put(request, copy));
+            }
+            return res;
+          })
+          .catch((err) => {
+            console.error('[SW] Erro no fetch:', err);
+            // Retorna um response dummy para não quebrar a Promise do worker
+            return new Response('Offline ou bloqueado', { status: 503 });
+          }),
     ),
   );
 });

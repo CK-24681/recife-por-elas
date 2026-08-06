@@ -17,8 +17,8 @@
 //   // depois do login/cadastro: definirUsuario(usuarioRetornado)
 //   // no botão sair: encerrar()
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { eu as buscarEu, sair as limparToken, type Usuario } from './api';
-import { navegar } from './roteador';
+import { eu as buscarEu, sair as limparToken, type Usuario } from '../services/api';
+import { navegar } from '../utils/roteador';
 
 type Estado = 'carregando' | 'logado' | 'deslogado';
 

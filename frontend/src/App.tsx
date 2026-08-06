@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { checarSaude, apiJSON } from './api';
-import Auth from './Auth';
-import { Link, navegar, useCaminho } from './roteador';
-import { SessaoProvider, useSessao, Protegido } from './sessao';
+import { checarSaude, apiJSON } from './services/api';
+import Auth from './components/Auth';
+import { Link, navegar, useCaminho } from './utils/roteador';
+import { SessaoProvider, useSessao, Protegido } from './context/sessao';
 import Feed from './paginas/Feed';
 import OportunidadeDetalhe from './paginas/OportunidadeDetalhe';
 import Mapa from './paginas/Mapa';
@@ -38,7 +38,7 @@ function Conteudo() {
     return (
       <Auth
         resetToken={resetToken}
-        onLogado={(u) => { definirUsuario(u); if (resetToken) window.history.replaceState({}, '', '/'); navegar('/'); }}
+        onLogado={(u: any) => { definirUsuario(u); if (resetToken) window.history.replaceState({}, '', '/'); navegar('/'); }}
         onVoltar={() => navegar('/')}
       />
     );
@@ -167,61 +167,105 @@ function Conteudo() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
               </a>
             </div>
-            <div className="hp-parceiros">
-              <span>Apoiadores:</span>
-              <div className="hp-selos">
-                <span className="hp-selo"><span className="hp-selo-dot" style={{background:'var(--cor-primaria)'}}></span>Programa Recife Resolve</span>
-                <span className="hp-selo"><span className="hp-selo-dot" style={{background:'var(--coral)'}}></span>Prefeitura do Recife</span>
-                <span className="hp-selo"><span className="hp-selo-dot" style={{background:'#214E8A'}}></span>CESAR</span>
-                <span className="hp-selo"><span className="hp-selo-dot" style={{background:'#4A90E2'}}></span>UK-Brazil Tech Hub</span>
-              </div>
-            </div>
           </div>
           <div className="hp-foto hover-zoom-foto entrada-hero">
             <img
-              src="https://images.unsplash.com/photo-1621353417044-d9585aee7346?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODQwNjl8MHwxfHNlYXJjaHw2fHxicmF6aWxpYW4lMjB3b21lbiUyMGNvbW11bml0eSUyMHN1cHBvcnQlMjBncm91cCUyMGVtcG93ZXJpbmclMjBkaXZlcnNlfGVufDF8MHx8fDE3ODU3NjkwMjB8MA&ixlib=rb-4.1.0&q=80&w=1080"
+              src="https://img.magnific.com/fotos-gratis/retrato-intimo-da-linda-mae-segurando-seu-filho_23-2150551743.jpg"
               alt="Mulheres em círculo de apoio mútuo, sorrindo e se abraçando"
               loading="eager"
             />
           </div>
         </div>
       </section>
-
       {/* IMPACTO E CONTEXTO */}
       <section className="nu-faixa" id="impacto">
         <div className="container">
-          <div className="nu-grade surgir">
-            <div className="nu-item"><strong>11,3M</strong><span>de mães solo no Brasil</span></div>
-            <div className="nu-item"><strong>Recife e RMR</strong><span>foco total de atuação</span></div>
-            <div className="nu-item"><strong>100%</strong><span>gratuito para as mães</span></div>
+          <div className="secao-cabeca surgir" style={{ marginBottom: '40px', textAlign: 'center' }}>
+            <span className="secao-etiqueta">Dados que transformam</span>
+            <h2 className="secao-titulo">A realidade que queremos transformar</h2>
+            <p className="secao-sub">
+              Entendemos os desafios únicos enfrentados diariamente pelas mães solo e criamos o Recife por Elas para ser a ponte para um novo começo.
+            </p>
+          </div>
+          <div className="nu-grade-3col surgir">
+            <div className="nu-item-card">
+              <strong className="nu-item-numero">+11 Milhões</strong>
+              <span className="nu-item-texto">de mães solo no Brasil cuidando de lares inteiros sozinhas.</span>
+              <div className="nu-item-fonte">
+                <span>Fonte:</span> IBGE / Censo Demográfico
+              </div>
+            </div>
+            <div className="nu-item-card">
+              <strong className="nu-item-numero">47%</strong>
+              <span className="nu-item-texto">das famílias chefiadas por mulheres vivem em situação de vulnerabilidade ou extrema pobreza.</span>
+              <div className="nu-item-fonte">
+                <span>Fonte:</span> FGV Social
+              </div>
+            </div>
+            <div className="nu-item-card">
+              <strong className="nu-item-numero">63%</strong>
+              <span className="nu-item-texto">dos lares chefiados por mães solo dependem diretamente de auxílios e benefícios sociais.</span>
+              <div className="nu-item-fonte">
+                <span>Fonte:</span> CadÚnico / MDS
+              </div>
+            </div>
+            <div className="nu-item-card">
+              <strong className="nu-item-numero">74%</strong>
+              <span className="nu-item-texto">das mães empreendedoras abriram o próprio negócio por absoluta necessidade de sustento.</span>
+              <div className="nu-item-fonte">
+                <span>Fonte:</span> Sebrae / GEM
+              </div>
+            </div>
+            <div className="nu-item-card">
+              <strong className="nu-item-numero">Elevada</strong>
+              <span className="nu-item-texto">taxa de desemprego entre mulheres com filhos pequenos, superando a média nacional.</span>
+              <div className="nu-item-fonte">
+                <span>Fonte:</span> DIEESE / PNAD Contínua
+              </div>
+            </div>
+            <div className="nu-item-card">
+              <strong className="nu-item-numero">+80%</strong>
+              <span className="nu-item-texto">relatam falta crônica de rede de apoio para conseguir trabalhar ou estudar em paz.</span>
+              <div className="nu-item-fonte">
+                <span>Fonte:</span> Instituto Mãe / Pesquisa Nacional
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* COMO FUNCIONA */}
-      <section className="secao cf-secao" id="como-funciona">
-        <div className="container">
-          <div className="secao-cabeca surgir">
-            <span className="secao-etiqueta">Como funciona</span>
-            <h2 className="secao-titulo">Três passos para recomeçar</h2>
-            <p className="secao-sub">Simples, rápido e pensado para a sua realidade.</p>
+      {/* POR QUE USAR O NOSSO SITE - FAIXA DE APELO / CONVERSÃO */}
+      <section className="apelo-faixa-destaque" id="por-que-usar">
+        <div className="container apelo-conteudo-centralizado surgir">
+          <h2 className="apelo-titulo-faixa">
+            Sua maternidade é sua maior força. Não caminhe mais sozinha.
+          </h2>
+
+          <div className="apelo-texto-corrido-faixa">
+            <p className="apelo-destaque-inicial-faixa">
+              Ser mãe solo no Recife é um ato diário de coragem, resiliência e amor incondicional. Mas nós sabemos o quanto a rotina pode ser exaustiva e como, muitas vezes, parece que o mundo não foi desenhado para acolher o seu tempo e as suas necessidades.
+            </p>
+
+            <p>
+              O <strong>Recife por Elas</strong> não é apenas mais um site — é um movimento criado sob medida para devolver o seu protagonismo. Nós acreditamos com convicção que cuidar da sua família não deve significar abrir mão dos seus sonhos ou da sua independência financeira. Cada funcionalidade da nossa plataforma foi pensada para abrir portas reais no seu próprio bairro, respeitando os horários dos seus filhos e a sua jornada.
+            </p>
+
+            <blockquote className="apelo-citacao-faixa">
+              "Você já sustentou lares inteiros no amor e na raça. Agora, permita que uma rede inteira de oportunidades e mulheres segure a sua mão."
+            </blockquote>
+
+            <p>
+              Conectamos você a <strong>oportunidades de trabalho acolhedoras</strong>, <strong>cursos de capacitação gratuitos</strong>, <strong>orientação descomplicada para benefícios sociais</strong> e uma comunidade vibrante de mulheres que entendem exatamente o que você vive. Dê hoje o passo que vai transformar não apenas o seu futuro, mas a história da sua família.
+            </p>
           </div>
-          <div className="cf-grade">
-            <div className="cf-passo surgir">
-              <span className="cf-num">1</span>
-              <h3>Crie seu perfil</h3>
-              <p>Conte pra gente seu bairro, horários disponíveis e o tipo de oportunidade que procura — emprego, curso, benefício ou apoio.</p>
-            </div>
-            <div className="cf-passo surgir surgir-2">
-              <span className="cf-num">2</span>
-              <h3>Receba recomendações</h3>
-              <p>Todo dia, uma seleção de vagas e cursos que cabem na sua rotina, filtrados por distância e compatibilidade familiar.</p>
-            </div>
-            <div className="cf-passo surgir surgir-3">
-              <span className="cf-num">3</span>
-              <h3>Candidate-se com um toque</h3>
-              <p>Viu algo que encaixa? Candidate-se direto pelo app. Acompanhe o status e receba apoio da nossa rede em cada etapa.</p>
-            </div>
+
+          <div className="apelo-acoes-faixa">
+            <Link to="/cadastro" className="btn-secundario apelo-btn-faixa">
+              Quero me cadastrar agora
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>
+              </svg>
+            </Link>
           </div>
         </div>
       </section>
@@ -281,9 +325,16 @@ function Conteudo() {
         </div>
       </section>
 
+      {/* CTA FINAL */}
+      <section className="ct-faixa" id="comecar">
+        <div className="container ct-caixa">
+          <h2 className="ct-titulo surgir">Ajude a construir essa comunidade</h2>
+          <p className="ct-sub surgir">Estamos em fase inicial de testes. Cadastre-se para ser uma das nossas primeiras usuárias e ajude a moldar uma plataforma que respeita sua rotina e seu bairro.</p>
+          <Link to="/cadastro" className="btn-secundario surgir">Fazer parte agora</Link>
+        </div>
+      </section>
 
-
-      {/* FAQ */}
+      {/* FAQ (POSICIONADO ESTRATEGICAMENTE POR ÚLTIMO, IMEDIATAMENTE ANTES DO RODAPÉ) */}
       <section className="secao" id="faq">
         <div className="container fq-caixa">
           <div className="secao-cabeca surgir">
@@ -315,15 +366,6 @@ function Conteudo() {
         </div>
       </section>
 
-      {/* CTA FINAL */}
-      <section className="ct-faixa" id="comecar">
-        <div className="container ct-caixa">
-          <h2 className="ct-titulo surgir">Ajude a construir essa comunidade</h2>
-          <p className="ct-sub surgir">Estamos em fase inicial de testes. Cadastre-se para ser uma das nossas primeiras usuárias e ajude a moldar uma plataforma que respeita sua rotina e seu bairro.</p>
-          <Link to="/cadastro" className="btn-secundario surgir">Fazer parte agora</Link>
-        </div>
-      </section>
-
       {/* FOOTER */}
       <FooterLanding />
 
@@ -345,7 +387,7 @@ function HeaderApp() {
   useEffect(() => {
     let ativo = true;
     apiJSON<{ photo_url?: string }>('/perfil')
-      .then((perfil) => {
+      .then((perfil: any) => {
         if (ativo) setFotoPerfil(perfil.photo_url || '');
       })
       .catch(() => {
@@ -359,7 +401,9 @@ function HeaderApp() {
   return (
     <header className="hn-topo-app">
       <div className="container hn-linha-app">
-        <Link to="/" className="hn-logo-app">Recife<strong>PorElas</strong></Link>
+        <Link to="/" className="hn-logo-app">
+          <img src="/logos/quadrado.png" alt="Recife Por Elas" className="brand-logo-img" />
+        </Link>
         <nav className="hn-menu-app">
           <Link to="/" className={ativo('/') && !ativo('/oportunidades') ? 'ativo' : ''}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -396,7 +440,9 @@ function HeaderLanding({ estado, encerrar }: { estado: string; encerrar: () => v
   return (
     <header className="hn-topo">
       <div className="container hn-linha">
-        <a href="/" className="hn-logo">Recife<strong>PorElas</strong></a>
+        <a href="/" className="hn-logo">
+          <img src="/logos/quadrado.png" alt="Recife Por Elas" className="brand-logo-img" />
+        </a>
         <nav className="hn-nav">
           <a href="/#como-funciona">Como funciona</a>
           <a href="/#recursos">Recursos</a>
@@ -435,12 +481,35 @@ function HeaderLanding({ estado, encerrar }: { estado: string; encerrar: () => v
 }
 
 function FooterLanding() {
+  const parceiros = [
+    { logo: '/logos/1.png' },
+    { logo: '/logos/2.png' },
+    { logo: '/logos/3.png' },
+    { logo: '/logos/4.png' },
+    { logo: '/logos/5.png' }
+  ];
+
   return (
     <footer className="rp-rodape">
       <div className="container">
+        <div className="rp-apoiadores-container">
+          <div className="rp-apoiadores-cabeca">
+            <span className="rp-apoiadores-tag">Rede de Apoio e Parcerias</span>
+            <h4 className="rp-apoiadores-titulo">Apoiadores e Parceiros Institucionais</h4>
+          </div>
+          <div className="rp-apoiadores-grade">
+            {parceiros.map((item, idx) => (
+              <div key={idx} className="rp-apoiador-card">
+                <img src={item.logo} alt={`Parceiro ${idx}`} />
+              </div>
+            ))}
+          </div>
+        </div>
         <div className="rp-grade">
           <div className="rp-marca">
-            <a href="/" className="rp-logo">Recife<strong>PorElas</strong></a>
+            <a href="/" className="rp-logo">
+              <img src="/logos/quadrado.png" alt="Recife Por Elas" className="brand-logo-img" />
+            </a>
             <p>Conectando mulheres do Recife a oportunidades de trabalho, capacitação e apoio — respeitando sua rotina e seu território.</p>
           </div>
           <nav className="rp-col">
@@ -472,6 +541,6 @@ function FooterLanding() {
 
 function SaudeApi() {
   const [, setStatus] = useState<'verificando' | 'online' | 'offline'>('verificando');
-  useEffect(() => { checarSaude().then((ok) => setStatus(ok ? 'online' : 'offline')); }, []);
+  useEffect(() => { checarSaude().then((ok: boolean) => setStatus(ok ? 'online' : 'offline')); }, []);
   return null; // invisível na landing — só debug
 }

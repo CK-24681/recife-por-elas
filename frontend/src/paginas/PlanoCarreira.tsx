@@ -1,74 +1,32 @@
-import { useEffect, useState } from 'react';
-import { apiJSON } from '../api';
-import { Link } from '../roteador';
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from '../utils/roteador';
 
-interface Oportunidade {
-  id?: number;
-  titulo: string;
-  descricao: string;
-  empresa?: string;
-  tipo: string;
-  link_inscricao?: string;
-  bairro?: string;
-  horario?: string;
-  isOnline?: boolean;
-}
+const CHAVE_PLANO_CARREIRA = 'recife-por-elas:plano-carreira:v1';
+const CHAVE_FAVORITOS_CARREIRA = 'recife-por-elas:favoritos-carreira:v1';
 
-type Objetivo =
-  | 'emprego_rapido'
-  | 'curso_primeiro'
-  | 'renda_extra'
-  | 'empreender'
-  | 'recolocacao';
-
-type Disponibilidade = 'manha' | 'tarde' | 'noite' | 'fins_semana' | 'flexivel';
-type Modalidade = 'perto_casa' | 'presencial' | 'hibrido' | 'remoto';
-type Dependencia = 'sim' | 'parcial' | 'nao';
-type Escolaridade = 'fundamental' | 'medio' | 'tecnico' | 'superior';
-type TempoEstudo = '0_2h' | '3_5h' | '6_8h' | '8h_mais';
-type Desafio = 'tempo' | 'transporte' | 'dinheiro' | 'internet' | 'cuidado' | 'confianca';
+type Objetivo = 'emprego' | 'empreender' | 'renda_extra' | 'estudar';
+type Ritmo = 'muito_pouco' | 'pouco' | 'medio' | 'flexivel';
+type Local = 'perto' | 'bairro' | 'presencial' | 'em_casa';
 
 interface Respostas {
   objetivo: Objetivo;
-  disponibilidade: Disponibilidade;
-  modalidade: Modalidade;
-  interesses: string[];
-  experiencias: string[];
-  filhos: string;
-  dependentes: Dependencia;
-  apoio: 'sim' | 'as_vezes' | 'nao';
-  escolaridade: Escolaridade;
-  tempoEstudo: TempoEstudo;
-  hobbies: string[];
-  desafio: Desafio;
-  sonho: string;
-}
-
-interface Recomendacao {
-  titulo: string;
-  descricao: string;
-  tipo: string;
-  empresa?: string;
-  bairro?: string;
-  link?: string;
-  interno?: boolean;
-  id?: number;
-  motivo: string;
+  ritmo: Ritmo;
+  filhos: boolean;
+  local: Local;
+  areas: string[];
 }
 
 interface PlanoGerado {
   modoGeracao: 'ia' | 'local';
+interface CarreiraBase {
+  id: string;
   titulo: string;
+  tipo: 'Profissão' | 'Empreender';
   resumo: string;
-  primeiroPasso: string;
-  justificativa: string;
-  habilidades: string[];
-  trilha: Array<{
-    titulo: string;
-    descricao: string;
-  }>;
-  cursos: Recomendacao[];
-  beneficios: Recomendacao[];
+  comoComecar: string;
+  passos: string[];
+  tags: string[];
+  base: number;
 }
 
 interface PlanoGeradoApi extends Omit<PlanoGerado, 'modoGeracao' | 'cursos' | 'beneficios'> {
@@ -129,481 +87,285 @@ const EXPERIENCIAS: Array<{ valor: string; label: string }> = [
   { valor: 'educacao', label: 'Ja ensinei ou ajudei a ensinar' },
   { valor: 'artesanato', label: 'Ja produzi itens artesanais' },
 ];
+interface CarreiraResultado extends CarreiraBase {
+  percent: number;
+  motivo: string;
+}
 
-const HOBBIES: Array<{ valor: string; label: string }> = [
-  { valor: 'cozinhar', label: 'Cozinhar' },
-  { valor: 'organizar', label: 'Organizar a casa' },
-  { valor: 'maquiagem', label: 'Maquiagem e beleza' },
-  { valor: 'costurar', label: 'Costurar' },
-  { valor: 'arte', label: 'Arte e artesanato' },
-  { valor: 'redes', label: 'Redes sociais' },
-  { valor: 'cuidar', label: 'Cuidar de pessoas' },
-  { valor: 'vender', label: 'Vender ou indicar coisas' },
-  { valor: 'escrever', label: 'Escrever ou estudar' },
-  { valor: 'tecnologia', label: 'Mexer no celular e apps' },
+const OBJETIVOS: Array<{ valor: Objetivo; titulo: string; subtitulo: string }> = [
+  { valor: 'emprego', titulo: 'Quero emprego', subtitulo: 'Prioriza profissões e vagas mais diretas.' },
+  { valor: 'empreender', titulo: 'Quero empreender', subtitulo: 'Prioriza serviços e renda por conta própria.' },
+  { valor: 'renda_extra', titulo: 'Quero renda extra', subtitulo: 'Busca opções simples para começar rápido.' },
+  { valor: 'estudar', titulo: 'Quero estudar primeiro', subtitulo: 'Destaca caminhos com aprendizagem mais leve.' },
 ];
 
-const ESCOLARIDADE: Array<{ valor: Escolaridade; label: string }> = [
-  { valor: 'fundamental', label: 'Fundamental' },
-  { valor: 'medio', label: 'Medio' },
-  { valor: 'tecnico', label: 'Tecnico' },
-  { valor: 'superior', label: 'Superior' },
+const RITMOS: Array<{ valor: Ritmo; titulo: string }> = [
+  { valor: 'muito_pouco', titulo: 'Pouquíssimo tempo' },
+  { valor: 'pouco', titulo: 'Poucas horas' },
+  { valor: 'medio', titulo: 'Algumas horas' },
+  { valor: 'flexivel', titulo: 'Horário flexível' },
 ];
 
-const TEMPO_ESTUDO: Array<{ valor: TempoEstudo; label: string }> = [
-  { valor: '0_2h', label: '0 a 2 horas por semana' },
-  { valor: '3_5h', label: '3 a 5 horas por semana' },
-  { valor: '6_8h', label: '6 a 8 horas por semana' },
-  { valor: '8h_mais', label: 'Mais de 8 horas por semana' },
+const LOCAIS: Array<{ valor: Local; titulo: string }> = [
+  { valor: 'perto', titulo: 'Perto de casa' },
+  { valor: 'bairro', titulo: 'No bairro' },
+  { valor: 'presencial', titulo: 'Presencial' },
+  { valor: 'em_casa', titulo: 'Em casa' },
 ];
 
-const DESAFIOS: Array<{ valor: Desafio; label: string }> = [
-  { valor: 'tempo', label: 'Falta de tempo' },
-  { valor: 'transporte', label: 'Transporte' },
-  { valor: 'dinheiro', label: 'Dinheiro curto' },
-  { valor: 'internet', label: 'Internet / celular' },
-  { valor: 'cuidado', label: 'Cuidado com filhos' },
-  { valor: 'confianca', label: 'Falta de confiança' },
+const AREAS = [
+  { valor: 'beleza', titulo: 'Beleza' },
+  { valor: 'cabelo', titulo: 'Cabelo' },
+  { valor: 'maquiagem', titulo: 'Maquiagem' },
+  { valor: 'vendas', titulo: 'Vendas' },
+  { valor: 'cozinha', titulo: 'Cozinha' },
+  { valor: 'costura', titulo: 'Costura' },
+  { valor: 'cuidado', titulo: 'Cuidado' },
+  { valor: 'limpeza', titulo: 'Limpeza' },
+  { valor: 'atendimento', titulo: 'Atendimento' },
+  { valor: 'digital', titulo: 'Digital' },
+  { valor: 'artesanato', titulo: 'Artesanato' },
+  { valor: 'rua', titulo: 'Rua / carrinho' },
 ];
 
-const CATALOGO_CURSOS: Recomendacao[] = [
+const CARREIRAS: CarreiraBase[] = [
   {
-    titulo: 'Qualifica Recife',
-    descricao: 'Cursos gratuitos de saude, tecnologia, gastronomia, beleza, servicos e idiomas. Bom para quem quer entrada rapida.',
-    tipo: 'Curso',
-    empresa: 'Prefeitura do Recife',
-    bairro: 'Recife',
-    link: 'https://qualifica.recife.pe.gov.br/',
-    motivo: 'Trilha curta e pratica para quem precisa ganhar ritmo rapido.',
+    id: 'manicure',
+    titulo: 'Manicure',
+    tipo: 'Empreender',
+    resumo: 'Serviço rápido, baixo investimento e agenda flexível.',
+    comoComecar: 'Monte um kit básico, faça 2 ou 3 modelos de unha e divulgue no WhatsApp do bairro.',
+    passos: ['Kit simples', 'Fotos de antes e depois', 'Agenda pelo celular'],
+    tags: ['beleza', 'casa', 'flexivel'],
+    base: 52,
   },
   {
-    titulo: 'SENAC PE - Programa de Gratuidade',
-    descricao: 'Cursos gratuitos em beleza, gastronomia, saude, moda, computacao e negocios.',
-    tipo: 'Curso',
-    empresa: 'SENAC Pernambuco',
-    bairro: 'Boa Vista',
-    link: 'https://www.pe.senac.br/psg/',
-    motivo: 'Bom para quem quer certificacao reconhecida e curso profissionalizante.',
+    id: 'cabeleireira',
+    titulo: 'Cabeleireira',
+    tipo: 'Empreender',
+    resumo: 'Corte, escova, hidratação e penteados para começar em casa.',
+    comoComecar: 'Comece com escova, tranças ou penteados e vá aumentando os serviços aos poucos.',
+    passos: ['Treino básico', 'Tabela de preços', 'Atendimento no bairro'],
+    tags: ['beleza', 'cabelo', 'casa', 'flexivel'],
+    base: 54,
   },
   {
-    titulo: 'SENAI PE - Cursos com foco em empregabilidade',
-    descricao: 'Costura industrial, manutencao, logistica, automacao e tecnologia com foco em vagas reais.',
-    tipo: 'Curso',
-    empresa: 'SENAI Pernambuco',
-    bairro: 'Iputinga',
-    link: 'https://pe.senai.br/',
-    motivo: 'Combina com quem quer aprender algo pratico para entrar no mercado.',
+    id: 'maquiadora',
+    titulo: 'Maquiadora',
+    tipo: 'Empreender',
+    resumo: 'Boa para festas, eventos e atendimentos por hora.',
+    comoComecar: 'Monte um portfólio simples, ofereça pacote para eventos e divulgue no Instagram.',
+    passos: ['Portfólio simples', 'Pacotes curtos', 'Divulgação online'],
+    tags: ['beleza', 'maquiagem', 'digital', 'flexivel'],
+    base: 50,
   },
   {
-    titulo: 'SEBRAE PE - Trilhas de empreendedorismo',
-    descricao: 'Financas, marketing digital, vendas, gestao e MEI para quem pensa em empreender.',
-    tipo: 'Curso',
-    empresa: 'SEBRAE Pernambuco',
-    bairro: 'Imbiribeira',
-    link: 'https://pe.lojavirtualsebrae.com.br/',
-    motivo: 'Ajuda quem quer vender por conta propria ou organizar um negocio pequeno.',
+    id: 'carrinho',
+    titulo: 'Vender no carrinho',
+    tipo: 'Empreender',
+    resumo: 'Lanches, água, doces ou bebidas com renda diária.',
+    comoComecar: 'Escolha 1 produto que gira rápido e comece no ponto mais movimentado do bairro.',
+    passos: ['Produto de saída rápida', 'Ponto fixo', 'Reaproveitar lucro para crescer'],
+    tags: ['vendas', 'rua', 'bairro', 'flexivel'],
+    base: 56,
   },
   {
-    titulo: 'Porto Digital - Mulheres na tecnologia',
-    descricao: 'Cursos, bootcamps e mentorias para mulheres que querem entrar na area de tecnologia.',
-    tipo: 'Curso',
-    empresa: 'Porto Digital',
-    bairro: 'Bairro do Recife',
-    link: 'https://www.portodigital.org/',
-    motivo: 'Interessante para quem gosta de celular, internet e ferramentas digitais.',
+    id: 'revenda',
+    titulo: 'Revenda de cosméticos',
+    tipo: 'Empreender',
+    resumo: 'Começa com catálogo e encomenda pelo celular.',
+    comoComecar: 'Trabalhe com catálogo, combo de produtos e pagamentos simples pelo WhatsApp.',
+    passos: ['Catálogo', 'Pedidos por WhatsApp', 'Entrega no bairro'],
+    tags: ['beleza', 'vendas', 'casa', 'digital'],
+    base: 55,
   },
   {
-    titulo: 'Nave do Conhecimento',
-    descricao: 'Tecnologia, programacao, design e empreendedorismo digital com acesso presencial e gratuito.',
-    tipo: 'Curso',
-    empresa: 'Prefeitura do Recife / Porto Digital',
-    bairro: 'Casa Amarela',
-    link: 'https://conecta.recife.pe.gov.br/',
-    motivo: 'Boa porta de entrada para quem quer aprender no proprio bairro.',
+    id: 'cozinha',
+    titulo: 'Cozinha por encomenda',
+    tipo: 'Empreender',
+    resumo: 'Marmitas, bolos, salgados e doces por pedido.',
+    comoComecar: 'Escolha um item que você faz bem e ofereça para vizinhas, escola e comércio local.',
+    passos: ['Prato principal', 'Venda por encomenda', 'Entrega curta'],
+    tags: ['cozinha', 'casa', 'flexivel'],
+    base: 54,
   },
   {
-    titulo: 'IFPE Recife',
-    descricao: 'Cursos tecnicos gratuitos em enfermagem, informatica, logistica e outras areas.',
-    tipo: 'Curso',
-    empresa: 'Instituto Federal de Pernambuco',
-    bairro: 'Cidade Universitaria',
-    link: 'https://www.ifpe.edu.br/',
-    motivo: 'Indicado para quem quer algo mais estruturado e com peso no curriculo.',
+    id: 'costura',
+    titulo: 'Costureira e ajustes',
+    tipo: 'Empreender',
+    resumo: 'Ajustes, barras e peças sob medida com rotina flexível.',
+    comoComecar: 'Faça pequenos consertos e anuncie no bairro e nos grupos de WhatsApp.',
+    passos: ['Máquina básica', 'Ajustes rápidos', 'Divulgação local'],
+    tags: ['costura', 'casa', 'flexivel'],
+    base: 51,
+  },
+  {
+    id: 'cuidadora',
+    titulo: 'Cuidadora',
+    tipo: 'Profissão',
+    resumo: 'Apoio a crianças, idosos ou pessoas que precisam de atenção.',
+    comoComecar: 'Mostre responsabilidade, paciência e disponibilidade para plantões ou meio período.',
+    passos: ['Currículo simples', 'Referências', 'Rotina organizada'],
+    tags: ['cuidado', 'presencial', 'bairro'],
+    base: 53,
+  },
+  {
+    id: 'limpeza',
+    titulo: 'Auxiliar de limpeza',
+    tipo: 'Profissão',
+    resumo: 'Entrada rápida no mercado com rotina direta.',
+    comoComecar: 'Procure vagas em comércios, escolas, clínicas e empresas próximas de você.',
+    passos: ['Vagas locais', 'Currículo curto', 'Entrevista simples'],
+    tags: ['limpeza', 'presencial', 'bairro'],
+    base: 52,
+  },
+  {
+    id: 'atendente',
+    titulo: 'Atendente',
+    tipo: 'Profissão',
+    resumo: 'Loja, salão, clínica ou comércio de bairro.',
+    comoComecar: 'Treine atendimento, comunicação clara e postura para lidar com o público.',
+    passos: ['Comunicação', 'Postura no atendimento', 'Vagas do bairro'],
+    tags: ['atendimento', 'presencial', 'bairro'],
+    base: 51,
+  },
+  {
+    id: 'recepcao',
+    titulo: 'Recepção',
+    tipo: 'Profissão',
+    resumo: 'Organização, telefone e contato com o público.',
+    comoComecar: 'Mostre que você organiza agenda, recebe bem as pessoas e aprende rápido.',
+    passos: ['Agenda e telefone', 'Boa comunicação', 'Busca por clínicas e escritórios'],
+    tags: ['atendimento', 'presencial', 'bairro', 'digital'],
+    base: 50,
+  },
+  {
+    id: 'social',
+    titulo: 'Social media',
+    tipo: 'Empreender',
+    resumo: 'Postagens, resposta de mensagens e apoio a pequenos negócios.',
+    comoComecar: 'Comece cuidando de 1 perfil pequeno e montando posts no celular.',
+    passos: ['Celular na mão', 'Canva ou app simples', 'Pacote mensal'],
+    tags: ['digital', 'em_casa', 'flexivel'],
+    base: 49,
+  },
+  {
+    id: 'artesanato',
+    titulo: 'Artesanato por encomenda',
+    tipo: 'Empreender',
+    resumo: 'Peças personalizadas, lembrancinhas e produtos feitos à mão.',
+    comoComecar: 'Faça 3 modelos simples e mostre para amigas, escola e vizinhança.',
+    passos: ['Peças pequenas', 'Foto boa', 'Entrega no bairro'],
+    tags: ['artesanato', 'casa', 'flexivel'],
+    base: 50,
   },
 ];
 
-const CATALOGO_BENEFICIOS: Recomendacao[] = [
-  {
-    titulo: 'Mães de Pernambuco',
-    descricao: 'Renda extra para maes com filhos de 0 a 6 anos que estejam dentro dos criterios do programa.',
-    tipo: 'Benefício social',
-    empresa: 'Governo do Estado de Pernambuco',
-    bairro: 'Recife',
-    link: 'https://www.maesdepernambuco.pe.gov.br/',
-    motivo: 'Ajuda a aliviar a pressao financeira enquanto voce se reorganiza.',
-  },
-  {
-    titulo: 'Bolsa Familia',
-    descricao: 'Programa de transferencia de renda para familias em vulnerabilidade. Cadastro no CRAS com CadUnico atualizado.',
-    tipo: 'Benefício social',
-    empresa: 'Governo Federal',
-    bairro: 'Recife',
-    link: 'https://www.gov.br/pt-br/servicos/inscrever-se-no-bolsa-familia',
-    motivo: 'Importante para familias que precisam reforcar a renda mensal.',
-  },
-  {
-    titulo: 'Gás do Povo',
-    descricao: 'Recarrega gratuita de botijao em ciclos para familias com renda mais baixa.',
-    tipo: 'Benefício social',
-    empresa: 'Governo Federal',
-    bairro: 'Recife',
-    link: 'https://www.gov.br/pt-br/servicos/obter-o-auxilio-gas',
-    motivo: 'Pode reduzir um custo fixo importante da casa.',
-  },
-  {
-    titulo: 'Tarifa Social de Energia',
-    descricao: 'Desconto na conta de luz para familias no CadUnico dentro dos criterios do programa.',
-    tipo: 'Benefício social',
-    empresa: 'ANEEL / Equatorial',
-    bairro: 'Recife',
-    link: 'https://www.gov.br/aneel/pt-br/assuntos/tarifas/tarifa-social',
-    motivo: 'Boa escolha quando o objetivo e aliviar gastos do mes.',
-  },
-  {
-    titulo: 'CredPop Recife',
-    descricao: 'Microcredito para pequenos empreendimentos e para quem quer iniciar uma renda propria.',
-    tipo: 'Microcrédito',
-    empresa: 'Prefeitura do Recife',
-    bairro: 'Recife',
-    link: 'https://credpop.recife.pe.gov.br/',
-    motivo: 'Ajuda muito quem quer empreender com pouco dinheiro inicial.',
-  },
-  {
-    titulo: 'CRAS e CadUnico',
-    descricao: 'Porta de entrada para varios beneficios, apoio social e orientacao da rede publica.',
-    tipo: 'Apoio',
-    empresa: 'Assistencia Social',
-    bairro: 'Recife',
-    motivo: 'Organiza sua base de protecao social e abre portas para outros programas.',
-  },
-];
-
-const MAPA_HABILIDADES: Record<string, string[]> = {
-  atendimento: ['comunicacao', 'escuta ativa', 'acolhimento'],
-  vendas: ['persuasao', 'relacionamento', 'negociacao'],
-  cuidados: ['cuidado', 'paciencia', 'responsabilidade'],
-  beleza: ['capricho', 'atencao aos detalhes', 'estetica'],
-  cozinha: ['higiene', 'organizacao', 'producao'],
-  costura: ['precisao', 'criatividade', 'capricho'],
-  administrativo: ['organizacao', 'escrita', 'rotina'],
-  tecnologia: ['ferramentas digitais', 'aprendizado rapido', 'celular'],
-  logistica: ['controle', 'organizacao', 'movimentacao'],
-  limpeza: ['capricho', 'disciplina', 'organizacao'],
-  educacao: ['didatica', 'paciencia', 'escuta'],
-  artesanato: ['criatividade', 'producoes manuais', 'capricho'],
-  cozinhar: ['higiene', 'criatividade', 'organizacao'],
-  organizar: ['gestao de rotina', 'organizacao', 'planejamento'],
-  maquiagem: ['capricho', 'estetica', 'atencao aos detalhes'],
-  redes: ['comunicacao digital', 'criatividade', 'autogestao'],
-  cuidar: ['cuidado', 'paciencia', 'responsabilidade'],
-  vender: ['comunicacao', 'persuasao', 'iniciativa'],
-  escrever: ['escrita', 'comunicacao', 'aprendizado'],
+const INICIAL: Respostas = {
+  objetivo: 'empreender',
+  ritmo: 'medio',
+  filhos: false,
+  local: 'bairro',
+  areas: [],
 };
 
-function normalizar(valor: string): string {
-  return String(valor || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
+interface PlanoSalvo {
+  respostas: Respostas;
+  selecionadoId: string;
 }
 
-function rotuloObjetivo(valor: Objetivo): string {
-  return OPCOES_OBJETIVO.find((op) => op.valor === valor)?.label ?? valor;
-}
+function carregarPlano(): PlanoSalvo | null {
+  if (typeof window === 'undefined') return null;
 
-function rotuloDisponibilidade(valor: Disponibilidade): string {
-  return OPCOES_DISPONIBILIDADE.find((op) => op.valor === valor)?.label ?? valor;
-}
+  try {
+    const valor = window.localStorage.getItem(CHAVE_PLANO_CARREIRA);
+    if (!valor) return null;
 
-function rotuloModalidade(valor: Modalidade): string {
-  return OPCOES_MODALIDADE.find((op) => op.valor === valor)?.label ?? valor;
-}
+    const salvo = JSON.parse(valor) as Partial<PlanoSalvo>;
+    if (!salvo.respostas || typeof salvo.respostas !== 'object') return null;
 
-function rotuloEscolaridade(valor: Escolaridade): string {
-  return ESCOLARIDADE.find((op) => op.valor === valor)?.label ?? valor;
-}
-
-function rotuloTempo(valor: TempoEstudo): string {
-  return TEMPO_ESTUDO.find((op) => op.valor === valor)?.label ?? valor;
-}
-
-function rotuloDesafio(valor: Desafio): string {
-  return DESAFIOS.find((op) => op.valor === valor)?.label ?? valor;
-}
-
-function extrairNumero(valor: string): number {
-  const n = Number(String(valor || '').replace(/[^\d]/g, ''));
-  return Number.isFinite(n) ? n : 0;
-}
-
-function contemAlgum(texto: string, termos: string[]): boolean {
-  const base = normalizar(texto);
-  return termos.some((termo) => base.includes(normalizar(termo)));
-}
-
-function mapearOportunidade(op: Oportunidade): Recomendacao {
-  const tipo = normalizar(op.tipo);
-  let tipoFinal = 'Apoio';
-  if (tipo.includes('curso')) tipoFinal = 'Curso';
-  else if (tipo.includes('benef')) tipoFinal = 'Benefício social';
-  else if (tipo.includes('micro')) tipoFinal = 'Microcrédito';
-  else if (tipo.includes('apoio')) tipoFinal = 'Apoio';
-
-  return {
-    id: op.id,
-    titulo: op.titulo,
-    descricao: op.descricao,
-    tipo: tipoFinal,
-    empresa: op.empresa,
-    bairro: op.bairro,
-    link: op.link_inscricao,
-    interno: Boolean(op.id && !op.link_inscricao),
-    motivo: '',
-  };
-}
-
-function escolherMaisRelevantes(
-  itens: Recomendacao[],
-  respostas: Respostas,
-  limite: number,
-  tipoDesejado: string,
-): Recomendacao[] {
-  const palavrasPorArea: Record<string, string[]> = {
-    atendimento: ['atendimento', 'cliente', 'recepcao', 'call center', 'telemarketing', 'escuta'],
-    vendas: ['venda', 'vendas', 'comercial', 'negociacao', 'lojista', 'promotor'],
-    cuidados: ['cuidador', 'cuidados', 'crianca', 'idoso', 'bab', 'acolhimento'],
-    beleza: ['beleza', 'estetica', 'cabelo', 'maquiagem', 'unhas', 'salao'],
-    cozinha: ['cozinha', 'culinaria', 'gastronomia', 'confeitaria', 'alimentos'],
-    costura: ['costura', 'moda', 'artesanato', 'linha', 'tecido'],
-    administrativo: ['administrativo', 'escritorio', 'planilha', 'excel', 'rotina'],
-    tecnologia: ['tecnologia', 'informatica', 'digital', 'celular', 'computador', 'canva'],
-    logistica: ['logistica', 'estoque', 'expedicao', 'almoxarifado'],
-    limpeza: ['limpeza', 'servicos gerais', 'organizacao', 'higiene'],
-    educacao: ['educacao', 'ensino', 'didatica', 'alfabetizacao'],
-    artesanato: ['artesanato', 'manual', 'criatividade', 'feito a mao'],
-    cozinhar: ['cozinha', 'gastronomia', 'culinaria', 'alimentos'],
-    organizar: ['organizacao', 'rotina', 'planejamento', 'agenda'],
-    maquiagem: ['maquiagem', 'beleza', 'estetica'],
-    redes: ['redes sociais', 'digital', 'social media', 'marketing'],
-    cuidar: ['cuidador', 'cuidado', 'acolhimento'],
-    vender: ['venda', 'vendas', 'comercial', 'negociacao'],
-    escrever: ['texto', 'escrita', 'comunicacao', 'redacao'],
-  };
-
-  const score = (item: Recomendacao): number => {
-    const base = normalizar([item.titulo, item.descricao, item.empresa, item.bairro, item.tipo].filter(Boolean).join(' '));
-    let total = 0;
-
-    if (normalizar(item.tipo).includes(normalizar(tipoDesejado))) {
-      total += 4;
-    }
-
-    Object.entries(palavrasPorArea).forEach(([area, termos]) => {
-      if (respostas.interesses.includes(area) || respostas.experiencias.includes(area) || respostas.hobbies.includes(area)) {
-        if (termos.some((termo) => base.includes(termo))) total += 3;
-      }
-    });
-
-    if (respostas.objetivo === 'curso_primeiro' && normalizar(item.tipo).includes('curso')) total += 2;
-    if (respostas.objetivo === 'emprego_rapido' && normalizar(item.tipo).includes('curso')) total += 1;
-    if (respostas.objetivo === 'empreender' && contemAlgum(base, ['empreendedor', 'negocio', 'mei', 'marketing', 'venda'])) total += 3;
-    if (respostas.objetivo === 'renda_extra' && contemAlgum(base, ['renda', 'apoio', 'credito', 'venda'])) total += 2;
-
-    if (respostas.modalidade === 'remoto' && contemAlgum(base, ['online', 'ead', 'virtual', '24h'])) total += 2;
-    if (respostas.modalidade === 'hibrido' && contemAlgum(base, ['online', 'presencial'])) total += 1;
-    if (respostas.modalidade === 'perto_casa' && item.bairro && !contemAlgum(base, ['online', 'remoto'])) total += 1.5;
-
-    if (respostas.disponibilidade === 'noite' && contemAlgum(base, ['noite', 'noturno', 'flexivel'])) total += 1.5;
-    if (respostas.disponibilidade === 'fins_semana' && contemAlgum(base, ['fim', 'flexivel', 'online'])) total += 1;
-    if (respostas.desafio === 'tempo' && contemAlgum(base, ['curto', 'flexivel', 'online', 'rapido'])) total += 1.5;
-    if (respostas.desafio === 'internet' && contemAlgum(base, ['presencial', 'bairro'])) total += 1;
-    if (respostas.desafio === 'transporte' && contemAlgum(base, ['perto', 'bairro', 'presencial'])) total += 1.5;
-
-    return total;
-  };
-
-  return [...itens]
-    .map((item) => ({ item, score: score(item) }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limite)
-    .map(({ item }) => item);
-}
-
-function gerarMotivoCurso(item: Recomendacao, respostas: Respostas): string {
-  const areas: string[] = [];
-  const texto = normalizar([item.titulo, item.descricao, item.empresa].filter(Boolean).join(' '));
-
-  Object.entries({
-    atendimento: ['atendimento', 'cliente', 'recepcao', 'escuta'],
-    vendas: ['venda', 'comercial', 'negociacao'],
-    cuidados: ['cuidador', 'cuidado', 'acolhimento'],
-    beleza: ['beleza', 'estetica', 'maquiagem'],
-    cozinha: ['cozinha', 'gastronomia', 'culinaria'],
-    costura: ['costura', 'moda', 'artesanato'],
-    administrativo: ['administrativo', 'escritorio', 'planilha', 'rotina'],
-    tecnologia: ['tecnologia', 'informatica', 'digital', 'canva'],
-    logistica: ['logistica', 'estoque', 'expedicao'],
-    limpeza: ['limpeza', 'servicos gerais', 'higiene'],
-    educacao: ['educacao', 'ensino', 'didatica'],
-    artesanato: ['artesanato', 'manual'],
-  }).forEach(([area, termos]) => {
-    if ((respostas.interesses.includes(area) || respostas.experiencias.includes(area) || respostas.hobbies.includes(area)) && termos.some((termo) => texto.includes(termo))) {
-      areas.push(area);
-    }
-  });
-
-  if (areas.length > 0) {
-    return `Combina com ${areas.slice(0, 2).join(' e ')} e com sua rotina.`;
+    return {
+      respostas: {
+        ...INICIAL,
+        ...salvo.respostas,
+        areas: Array.isArray(salvo.respostas.areas) ? salvo.respostas.areas : [],
+      },
+      selecionadoId: typeof salvo.selecionadoId === 'string' ? salvo.selecionadoId : '',
+    };
+  } catch {
+    return null;
   }
-  if (respostas.objetivo === 'empreender') {
-    return 'Ajuda a abrir uma porta pratica para voce ganhar mais autonomia.';
-  }
-  if (respostas.objetivo === 'curso_primeiro') {
-    return 'Boa opcao para comecar com formacao antes de ir para as vagas.';
-  }
-  return 'Pode encaixar bem com o caminho que voce escolheu agora.';
 }
 
-function gerarMotivoBeneficio(item: Recomendacao, respostas: Respostas): string {
-  const texto = normalizar([item.titulo, item.descricao].filter(Boolean).join(' '));
-  if (respostas.objetivo === 'empreender' && contemAlgum(texto, ['credito', 'microcredito', 'empreendedor'])) {
-    return 'Pode dar folego financeiro para iniciar um negocio pequeno.';
+function carregarFavoritos(): string[] {
+  if (typeof window === 'undefined') return [];
+
+  try {
+    const valor = window.localStorage.getItem(CHAVE_FAVORITOS_CARREIRA);
+    if (!valor) return [];
+
+    const favoritos = JSON.parse(valor);
+    return Array.isArray(favoritos) ? favoritos.filter((id): id is string => typeof id === 'string') : [];
+  } catch {
+    return [];
   }
-  if (Number(respostas.filhos) > 0 && contemAlgum(texto, ['mae', 'bolsa familia', 'crianca', 'filhos', 'gas'])) {
-    return 'Ajuda na organizacao da casa e na protecao dos filhos.';
-  }
-  if (respostas.desafio === 'dinheiro' && contemAlgum(texto, ['renda', 'desconto', 'credito', 'gas', 'tarifa'])) {
-    return 'Pode aliviar um gasto importante enquanto voce se reorganiza.';
-  }
-  if (respostas.desafio === 'cuidado' && contemAlgum(texto, ['cras', 'creas', 'apoio', 'rede'])) {
-    return 'Da suporte para voce nao carregar tudo sozinha.';
-  }
-  return 'Combina com o seu momento e com a rotina que voce descreveu.';
 }
 
-function gerarHabilidades(respostas: Respostas): string[] {
-  const habilidades = new Set<string>();
-
-  const adicionar = (itens: string[]) => itens.forEach((item) => habilidades.add(item));
-
-  [...respostas.interesses, ...respostas.experiencias, ...respostas.hobbies].forEach((valor) => {
-    adicionar(MAPA_HABILIDADES[valor] || []);
-  });
-
-  if (Number(respostas.filhos) > 0) adicionar(['gestao de rotina', 'priorizacao']);
-  if (respostas.dependentes !== 'nao') adicionar(['resiliencia', 'organizacao familiar']);
-  if (respostas.objetivo === 'empreender') adicionar(['autonomia', 'planejamento']);
-  if (respostas.modalidade === 'remoto') adicionar(['autogestao digital']);
-  if (respostas.desafio === 'tempo') adicionar(['gestao de tempo']);
-
-  return Array.from(habilidades).slice(0, 8);
+function clamp(valor: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, valor));
 }
 
-function gerarTrilha(
-  respostas: Respostas,
-  cursos: Recomendacao[],
-  beneficios: Recomendacao[],
-): Array<{ titulo: string; descricao: string }> {
-  const cursoPrincipal = cursos[0];
-  const beneficioPrincipal = beneficios[0];
-  const passos: Array<{ titulo: string; descricao: string }> = [];
+function calcularPercentual(item: CarreiraBase, respostas: Respostas): number {
+  let score = item.base;
+  const objetivoEmpreender = respostas.objetivo === 'empreender' || respostas.objetivo === 'renda_extra';
+  const objetivoEmprego = respostas.objetivo === 'emprego' || respostas.objetivo === 'estudar';
 
-  const precisaBase =
-    Number(respostas.filhos) > 0 ||
-    respostas.dependentes !== 'nao' ||
-    respostas.desafio === 'dinheiro' ||
-    respostas.desafio === 'cuidado';
+  if (objetivoEmpreender && item.tipo === 'Empreender') score += 18;
+  if (objetivoEmprego && item.tipo === 'Profissão') score += 18;
+  if (respostas.ritmo === 'muito_pouco' && item.tags.includes('flexivel')) score += 12;
+  if (respostas.ritmo === 'pouco' && item.tags.includes('flexivel')) score += 8;
+  if (respostas.local === 'em_casa' && item.tags.includes('casa')) score += 14;
+  if (respostas.local === 'perto' && item.tags.includes('bairro')) score += 10;
+  if (respostas.local === 'presencial' && item.tags.includes('presencial')) score += 12;
+  if (respostas.local === 'bairro' && (item.tags.includes('bairro') || item.tags.includes('presencial'))) score += 12;
+  if (respostas.filhos && (item.tags.includes('flexivel') || item.tags.includes('casa'))) score += 10;
+  if (respostas.objetivo === 'estudar') score += 4;
 
-  if (precisaBase && beneficioPrincipal) {
-    passos.push({
-      titulo: `Organizar ${beneficioPrincipal.titulo}`,
-      descricao: 'Comece tirando o peso financeiro e burocratico da frente.',
-    });
-  } else {
-    passos.push({
-      titulo: 'Atualizar perfil e documentos',
-      descricao: 'Deixe tudo pronto para acelerar as proximas escolhas.',
-    });
+  const matches = respostas.areas.filter((area) => item.tags.includes(area)).length;
+  score += matches * 16;
+
+  if (respostas.objetivo === 'empreender' && item.tipo === 'Empreender') score += 4;
+  if (respostas.objetivo === 'renda_extra' && item.tipo === 'Empreender') score += 4;
+
+  return clamp(Math.round(score), 26, 96);
+}
+
+function criarMotivo(item: CarreiraBase, respostas: Respostas): string {
+  const partes: string[] = [];
+
+  if ((respostas.objetivo === 'empreender' || respostas.objetivo === 'renda_extra') && item.tipo === 'Empreender') {
+    partes.push('combina com sua meta de ganhar dinheiro');
   }
 
-  passos.push({
-    titulo: cursoPrincipal ? `Fazer ${cursoPrincipal.titulo}` : 'Fazer um curso curto',
-    descricao: 'A fase seguinte e ganhar uma habilidade pratica que caiba na sua rotina.',
-  });
-
-  if (respostas.objetivo === 'empreender') {
-    passos.push({
-      titulo: 'Testar uma oferta pequena',
-      descricao: 'Abra uma renda inicial simples, com apoio da rede e do proprio bairro.',
-    });
-  } else if (respostas.objetivo === 'curso_primeiro') {
-    passos.push({
-      titulo: 'Depois ir para o feed',
-      descricao: 'Use o feed para escolher vagas e oportunidades que combinem com o curso.',
-    });
-  } else {
-    passos.push({
-      titulo: 'Buscar vagas e combinar com sua rotina',
-      descricao: 'Use o feed e o mapa para entrar em vagas mais proximas e viaveis.',
-    });
+  if ((respostas.objetivo === 'emprego' || respostas.objetivo === 'estudar') && item.tipo === 'Profissão') {
+    partes.push('fica mais perto do caminho de emprego');
   }
 
-  return passos.slice(0, 3);
-}
-
-function gerarResumo(respostas: Respostas): string {
-  const filhos = extrairNumero(respostas.filhos);
-  const dependentes =
-    respostas.dependentes === 'sim'
-      ? 'dependentes'
-      : respostas.dependentes === 'parcial'
-        ? 'dependencia parcial'
-        : 'sem dependencia atual';
-
-  return [
-    rotuloObjetivo(respostas.objetivo),
-    `rotina ${rotuloDisponibilidade(respostas.disponibilidade).toLowerCase()}`,
-    `modalidade ${rotuloModalidade(respostas.modalidade).toLowerCase()}`,
-    filhos > 0 ? `${filhos} filho${filhos === 1 ? '' : 's'}` : 'sem filhos informados',
-    dependentes,
-  ].join(' • ');
-}
-
-function gerarPrimeiroPasso(
-  respostas: Respostas,
-  cursos: Recomendacao[],
-  beneficios: Recomendacao[],
-): string {
-  const cursoPrincipal = cursos[0];
-  const beneficioPrincipal = beneficios[0];
-
-  if ((extrairNumero(respostas.filhos) > 0 || respostas.dependentes !== 'nao') && beneficioPrincipal) {
-    return `Comece por ${beneficioPrincipal.titulo} e, em seguida, faça ${cursoPrincipal?.titulo || 'um curso curto'} para acelerar a sua saida.`;
+  if (respostas.filhos && (item.tags.includes('flexivel') || item.tags.includes('casa'))) {
+    partes.push('cabe melhor na rotina com filhos');
   }
 
-  if (respostas.objetivo === 'curso_primeiro') {
-    return `Comece pelo curso ${cursoPrincipal?.titulo || 'mais alinhado'} e depois volte para as vagas.`;
+  if (respostas.local === 'em_casa' && item.tags.includes('casa')) {
+    partes.push('pode começar de casa');
   }
 
-  if (respostas.objetivo === 'empreender') {
-    return `Abra uma oferta pequena e use ${beneficioPrincipal?.titulo || 'o apoio da rede'} para dar sustentacao.`;
+  const areaHit = respostas.areas.find((area) => item.tags.includes(area));
+  if (areaHit) {
+    partes.push('bate com o que você já marcou');
   }
 
-  if (respostas.objetivo === 'renda_extra') {
-    return `Priorize uma fonte de renda flexivel e use ${cursoPrincipal?.titulo || 'um curso curto'} para fortalecer seu perfil.`;
-  }
-
-  return `Atualize o perfil e entre em ${cursoPrincipal?.titulo || 'uma qualificacao curta'} antes de procurar as vagas mais parecidas.`;
+  if (!partes.length) return 'é uma porta de entrada simples';
+  return partes.slice(0, 2).join(' e ');
 }
 
 function gerarPlano(respostas: Respostas, oportunidades: Oportunidade[]): PlanoGerado {
@@ -646,25 +408,7 @@ function Badge({ children, tonalidade = 'neutra' }: { children: string; tonalida
 }
 
 function PillButton({
-  label,
-  ajuda,
-  ativo,
-  onClick,
-}: {
-  label: string;
-  ajuda?: string;
-  ativo: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button type="button" className={`pc-pill ${ativo ? 'ativo' : ''}`} onClick={onClick}>
-      <strong>{label}</strong>
-      {ajuda && <span>{ajuda}</span>}
-    </button>
-  );
-}
-
-function MultiPillButton({
+function AreaTag({
   label,
   ativo,
   onClick,
@@ -674,65 +418,92 @@ function MultiPillButton({
   onClick: () => void;
 }) {
   return (
-    <button type="button" className={`pc-chip ${ativo ? 'ativo' : ''}`} onClick={onClick}>
+    <button
+      type="button"
+      className={`cp-chip ${ativo ? 'ativo' : ''}`}
+      onClick={onClick}
+      aria-pressed={ativo}
+    >
       {label}
     </button>
   );
 }
 
-function RecomendacaoCard({ item }: { item: Recomendacao }) {
-  const botao = item.interno && item.id ? (
-    <Link to={`/oportunidades/${item.id}`} className="btn-secundario pc-reco-btn">
-      Ver detalhe
-    </Link>
-  ) : item.link ? (
-    <a href={item.link} target="_blank" rel="noopener noreferrer" className="btn-secundario pc-reco-btn">
-      Abrir
-    </a>
-  ) : null;
-
+function CardOpcao({
+  titulo,
+  subtitulo,
+  ativo,
+  onClick,
+}: {
+  titulo: string;
+  subtitulo?: string;
+  ativo: boolean;
+  onClick: () => void;
+}) {
   return (
-    <article className="pc-reco-card">
-      <div className="pc-reco-topo">
-        <span className={`pc-tipo ${normalizar(item.tipo).includes('curso') ? 'curso' : normalizar(item.tipo).includes('benef') ? 'beneficio' : normalizar(item.tipo).includes('micro') ? 'micro' : 'apoio'}`}>
-          {item.tipo}
-        </span>
-        {item.bairro && <span className="pc-bairro">{item.bairro}</span>}
+    <button
+      type="button"
+      className={`cp-opcao ${ativo ? 'ativo' : ''}`}
+      onClick={onClick}
+      aria-pressed={ativo}
+    >
+      <strong>{titulo}</strong>
+      {subtitulo && <span>{subtitulo}</span>}
+    </button>
+  );
+}
+
+function ResultadoCard({
+  item,
+  ativo,
+  favoritado,
+  onSelecionar,
+  onFavoritar,
+}: {
+  item: CarreiraResultado;
+  ativo: boolean;
+  favoritado: boolean;
+  onSelecionar: () => void;
+  onFavoritar: () => void;
+}) {
+  return (
+    <article className={`cp-card ${item.percent >= 70 ? 'cp-card-alta' : ''} ${ativo ? 'ativo' : ''}`}>
+      <div className="cp-card-topo">
+        <strong className="cp-percent">{item.percent}%</strong>
+        <button
+          type="button"
+          className={`cp-star ${favoritado ? 'favoritado' : ''}`}
+          onClick={onFavoritar}
+          aria-label={favoritado ? `Remover ${item.titulo} dos favoritos` : `Favoritar ${item.titulo}`}
+          aria-pressed={favoritado}
+          title={favoritado ? 'Remover dos favoritos' : 'Favoritar esta opção'}
+        >
+          {favoritado ? '★' : '☆'}
+        </button>
       </div>
-      <h4>{item.titulo}</h4>
-      {item.empresa && <p className="pc-empresa">{item.empresa}</p>}
-      <p className="pc-desc">{item.descricao}</p>
-      <p className="pc-motivo">{item.motivo}</p>
-      {botao && <div className="pc-reco-acao">{botao}</div>}
+
+      <span className={`cp-tag ${item.tipo === 'Empreender' ? 'empreender' : 'profissao'}`}>{item.tipo}</span>
+
+      <h3>{item.titulo}</h3>
+      <p className="cp-card-resumo">{item.resumo}</p>
+      <p className="cp-card-motivo">{item.motivo}</p>
+
+      <button type="button" className="cp-card-acao" onClick={onSelecionar}>
+        Ver detalhes
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
+        </svg>
+      </button>
     </article>
   );
 }
 
-const RESPOSTAS_INICIAIS: Respostas = {
-  objetivo: 'emprego_rapido',
-  disponibilidade: 'flexivel',
-  modalidade: 'perto_casa',
-  interesses: [],
-  experiencias: [],
-  filhos: '1',
-  dependentes: 'sim',
-  apoio: 'as_vezes',
-  escolaridade: 'medio',
-  tempoEstudo: '3_5h',
-  hobbies: [],
-  desafio: 'tempo',
-  sonho: '',
-};
-
 const PASSOS = [
   'Objetivo',
   'Rotina',
-  'Onde trabalhar',
-  'Areas de interesse',
-  'O que voce ja faz',
-  'Filhos e apoio',
-  'Estudo e tempo',
-  'Hobbies e meta',
+  'O que combina',
+  'Onde atuar',
 ];
 
 const PLANO_SALVO_KEY = 'recife-por-elas:plano-carreira';
@@ -768,48 +539,59 @@ export default function PlanoCarreira() {
   const [carregando, setCarregando] = useState(true);
   const [gerando, setGerando] = useState(false);
   const [plano, setPlano] = useState<PlanoGerado | null>(salvo?.plano || null);
+  const [planoSalvoInicial] = useState<PlanoSalvo | null>(() => carregarPlano());
+  const [respostas, setRespostas] = useState<Respostas>(() => planoSalvoInicial?.respostas ?? INICIAL);
+  const [passo, setPasso] = useState(0);
+  const [mostrarPlano, setMostrarPlano] = useState(() => Boolean(planoSalvoInicial));
+  const [selecionadoId, setSelecionadoId] = useState(() => planoSalvoInicial?.selecionadoId ?? '');
+  const [favoritos, setFavoritos] = useState<string[]>(() => carregarFavoritos());
+
+  const resultados = useMemo<CarreiraResultado[]>(() => {
+    return [...CARREIRAS]
+      .map((item) => ({
+        ...item,
+        percent: calcularPercentual(item, respostas),
+        motivo: criarMotivo(item, respostas),
+      }))
+      .sort((a, b) => b.percent - a.percent)
+      .slice(0, 9);
+  }, [respostas]);
+
+  const selecionado = resultados.find((item) => item.id === selecionadoId) ?? resultados[0] ?? null;
 
   useEffect(() => {
-    let ativo = true;
+    if (!mostrarPlano) return;
 
-    const carregar = async () => {
-      setCarregando(true);
-      try {
-        const [internas, externas] = await Promise.all([
-          apiJSON<Oportunidade[]>('/oportunidades').catch(() => [] as Oportunidade[]),
-          apiJSON<Oportunidade[]>('/oportunidades/externas').catch(() => [] as Oportunidade[]),
-        ]);
-        if (!ativo) return;
-        setOportunidades([...internas, ...externas]);
-      } finally {
-        if (ativo) setCarregando(false);
-      }
-    };
+    try {
+      window.localStorage.setItem(
+        CHAVE_PLANO_CARREIRA,
+        JSON.stringify({ respostas, selecionadoId }),
+      );
+    } catch {
+      // A página continua funcionando mesmo quando o navegador bloqueia o armazenamento local.
+    }
+  }, [mostrarPlano, respostas, selecionadoId]);
 
-    void carregar();
-    return () => {
-      ativo = false;
-    };
-  }, []);
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(CHAVE_FAVORITOS_CARREIRA, JSON.stringify(favoritos));
+    } catch {
+      // A preferência visual permanece disponível durante a sessão.
+    }
+  }, [favoritos]);
 
-  const totalPassos = PASSOS.length;
-  const progresso = Math.round(((passo + 1) / totalPassos) * 100);
-  const habilidadesPrevias = gerarHabilidades(respostas);
-  const resumoAgora = gerarResumo(respostas);
-
-  const atualizar = <K extends keyof Respostas>(chave: K, valor: Respostas[K]) => {
+  function atualizar<K extends keyof Respostas>(chave: K, valor: Respostas[K]) {
     setRespostas((atual) => ({ ...atual, [chave]: valor }));
-  };
+  }
 
-  const alternarLista = (chave: 'interesses' | 'experiencias' | 'hobbies', valor: string) => {
-    setRespostas((atual) => {
-      const lista = atual[chave];
-      return {
-        ...atual,
-        [chave]: lista.includes(valor) ? lista.filter((item) => item !== valor) : [...lista, valor],
-      } as Respostas;
-    });
-  };
+  function alternarArea(valor: string) {
+    setRespostas((atual) => ({
+      ...atual,
+      areas: atual.areas.includes(valor)
+        ? atual.areas.filter((item) => item !== valor)
+        : [...atual.areas, valor],
+    }));
+  }
 
   const gerar = async () => {
     setGerando(true);
@@ -823,10 +605,13 @@ export default function PlanoCarreira() {
     setPlano(resultado);
     window.localStorage.setItem(PLANO_SALVO_KEY, JSON.stringify({ respostas, plano: resultado }));
     setGerando(false);
+  function gerarPlano() {
+    setMostrarPlano(true);
+    setSelecionadoId(resultados[0]?.id || '');
     window.setTimeout(() => {
-      document.getElementById('pc-plano')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('cp-resultados')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 0);
-  };
+  }
 
   const resetarPlano = () => {
     window.localStorage.removeItem(PLANO_SALVO_KEY);
@@ -840,413 +625,229 @@ export default function PlanoCarreira() {
     if (passo < totalPassos - 1) {
       setPasso((valor) => Math.min(valor + 1, totalPassos - 1));
       return;
+  function refazer() {
+    try {
+      window.localStorage.removeItem(CHAVE_PLANO_CARREIRA);
+      window.localStorage.removeItem(CHAVE_FAVORITOS_CARREIRA);
+    } catch {
+      // O reset visual continua funcionando mesmo sem acesso ao armazenamento local.
     }
-    await gerar();
-  };
 
-  const voltar = () => {
-    setPasso((valor) => Math.max(valor - 1, 0));
-  };
+    setRespostas(INICIAL);
+    setPasso(0);
+    setMostrarPlano(false);
+    setSelecionadoId('');
+    setFavoritos([]);
+    window.setTimeout(() => {
+      document.getElementById('cp-questionario')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  }
 
-  const renderPasso = () => {
-    switch (passo) {
-      case 0:
-        return (
-          <div className="pc-bloco">
-            <p className="pc-rotulo">Pergunta 1 de 8</p>
-            <h3>Qual e o seu objetivo principal agora?</h3>
-            <p className="pc-ajuda">A IA usa sua resposta para definir se o plano comeca por curso, emprego, renda extra ou empreendedorismo.</p>
-            <div className="pc-grid-opcoes">
-              {OPCOES_OBJETIVO.map((opcao) => (
-                <PillButton
-                  key={opcao.valor}
-                  label={opcao.label}
-                  ajuda={opcao.ajuda}
-                  ativo={respostas.objetivo === opcao.valor}
-                  onClick={() => atualizar('objetivo', opcao.valor)}
-                />
-              ))}
+  function alternarFavorito(id: string) {
+    setFavoritos((atuais) => (
+      atuais.includes(id)
+        ? atuais.filter((item) => item !== id)
+        : [...atuais, id]
+    ));
+  }
+
+  const maxPasso = PASSOS.length - 1;
+
+  const renderPergunta = () => {
+    if (passo === 0) {
+      return (
+        <div className="cp-bloco">
+          <div className="cp-bloco-cabeca">
+            <span className="cp-numero">1</span>
+            <div>
+              <h3>O que você quer agora?</h3>
+              <p>Escolha o foco principal para encontrar opções de profissão e empreendedorismo.</p>
             </div>
           </div>
-        );
-      case 1:
-        return (
-          <div className="pc-bloco">
-            <p className="pc-rotulo">Pergunta 2 de 8</p>
-            <h3>Quando voce consegue se dedicar?</h3>
-            <p className="pc-ajuda">Isso ajuda a IA a sugerir opcoes que cabem na sua rotina.</p>
-            <div className="pc-grid-opcoes pc-grid-opcoes-pequenas">
-              {OPCOES_DISPONIBILIDADE.map((opcao) => (
-                <MultiPillButton
-                  key={opcao.valor}
-                  label={opcao.label}
-                  ativo={respostas.disponibilidade === opcao.valor}
-                  onClick={() => atualizar('disponibilidade', opcao.valor)}
-                />
-              ))}
+          <div className="cp-opcoes-grid">
+            {OBJETIVOS.map((item) => (
+              <CardOpcao
+                key={item.valor}
+                titulo={item.titulo}
+                subtitulo={item.subtitulo}
+                ativo={respostas.objetivo === item.valor}
+                onClick={() => atualizar('objetivo', item.valor)}
+              />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (passo === 1) {
+      return (
+        <div className="cp-bloco">
+          <div className="cp-bloco-cabeca">
+            <span className="cp-numero">2</span>
+            <div>
+              <h3>Sua rotina está mais apertada ou mais livre?</h3>
+              <p>Indique quanto tempo você tem para encontrar caminhos que caibam no seu dia.</p>
             </div>
           </div>
-        );
-      case 2:
-        return (
-          <div className="pc-bloco">
-            <p className="pc-rotulo">Pergunta 3 de 8</p>
-            <h3>Onde voce gostaria de trabalhar?</h3>
-            <p className="pc-ajuda">Pode ser perto de casa, remoto, hibrido ou presencial.</p>
-            <div className="pc-grid-opcoes pc-grid-opcoes-pequenas">
-              {OPCOES_MODALIDADE.map((opcao) => (
-                <MultiPillButton
-                  key={opcao.valor}
-                  label={opcao.label}
-                  ativo={respostas.modalidade === opcao.valor}
-                  onClick={() => atualizar('modalidade', opcao.valor)}
-                />
-              ))}
-            </div>
-          </div>
-        );
-      case 3:
-        return (
-          <div className="pc-bloco">
-            <p className="pc-rotulo">Pergunta 4 de 8</p>
-            <h3>Quais areas combinam mais com voce?</h3>
-            <p className="pc-ajuda">Selecione quantas quiser. A IA vai cruzar com cursos e vagas parecidas.</p>
-            <div className="pc-grid-tags">
-              {AREAS_INTERESSE.map((opcao) => (
-                <MultiPillButton
-                  key={opcao.valor}
-                  label={opcao.label}
-                  ativo={respostas.interesses.includes(opcao.valor)}
-                  onClick={() => alternarLista('interesses', opcao.valor)}
-                />
-              ))}
-            </div>
-          </div>
-        );
-      case 4:
-        return (
-          <div className="pc-bloco">
-            <p className="pc-rotulo">Pergunta 5 de 8</p>
-            <h3>O que voce ja faz bem ou ja fez antes?</h3>
-            <p className="pc-ajuda">Essas experiencias ajudam a IA a reconhecer habilidades que ja existem em voce.</p>
-            <div className="pc-grid-tags">
-              {EXPERIENCIAS.map((opcao) => (
-                <MultiPillButton
-                  key={opcao.valor}
-                  label={opcao.label}
-                  ativo={respostas.experiencias.includes(opcao.valor)}
-                  onClick={() => alternarLista('experiencias', opcao.valor)}
-                />
-              ))}
-            </div>
-          </div>
-        );
-      case 5:
-        return (
-          <div className="pc-bloco">
-            <p className="pc-rotulo">Pergunta 6 de 8</p>
-            <h3>Como esta sua realidade familiar?</h3>
-            <p className="pc-ajuda">A IA usa isso para sugerir beneficios, horarios e cursos mais viaveis.</p>
-            <div className="pc-form-grid">
-              <label>
-                Quantos filhos voce tem?
-                <input
-                  className="pc-input"
-                  type="number"
-                  min={0}
-                  value={respostas.filhos}
-                  onChange={(e) => atualizar('filhos', e.target.value)}
-                />
-              </label>
-              <label>
-                Eles dependem de voce?
-                <select
-                  className="pc-input"
-                  value={respostas.dependentes}
-                  onChange={(e) => atualizar('dependentes', e.target.value as Dependencia)}
-                >
-                  <option value="sim">Sim, totalmente</option>
-                  <option value="parcial">Em parte</option>
-                  <option value="nao">Nao no momento</option>
-                </select>
-              </label>
-              <label className="pc-cheio">
-                Voce tem alguem para ajudar nos cuidados?
-                <select
-                  className="pc-input"
-                  value={respostas.apoio}
-                  onChange={(e) => atualizar('apoio', e.target.value as Respostas['apoio'])}
-                >
-                  <option value="sim">Sim, tenho apoio</option>
-                  <option value="as_vezes">As vezes</option>
-                  <option value="nao">Nao tenho apoio fixo</option>
-                </select>
-              </label>
-            </div>
-          </div>
-        );
-      case 6:
-        return (
-          <div className="pc-bloco">
-            <p className="pc-rotulo">Pergunta 7 de 8</p>
-            <h3>Qual e sua escolaridade e quanto tempo voce pode estudar?</h3>
-            <p className="pc-ajuda">Isso ajuda a IA a indicar o nivel certo de curso para o seu momento.</p>
-            <div className="pc-form-grid">
-              <label>
-                Escolaridade
-                <select
-                  className="pc-input"
-                  value={respostas.escolaridade}
-                  onChange={(e) => atualizar('escolaridade', e.target.value as Escolaridade)}
-                >
-                  {ESCOLARIDADE.map((opcao) => (
-                    <option key={opcao.valor} value={opcao.valor}>
-                      {opcao.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Tempo para estudar
-                <select
-                  className="pc-input"
-                  value={respostas.tempoEstudo}
-                  onChange={(e) => atualizar('tempoEstudo', e.target.value as TempoEstudo)}
-                >
-                  {TEMPO_ESTUDO.map((opcao) => (
-                    <option key={opcao.valor} value={opcao.valor}>
-                      {opcao.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          </div>
-        );
-      case 7:
-      default:
-        return (
-          <div className="pc-bloco">
-            <p className="pc-rotulo">Pergunta 8 de 8</p>
-            <h3>Quais hobbies te representam e o que mais atrapalha hoje?</h3>
-            <p className="pc-ajuda">A IA pode transformar seus gostos em habilidades e evitar rotas que nao cabem na sua rotina.</p>
-            <div className="pc-subbloco">
-              <strong>Hobbies ou gostos</strong>
-              <div className="pc-grid-tags">
-                {HOBBIES.map((opcao) => (
-                  <MultiPillButton
-                    key={opcao.valor}
-                    label={opcao.label}
-                    ativo={respostas.hobbies.includes(opcao.valor)}
-                    onClick={() => alternarLista('hobbies', opcao.valor)}
+
+          <div className="cp-dupla">
+            <div className="cp-subbloco">
+              <strong>Tempo por semana</strong>
+              <div className="cp-chip-grid">
+                {RITMOS.map((item) => (
+                  <AreaTag
+                    key={item.valor}
+                    label={item.titulo}
+                    ativo={respostas.ritmo === item.valor}
+                    onClick={() => atualizar('ritmo', item.valor)}
                   />
                 ))}
               </div>
             </div>
-            <div className="pc-form-grid pc-form-grid-dupla">
-              <label>
-                Principal desafio
-                <select
-                  className="pc-input"
-                  value={respostas.desafio}
-                  onChange={(e) => atualizar('desafio', e.target.value as Desafio)}
-                >
-                  {DESAFIOS.map((opcao) => (
-                    <option key={opcao.valor} value={opcao.valor}>
-                      {opcao.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Seu sonho para os proximos 6 meses
-                <textarea
-                  className="pc-input pc-textarea"
-                  rows={4}
-                  value={respostas.sonho}
-                  onChange={(e) => atualizar('sonho', e.target.value)}
-                  placeholder="Ex.: conseguir um trabalho perto de casa, terminar um curso, abrir uma renda extra..."
+
+            <div className="cp-subbloco">
+              <strong>Filhos dependem de você?</strong>
+              <div className="cp-chip-grid">
+                <AreaTag
+                  label="Sim"
+                  ativo={respostas.filhos}
+                  onClick={() => atualizar('filhos', true)}
                 />
-              </label>
+                <AreaTag
+                  label="Não"
+                  ativo={!respostas.filhos}
+                  onClick={() => atualizar('filhos', false)}
+                />
+              </div>
             </div>
           </div>
-        );
+        </div>
+      );
     }
+
+    if (passo === 2) {
+      return (
+        <div className="cp-bloco">
+          <div className="cp-bloco-cabeca">
+            <span className="cp-numero">3</span>
+            <div>
+              <h3>O que combina com você?</h3>
+              <p>Selecione as áreas que despertam seu interesse. Você pode escolher mais de uma.</p>
+            </div>
+          </div>
+          <div className="cp-opcoes-tags">
+            {AREAS.map((item) => (
+              <AreaTag
+                key={item.valor}
+                label={item.titulo}
+                ativo={respostas.areas.includes(item.valor)}
+                onClick={() => alternarArea(item.valor)}
+              />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="cp-bloco">
+        <div className="cp-bloco-cabeca">
+          <span className="cp-numero">4</span>
+          <div>
+            <h3>Onde você quer atuar?</h3>
+            <p>Escolha o formato que mais respeita sua realidade.</p>
+          </div>
+        </div>
+        <div className="cp-opcoes-grid cp-opcoes-grid-curta">
+          {LOCAIS.map((item) => (
+            <CardOpcao
+              key={item.valor}
+              titulo={item.titulo}
+              ativo={respostas.local === item.valor}
+              onClick={() => atualizar('local', item.valor)}
+            />
+          ))}
+        </div>
+      </div>
+    );
   };
 
   return (
-    <main className="pc-page">
-      <section className="pc-hero">
-        <div className="container pc-hero-grid">
-          <div className="pc-hero-texto">
-            <Badge tonalidade="destaque">Plano de carreira com IA</Badge>
-            <h1>Um caminho mais claro para o seu proximo passo</h1>
-            <p>
-              Responda perguntas sobre sua rotina, seus filhos, seus interesses e sua
-              disponibilidade. A IA cruza essas respostas com cursos, beneficios e rotas
-              possiveis para montar um plano de carreira feito para a sua realidade.
-            </p>
-            <div className="pc-hero-acoes">
-              <a href="#pc-questionario" className="btn-primario">
-                Comecar agora
-              </a>
-              <Link to="/" className="btn-secundario">
-                Ver feed
-              </Link>
+    <main className="cp-page">
+      <section className="cp-hero">
+        <div className="container cp-hero-grid">
+      <div className="cp-hero-texto">
+        <span className="cp-etiqueta">Plano de carreira</span>
+        <h1>Menos perguntas. Mais caminhos claros.</h1>
+        <p>
+          Responda 4 perguntas rápidas e receba uma lista de profissões e formas de empreender
+          que combinam com sua rotina.
+        </p>
+        <div className="cp-hero-chips">
+          <span>Leve e rápido</span>
+          <span>Cards com percentuais</span>
+          <span>Profissões e renda extra</span>
+        </div>
+      </div>
+
+      <aside className="cp-hero-box">
+        <span className="cp-hero-mini">Como funciona</span>
+        <h3>Você responde, a plataforma organiza.</h3>
+        <ol className="cp-hero-lista">
+          <li>Perguntas curtas.</li>
+          <li>Resultado em cards.</li>
+          <li>Destaque para caminhos práticos.</li>
+        </ol>
+      </aside>
+        </div>
+      </section>
+
+      {!mostrarPlano && (
+      <section className="cp-questionario" id="cp-questionario">
+        <div className="container">
+          <div className="cp-secao-topo">
+            <div>
+              <span className="cp-etiqueta">Perguntas rápidas</span>
+              <h2>Escolha o que combina com você</h2>
+              <p>São apenas quatro etapas rápidas para chegar a um plano feito para você.</p>
             </div>
-            <div className="pc-hero-fitas">
-              <span>Leva menos de 3 minutos</span>
-              <span>Mostra cursos, beneficios e o primeiro passo</span>
-              <span>Funciona no celular</span>
+            <div className="cp-progresso">
+              <strong>{passo + 1}/4</strong>
+              <span>{PASSOS[passo]}</span>
             </div>
           </div>
-          <aside className="pc-hero-card">
-            <div className="pc-hero-card-topo">
-              <Badge tonalidade="sucesso">Como funciona</Badge>
-              <span className="pc-hero-card-status">{carregando ? 'Carregando oportunidades' : 'Pronto para personalizar'}</span>
-            </div>
-            <h3>3 movimentos para sair do zero com mais seguranca</h3>
-            <ul className="pc-hero-lista">
-              <li>
-                <strong>1.</strong>
-                <span>Voce responde perguntas sobre rotina, filhos, trabalho e preferencia de horario.</span>
-              </li>
-              <li>
-                <strong>2.</strong>
-                <span>A IA identifica habilidades e aponta cursos e beneficios que cabem na sua vida.</span>
-              </li>
-              <li>
-                <strong>3.</strong>
-                <span>Voce recebe um plano de prioridade com o primeiro passo e proximas acoes.</span>
-              </li>
-            </ul>
-          </aside>
-        </div>
-      </section>
 
-      <section className="pc-faixa">
-        <div className="container pc-tres-colunas">
-          <article className="pc-mini-card">
-            <Badge>Clareza</Badge>
-            <h3>Voce entende por onde comecar</h3>
-            <p>A plataforma organiza a bagunca da busca em uma trilha simples, com prioridade realista.</p>
-          </article>
-          <article className="pc-mini-card">
-            <Badge>Rotina</Badge>
-            <h3>O plano respeita sua vida</h3>
-            <p>Horarios, filhos, transporte e apoio da rede entram na decisao da IA.</p>
-          </article>
-          <article className="pc-mini-card">
-            <Badge>Avanco</Badge>
-            <h3>Curso, beneficio e vaga juntos</h3>
-            <p>Em vez de escolher uma coisa so, o plano mostra a sequencia mais inteligente.</p>
-          </article>
-        </div>
-      </section>
+          <div className="cp-question-card">
+            {renderPergunta()}
 
-      <section className="pc-secao">
-        <div className="container pc-layout">
-          <article className="pc-card pc-questionario" id="pc-questionario">
-            <div className="pc-cabeca">
-              <div>
-                <Badge tonalidade="destaque">Questionario</Badge>
-                <h2>Responda para a IA montar seu plano</h2>
-                <p>
-                  Quanto mais detalhadas forem as respostas, mais perto do seu momento real o
-                  plano fica.
-                </p>
-              </div>
-              <div className="pc-progresso-card">
-                <strong>{passo + 1}/{totalPassos}</strong>
-                <span>{progresso}% concluido</span>
-              </div>
-            </div>
-
-            <div className="pc-stepper">
-              {PASSOS.map((item, indice) => (
-                <span key={item} className={`pc-stepper-item ${indice === passo ? 'ativo' : indice < passo ? 'feito' : ''}`}>
-                  {item}
-                </span>
-              ))}
-            </div>
-
-            {renderPasso()}
-
-            <div className="pc-navegacao">
-              <button type="button" className="btn-secundario" onClick={voltar} disabled={passo === 0 || gerando}>
+            <div className="cp-acoes">
+              <button type="button" className="btn-secundario" onClick={() => setPasso((v) => Math.max(0, v - 1))} disabled={passo === 0}>
                 Voltar
               </button>
-              <button type="button" className="btn-primario" onClick={avancar} disabled={gerando}>
-                {gerando
-                  ? 'Gerando plano...'
-                  : passo === totalPassos - 1
-                    ? 'Gerar meu plano'
-                    : 'Proxima pergunta'}
-              </button>
+              {passo < maxPasso ? (
+                <button type="button" className="btn-primario" onClick={() => setPasso((v) => Math.min(maxPasso, v + 1))}>
+                  Próxima
+                </button>
+              ) : (
+                <button type="button" className="btn-primario" onClick={gerarPlano}>
+                  Ver meu plano
+                </button>
+              )}
             </div>
-          </article>
-
-          <aside className="pc-lateral">
-            <article className="pc-card pc-resumo-card">
-              <Badge>Seu perfil agora</Badge>
-              <h3>Resumo vivo do que a IA ja entendeu</h3>
-              <p>{resumoAgora}</p>
-              <div className="pc-lista-resumo">
-                <span>
-                  <strong>Objetivo</strong>
-                  {rotuloObjetivo(respostas.objetivo)}
-                </span>
-                <span>
-                  <strong>Rotina</strong>
-                  {rotuloDisponibilidade(respostas.disponibilidade)}
-                </span>
-                <span>
-                  <strong>Onde</strong>
-                  {rotuloModalidade(respostas.modalidade)}
-                </span>
-                <span>
-                  <strong>Tempo de estudo</strong>
-                  {rotuloTempo(respostas.tempoEstudo)}
-                </span>
-                <span>
-                  <strong>Escolaridade</strong>
-                  {rotuloEscolaridade(respostas.escolaridade)}
-                </span>
-                <span>
-                  <strong>Desafio</strong>
-                  {rotuloDesafio(respostas.desafio)}
-                </span>
-              </div>
-            </article>
-
-            <article className="pc-card pc-resumo-card">
-              <Badge tonalidade="sucesso">Habilidades que apareceram</Badge>
-              <h3>O que a IA ja pode reconhecer em voce</h3>
-              <div className="pc-skill-cloud">
-                {habilidadesPrevias.length > 0 ? (
-                  habilidadesPrevias.map((item) => (
-                    <span key={item} className="pc-skill-chip">
-                      {item}
-                    </span>
-                  ))
-                ) : (
-                  <span className="pc-skill-vazio">Escolha areas e hobbies para revelar suas habilidades.</span>
-                )}
-              </div>
-            </article>
-          </aside>
+          </div>
         </div>
       </section>
+      )}
 
-      <section className="pc-secao pc-resultados" id="pc-plano">
+      <section className="cp-resultados" id="cp-resultados" aria-live="polite" aria-atomic="true">
         <div className="container">
-          <div className="pc-cabeca pc-cabeca-resultados">
+          <div className="cp-resultados-topo">
             <div>
-              <Badge tonalidade="destaque">Plano gerado</Badge>
-              <h2>Seu plano de carreira personalizado</h2>
+              <h2>{mostrarPlano ? 'Seu plano personalizado' : 'Encontre caminhos para o seu futuro'}</h2>
               <p>
-                A IA organiza o caminho mais forte para o seu momento, com prioridade, cursos,
-                beneficios e habilidades.
+                {mostrarPlano
+                  ? 'Este plano fica salvo para você consultar quando quiser. Considere 70% ou mais como um bom ponto de partida.'
+                  : 'Responda às perguntas acima para receber opções de profissão e empreendedorismo alinhadas à sua rotina.'}
               </p>
             </div>
             <div className="pc-resultados-acoes">
@@ -1258,16 +859,18 @@ export default function PlanoCarreira() {
                 Abrir mapa
               </Link>
             </div>
+            {mostrarPlano && (
+              <button type="button" className="cp-limpar" onClick={refazer}>
+                Refazer meu plano
+              </button>
+            )}
           </div>
 
-          {!plano ? (
-            <article className="pc-card pc-estado-vazio">
-              <h3>Seu plano vai aparecer aqui</h3>
-              <p>
-                Responda o questionario acima e clique em <strong>Gerar meu plano</strong> para ver
-                cursos, beneficios e o primeiro passo mais inteligente.
-              </p>
-            </article>
+          {!mostrarPlano ? (
+            <div className="cp-vazio">
+              <h3>Faça as 4 perguntas para ver os cards</h3>
+              <p>Depois disso, a plataforma mostrará os caminhos mais compatíveis com você.</p>
+            </div>
           ) : (
             <div className="pc-resultado-grade">
               <article className="pc-card pc-plano-principal">
@@ -1311,38 +914,55 @@ export default function PlanoCarreira() {
                   <p>{plano.justificativa}</p>
                 </div>
               </article>
-
-              <div className="pc-coluna-recomendacoes">
-                <article className="pc-card">
-                  <div className="pc-bloco-titulo">
-                    <div>
-                      <Badge tonalidade="destaque">Cursos sugeridos</Badge>
-                      <h3>O que pode combinar com voce</h3>
-                    </div>
-                    {carregando && <span className="pc-status-pequeno">Carregando catalogo</span>}
-                  </div>
-                  <div className="pc-grid-recos">
-                    {plano.cursos.map((item) => (
-                      <RecomendacaoCard key={`${item.titulo}-curso`} item={item} />
-                    ))}
-                  </div>
-                </article>
-
-                <article className="pc-card">
-                  <div className="pc-bloco-titulo">
-                    <div>
-                      <Badge tonalidade="sucesso">Beneficios e apoio</Badge>
-                      <h3>O que pode aliviar sua caminhada</h3>
-                    </div>
-                  </div>
-                  <div className="pc-grid-recos">
-                    {plano.beneficios.map((item) => (
-                      <RecomendacaoCard key={`${item.titulo}-beneficio`} item={item} />
-                    ))}
-                  </div>
-                </article>
+            <>
+              <div className="cp-grid">
+                {resultados.map((item) => (
+                  <ResultadoCard
+                    key={item.id}
+                    item={item}
+                    ativo={selecionado?.id === item.id}
+                    favoritado={favoritos.includes(item.id)}
+                    onSelecionar={() => setSelecionadoId(item.id)}
+                    onFavoritar={() => alternarFavorito(item.id)}
+                  />
+                ))}
               </div>
-            </div>
+
+              {selecionado && (
+                <article className="cp-detalhe" aria-live="polite" aria-atomic="true">
+                  <div className="cp-detalhe-cabeca">
+                    <div>
+                      <span className={`cp-tag ${selecionado.tipo === 'Empreender' ? 'empreender' : 'profissao'}`}>
+                        {selecionado.tipo}
+                      </span>
+                      <h3>{selecionado.titulo}</h3>
+                      <p>{selecionado.comoComecar}</p>
+                    </div>
+                    <div className="cp-detalhe-percentual">
+                      <strong>{selecionado.percent}%</strong>
+                      <span>compatibilidade</span>
+                    </div>
+                  </div>
+
+                  <div className="cp-detalhe-grade">
+                    {selecionado.passos.map((passoItem) => (
+                      <span key={passoItem} className="cp-detalhe-passos">
+                        {passoItem}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="cp-detalhe-acoes">
+                    <Link to="/" className="btn-secundario">
+                      Ver feed
+                    </Link>
+                    <Link to="/mapa" className="btn-secundario">
+                      Abrir mapa
+                    </Link>
+                  </div>
+                </article>
+              )}
+            </>
           )}
         </div>
       </section>
