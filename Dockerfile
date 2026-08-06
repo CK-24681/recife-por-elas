@@ -22,6 +22,7 @@ ENV NODE_ENV=production HOST=0.0.0.0 PORT=3000
 COPY backend/package*.json ./
 RUN npm ci --omit=dev
 COPY --from=backend /app/backend/dist ./dist
+COPY backend/conhecimento ./conhecimento
 COPY --from=frontend /app/frontend/dist /app/frontend/dist
 EXPOSE 3000
 CMD ["node", "dist/server.js"]

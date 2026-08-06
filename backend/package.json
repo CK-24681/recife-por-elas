@@ -10,13 +10,15 @@
     "start": "node --env-file=.env dist/server.js",
     "dev": "node --env-file=.env --watch dist/server.js",
     "test": "node --env-file=.env --test",
-    "test:e2e": "node --env-file=.env --test tests-e2e/*.e2e.js"
+    "test:e2e": "node --env-file=.env --test tests-e2e/*.e2e.js",
+    "sync:knowledge": "node scripts/sincronizar-conhecimento.mjs"
   },
   "dependencies": {
     "cors": "^2.8.6",
     "express": "^4.21.2",
     "express-rate-limit": "^8.6.1",
     "helmet": "^8.3.0",
+    "openai": "^7.4.0",
     "pg": "^8.13.1",
     "playwright-core": "^1.61.1"
   },

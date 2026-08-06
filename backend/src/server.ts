@@ -11,6 +11,7 @@ import { inicializarUploads } from './uploads';
 import { inicializarArquivos } from './arquivos';
 import { estadoDeSaude, registrarInicializacao } from './saude';
 import { inicializarBanco, registrarRotas } from './rotas';
+import { registrarRotasChatbot } from './chatbot/rotas';
 import path from 'node:path';
 
 // Porta vem da plataforma (process.env.PORT). Em dev, cai pra 3000.
@@ -88,6 +89,7 @@ if (pool) {
 // Rotas SEMPRE registradas — síncronas, não dependem do banco estar pronto.
 registrarRotasAuth(app, pool!);
 registrarRotas(app, pool!);
+registrarRotasChatbot(app, pool!);
 
 // Health: usado pela plataforma pra saber se a app está PRONTA (não só viva).
 // 503 enquanto alguma inicialização essencial estiver falhada — é o que impede

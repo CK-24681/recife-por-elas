@@ -49,3 +49,34 @@ como o Caddy. Aponte o domínio para o IP do servidor e faça o proxy para a por
 - Parar e APAGAR o banco:      docker compose down -v
 - Ver logs:                    docker compose logs -f
 - Atualizar após mudar algo:   docker compose up -d --build
+## Assistente e base de conhecimento
+
+O backend usa o SDK oficial `openai` e a Responses API. O chatbot consulta dados
+dinamicos no servidor, sem permitir que o modelo escreva SQL. O contexto de perfil
+e reduzido por uma camada de privacidade; senha, hashes, CPF, telefone, e-mail
+cifrado, tokens e logs nunca sao enviados ao modelo.
+
+Para criar ou sincronizar o Vector Store com os documentos sem dados pessoais:
+
+    cd backend
+    npm install
+    npm run build
+    npm run sync:knowledge
+
+O comando mostra o `OPENAI_VECTOR_STORE_ID`; coloque esse valor no `.env` e suba
+novamente a aplicacao. Sem esse valor, o chatbot usa a base local em
+`backend/conhecimento` junto com a Responses API.
+
+Para desenvolvimento separado:
+
+    cd backend
+    npm run build
+    npm run dev
+
+    cd frontend
+    npm install
+    npm run dev
+
+O endpoint do chatbot e `POST /api/chatbot`. O plano autenticado usa
+`POST /api/plano-carreira/gerar`; se a IA falhar, o servidor gera um plano local
+com as oportunidades reais disponiveis.

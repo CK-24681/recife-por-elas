@@ -10,11 +10,15 @@ import Mural from './paginas/Mural';
 import PlanoCarreira from './paginas/PlanoCarreira';
 import Perfil from './paginas/Perfil';
 import Cadastro from './paginas/Cadastro';
+import Chatbot from './chatbot/Chatbot';
 
 export default function App() {
   return (
     <SessaoProvider>
-      <Conteudo />
+      <>
+        <Conteudo />
+        <Chatbot />
+      </>
     </SessaoProvider>
   );
 }

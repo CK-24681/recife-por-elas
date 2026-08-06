@@ -57,6 +57,7 @@ interface Recomendacao {
 }
 
 interface PlanoGerado {
+  modoGeracao: 'ia' | 'local';
   titulo: string;
   resumo: string;
   primeiroPasso: string;
@@ -68,6 +69,12 @@ interface PlanoGerado {
   }>;
   cursos: Recomendacao[];
   beneficios: Recomendacao[];
+}
+
+interface PlanoGeradoApi extends Omit<PlanoGerado, 'modoGeracao' | 'cursos' | 'beneficios'> {
+  modoGeracao: 'ia' | 'local';
+  cursos: Array<Omit<Recomendacao, 'id'> & { id: string }>;
+  beneficios: Array<Omit<Recomendacao, 'id'> & { id: string }>;
 }
 
 const OPCOES_OBJETIVO: Array<{ valor: Objetivo; label: string; ajuda: string }> = [
@@ -621,6 +628,7 @@ function gerarPlano(respostas: Respostas, oportunidades: Oportunidade[]): PlanoG
   }));
 
   return {
+    modoGeracao: 'local',
     titulo: `Plano para ${rotuloObjetivo(respostas.objetivo).toLowerCase()}`,
     resumo: gerarResumo(respostas),
     primeiroPasso: gerarPrimeiroPasso(respostas, cursos, beneficios),
@@ -727,13 +735,39 @@ const PASSOS = [
   'Hobbies e meta',
 ];
 
+const PLANO_SALVO_KEY = 'recife-por-elas:plano-carreira';
+
+function carregarPlanoSalvo(): { respostas: Respostas; plano: PlanoGerado } | null {
+  try {
+    const bruto = window.localStorage.getItem(PLANO_SALVO_KEY);
+    if (!bruto) return null;
+    const salvo = JSON.parse(bruto) as { respostas?: Respostas; plano?: PlanoGerado };
+    return salvo.respostas && salvo.plano ? { respostas: salvo.respostas, plano: salvo.plano } : null;
+  } catch {
+    return null;
+  }
+}
+
+function adaptarPlanoApi(resultado: PlanoGeradoApi): PlanoGerado {
+  const adaptar = (item: PlanoGeradoApi['cursos'][number]): Recomendacao => ({
+    ...item,
+    id: item.id.startsWith('db:') ? Number(item.id.slice(3)) : undefined,
+  });
+  return {
+    ...resultado,
+    cursos: resultado.cursos.map(adaptar),
+    beneficios: resultado.beneficios.map(adaptar),
+  };
+}
+
 export default function PlanoCarreira() {
-  const [respostas, setRespostas] = useState<Respostas>(RESPOSTAS_INICIAIS);
+  const salvo = carregarPlanoSalvo();
+  const [respostas, setRespostas] = useState<Respostas>(salvo?.respostas || RESPOSTAS_INICIAIS);
   const [passo, setPasso] = useState(0);
   const [oportunidades, setOportunidades] = useState<Oportunidade[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [gerando, setGerando] = useState(false);
-  const [plano, setPlano] = useState<PlanoGerado | null>(null);
+  const [plano, setPlano] = useState<PlanoGerado | null>(salvo?.plano || null);
 
   useEffect(() => {
     let ativo = true;
@@ -779,13 +813,27 @@ export default function PlanoCarreira() {
 
   const gerar = async () => {
     setGerando(true);
-    await new Promise((resolve) => window.setTimeout(resolve, 500));
-    const resultado = gerarPlano(respostas, oportunidades);
+    let resultado: PlanoGerado;
+    try {
+      const resultadoIA = await apiJSON<PlanoGeradoApi>('/plano-carreira/gerar', { method: 'POST', corpo: respostas });
+      resultado = adaptarPlanoApi(resultadoIA);
+    } catch {
+      resultado = gerarPlano(respostas, oportunidades);
+    }
     setPlano(resultado);
+    window.localStorage.setItem(PLANO_SALVO_KEY, JSON.stringify({ respostas, plano: resultado }));
     setGerando(false);
     window.setTimeout(() => {
       document.getElementById('pc-plano')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 0);
+  };
+
+  const resetarPlano = () => {
+    window.localStorage.removeItem(PLANO_SALVO_KEY);
+    setRespostas(RESPOSTAS_INICIAIS);
+    setPasso(0);
+    setPlano(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const avancar = async () => {
@@ -1202,6 +1250,7 @@ export default function PlanoCarreira() {
               </p>
             </div>
             <div className="pc-resultados-acoes">
+              {plano && <button type="button" className="btn-secundario" onClick={resetarPlano}>Refazer plano</button>}
               <Link to="/" className="btn-secundario">
                 Ver vagas no feed
               </Link>
@@ -1224,7 +1273,7 @@ export default function PlanoCarreira() {
               <article className="pc-card pc-plano-principal">
                 <div className="pc-plano-topo">
                   <div>
-                    <Badge tonalidade="sucesso">IA personalizada</Badge>
+                    <Badge tonalidade="sucesso">{plano.modoGeracao === 'ia' ? 'IA online' : 'Modo local'}</Badge>
                     <h3>{plano.titulo}</h3>
                     <p>{plano.resumo}</p>
                   </div>
