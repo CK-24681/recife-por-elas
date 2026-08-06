@@ -166,8 +166,8 @@ function Conteudo() {
           </div>
           <div className="hp-foto hover-zoom-foto entrada-hero">
             <img
-              src="https://images.unsplash.com/photo-1621353417044-d9585aee7346?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODQwNjl8MHwxfHNlYXJjaHw2fHxicmF6aWxpYW4lMjB3b21lbiUyMGNvbW11bml0eSUyMHN1cHBvcnQlMjBncm91cCUyMGVtcG93ZXJpbmclMjBkaXZlcnNlfGVufDF8MHx8fDE3ODU3NjkwMjB8MA&ixlib=rb-4.1.0&q=80&w=1080"
-              alt="Mulheres em círculo de apoio mútuo, sorrindo e se abraçando"
+              src="https://images.unsplash.com/photo-1511895426328-dc8714191300?ixlib=rb-4.0.3&auto=format&fit=crop&w=1080&q=80"
+              alt="Mãe com seu(ua) filho(a)"
               loading="eager"
             />
           </div>
@@ -185,42 +185,60 @@ function Conteudo() {
             <div className="nu-item">
               <strong>+2 Milhões</strong>
               <span>de mães solo sem emprego formal no Brasil, buscando recolocação.</span>
+              <small style={{display: 'block', marginTop: '8px', fontSize: '12px', opacity: 0.7}}>Fonte: IBGE</small>
             </div>
             <div className="nu-item">
               <strong>63%</strong>
               <span>das famílias chefiadas por mães solo dependem de auxílios e benefícios sociais.</span>
+              <small style={{display: 'block', marginTop: '8px', fontSize: '12px', opacity: 0.7}}>Fonte: CadÚnico</small>
             </div>
             <div className="nu-item">
               <strong>74%</strong>
               <span>das mães solo empreendedoras iniciaram seus negócios por necessidade para sustentar a família.</span>
+              <small style={{display: 'block', marginTop: '8px', fontSize: '12px', opacity: 0.7}}>Fonte: Sebrae / DIEESE</small>
+            </div>
+            <div className="nu-item">
+              <strong>Dobro do tempo</strong>
+              <span>dedicado a cuidados não remunerados (filhos e casa) em comparação aos homens.</span>
+              <small style={{display: 'block', marginTop: '8px', fontSize: '12px', opacity: 0.7}}>Fonte: IBGE / IPEA</small>
+            </div>
+            <div className="nu-item">
+              <strong>60%</strong>
+              <span>das mães solo negras e pardas estão abaixo da linha da pobreza.</span>
+              <small style={{display: 'block', marginTop: '8px', fontSize: '12px', opacity: 0.7}}>Fonte: IBGE</small>
+            </div>
+            <div className="nu-item">
+              <strong>50%</strong>
+              <span>das trabalhadoras mães solo estão inseridas na economia informal, sem garantias trabalhistas.</span>
+              <small style={{display: 'block', marginTop: '8px', fontSize: '12px', opacity: 0.7}}>Fonte: IPEA</small>
             </div>
           </div>
         </div>
       </section>
 
-      {/* COMO FUNCIONA */}
-      <section className="secao cf-secao" id="como-funciona">
+      {/* POR QUE USAR O NOSSO SITE */}
+      <section className="secao cf-secao" id="por-que-usar">
         <div className="container">
           <div className="secao-cabeca surgir">
-            <span className="secao-etiqueta">Como funciona</span>
-            <h2 className="secao-titulo">Três passos para recomeçar</h2>
-            <p className="secao-sub">Simples, rápido e pensado para a sua realidade.</p>
+            <span className="secao-etiqueta">Um convite para você</span>
+            <h2 className="secao-titulo">Por que você tem que usar o nosso site?</h2>
+            <p className="secao-sub">Nós sabemos que a sua rotina é pesada, que o tempo é curto e que muitas portas se fecham. O Recife por Elas nasceu para acolher e transformar essa realidade de forma prática.</p>
           </div>
           <div className="cf-grade">
             <div className="cf-passo surgir">
               <span className="cf-num">1</span>
-              <h3>Crie seu perfil</h3>
-              <p>Conte pra gente seu bairro, horários disponíveis e o tipo de oportunidade que procura — emprego, curso, benefício ou apoio.</p>
+              <h3>Nós enxergamos o seu valor</h3>
+              <p>Esqueça os processos seletivos frios. Aqui, conectamos você a empresas e projetos que valorizam a força, a garra e a resiliência que só uma mãe solo tem.</p>
             </div>
             <div className="cf-passo surgir surgir-2">
               <span className="cf-num">2</span>
-              <h3>Receba recomendações</h3>
-              <p>Todo dia, uma seleção de vagas e cursos que cabem na sua rotina, filtrados por distância e compatibilidade familiar.</p>
+              <h3>Vagas na sua realidade</h3>
+              <p>Acabou a frustração de achar a vaga ideal do outro lado da cidade. Ofertamos oportunidades no seu bairro, respeitando os horários escolares e a sua carga de cuidados.</p>
             </div>
             <div className="cf-passo surgir surgir-3">
               <span className="cf-num">3</span>
-              <h3>Candidate-se com um toque</h3>
-              <p>Viu algo que encaixa? Candidate-se direto pelo app. Acompanhe o status e receba apoio da nossa rede em cada etapa.</p>
+              <h3>Você não está sozinha</h3>
+              <p>Dê o primeiro passo para o recomeço que você e seus filhos merecem. Aqui você terá apoio, orientação social e uma rede de mulheres prontas para segurar a sua mão.</p>
             </div>
           </div>
         </div>
@@ -440,11 +458,12 @@ function FooterLanding() {
       <div className="container">
         <div className="rp-apoiadores" style={{ paddingBottom: '32px', marginBottom: '32px', borderBottom: '1px solid var(--borda-card)', textAlign: 'center' }}>
           <h4 style={{ color: 'var(--texto-suave)', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>Apoiadores e Parceiros Institucionais</h4>
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '24px', alignItems: 'center' }}>
-            <span className="hp-selo" style={{ background: 'var(--fundo-card)', padding: '8px 16px', borderRadius: '100px', fontSize: '14px', fontWeight: '500', color: 'var(--texto-base)', border: '1px solid var(--borda-card)', display: 'inline-flex', alignItems: 'center' }}><span className="hp-selo-dot" style={{background:'var(--cor-primaria)', display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', marginRight: '8px'}}></span>Programa Recife Resolve</span>
-            <span className="hp-selo" style={{ background: 'var(--fundo-card)', padding: '8px 16px', borderRadius: '100px', fontSize: '14px', fontWeight: '500', color: 'var(--texto-base)', border: '1px solid var(--borda-card)', display: 'inline-flex', alignItems: 'center' }}><span className="hp-selo-dot" style={{background:'var(--coral)', display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', marginRight: '8px'}}></span>Prefeitura do Recife</span>
-            <span className="hp-selo" style={{ background: 'var(--fundo-card)', padding: '8px 16px', borderRadius: '100px', fontSize: '14px', fontWeight: '500', color: 'var(--texto-base)', border: '1px solid var(--borda-card)', display: 'inline-flex', alignItems: 'center' }}><span className="hp-selo-dot" style={{background:'#214E8A', display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', marginRight: '8px'}}></span>CESAR</span>
-            <span className="hp-selo" style={{ background: 'var(--fundo-card)', padding: '8px 16px', borderRadius: '100px', fontSize: '14px', fontWeight: '500', color: 'var(--texto-base)', border: '1px solid var(--borda-card)', display: 'inline-flex', alignItems: 'center' }}><span className="hp-selo-dot" style={{background:'#4A90E2', display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', marginRight: '8px'}}></span>UK-Brazil Tech Hub</span>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '40px', alignItems: 'center' }}>
+            <img src="/logos/uk-government.png" alt="UK Government" style={{ height: '45px', objectFit: 'contain' }} />
+            <img src="/logos/uk-brazil-tech-hub.png" alt="UK Brazil Tech Hub" style={{ height: '55px', objectFit: 'contain' }} />
+            <img src="/logos/compaz.png" alt="COMPAZ" style={{ height: '50px', objectFit: 'contain' }} />
+            <img src="/logos/prefeitura-recife.png" alt="Prefeitura do Recife" style={{ height: '50px', objectFit: 'contain' }} />
+            <img src="/logos/cesar.png" alt="CESAR" style={{ height: '40px', objectFit: 'contain' }} />
           </div>
         </div>
         <div className="rp-grade">
