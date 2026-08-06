@@ -65,3 +65,27 @@ export function Link({
     </a>
   );
 }
+
+/** Rola a página suavemente até o elemento com a ID informada. Se não estiver na raiz, navega para '/' antes. */
+export function rolarParaAncora(
+  e?: { preventDefault: () => void },
+  elementId?: string,
+): void {
+  if (e) e.preventDefault();
+  if (!elementId) return;
+
+  const rolar = () => {
+    const el = document.getElementById(elementId);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  if (window.location.pathname !== '/') {
+    navegar('/');
+    setTimeout(rolar, 100);
+  } else {
+    rolar();
+  }
+}
+

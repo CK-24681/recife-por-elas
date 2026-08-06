@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { checarSaude, apiJSON } from './services/api';
 import Auth from './components/Auth';
-import { Link, navegar, useCaminho } from './utils/roteador';
+import { Link, navegar, useCaminho, rolarParaAncora } from './utils/roteador';
 import { SessaoProvider, useSessao, Protegido } from './context/sessao';
 import Feed from './paginas/Feed';
 import OportunidadeDetalhe from './paginas/OportunidadeDetalhe';
@@ -158,10 +158,7 @@ function Conteudo() {
             </p>
             <div className="hp-ctas">
               <Link to="/cadastro" className="btn-primario">Quero me cadastrar</Link>
-              <a href="#como-funciona" className="hp-link">
-                Como funciona
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-              </a>
+              
             </div>
           </div>
           <div className="hp-foto hover-zoom-foto entrada-hero">
@@ -436,13 +433,14 @@ function HeaderLanding({ estado, encerrar }: { estado: string; encerrar: () => v
   return (
     <header className="hn-topo">
       <div className="container hn-linha">
-        <a href="/" className="hn-logo">
+        <a href="#inicio" onClick={(e) => rolarParaAncora(e, 'inicio')} className="hn-logo">
           <img src="/logos/quadrado.png" alt="Recife Por Elas" className="brand-logo-img" />
         </a>
         <nav className="hn-nav">
-          <a href="/#como-funciona">Como funciona</a>
-          <a href="/#recursos">Recursos</a>
-          <a href="/#faq">Dúvidas</a>
+          <a href="#inicio" onClick={(e) => rolarParaAncora(e, 'inicio')}>Início</a>
+          <a href="#por-que-usar" onClick={(e) => rolarParaAncora(e, 'por-que-usar')}>Por que usar?</a>
+          <a href="#recursos" onClick={(e) => rolarParaAncora(e, 'recursos')}>Recursos</a>
+          <a href="#faq" onClick={(e) => rolarParaAncora(e, 'faq')}>Dúvidas</a>
         </nav>
         <div className="hn-acoes">
           {estado === 'logado' ? (
@@ -459,9 +457,10 @@ function HeaderLanding({ estado, encerrar }: { estado: string; encerrar: () => v
           </label>
         </div>
         <nav className="hn-nav-movel">
-          <a href="/#como-funciona">Como funciona</a>
-          <a href="/#recursos">Recursos</a>
-          <a href="/#faq">Dúvidas</a>
+          <a href="#inicio" onClick={(e) => rolarParaAncora(e, 'inicio')}>Início</a>
+          <a href="#por-que-usar" onClick={(e) => rolarParaAncora(e, 'por-que-usar')}>Por que usar?</a>
+          <a href="#recursos" onClick={(e) => rolarParaAncora(e, 'recursos')}>Recursos</a>
+          <a href="#faq" onClick={(e) => rolarParaAncora(e, 'faq')}>Dúvidas</a>
           {estado === 'logado' ? (
             <>
               <a href="/perfil">Meu perfil</a>
@@ -503,16 +502,17 @@ function FooterLanding() {
         </div>
         <div className="rp-grade">
           <div className="rp-marca">
-            <a href="/" className="rp-logo">
+            <a href="#inicio" onClick={(e) => rolarParaAncora(e, 'inicio')} className="rp-logo">
               <img src="/logos/quadrado.png" alt="Recife Por Elas" className="brand-logo-img" />
             </a>
             <p>Conectando mulheres do Recife a oportunidades de trabalho, capacitação e apoio — respeitando sua rotina e seu território.</p>
           </div>
           <nav className="rp-col">
             <h4>Plataforma</h4>
-            <a href="/#como-funciona">Como funciona</a>
-            <a href="/#recursos">Recursos</a>
-            <a href="/#faq">Dúvidas</a>
+            <a href="#inicio" onClick={(e) => rolarParaAncora(e, 'inicio')}>Início</a>
+            <a href="#por-que-usar" onClick={(e) => rolarParaAncora(e, 'por-que-usar')}>Por que usar?</a>
+            <a href="#recursos" onClick={(e) => rolarParaAncora(e, 'recursos')}>Recursos</a>
+            <a href="#faq" onClick={(e) => rolarParaAncora(e, 'faq')}>Dúvidas</a>
             <a href="/mapa">Mapa</a>
           </nav>
           <nav className="rp-col">
