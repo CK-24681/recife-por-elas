@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { checarSaude, apiJSON } from './api';
-import Auth from './Auth';
-import { Link, navegar, useCaminho } from './roteador';
-import { SessaoProvider, useSessao, Protegido } from './sessao';
+import { checarSaude, apiJSON } from './services/api';
+import Auth from './components/Auth';
+import { Link, navegar, useCaminho } from './utils/roteador';
+import { SessaoProvider, useSessao, Protegido } from './context/sessao';
 import Feed from './paginas/Feed';
 import OportunidadeDetalhe from './paginas/OportunidadeDetalhe';
 import Mapa from './paginas/Mapa';
@@ -34,7 +34,7 @@ function Conteudo() {
     return (
       <Auth
         resetToken={resetToken}
-        onLogado={(u) => { definirUsuario(u); if (resetToken) window.history.replaceState({}, '', '/'); navegar('/'); }}
+        onLogado={(u: any) => { definirUsuario(u); if (resetToken) window.history.replaceState({}, '', '/'); navegar('/'); }}
         onVoltar={() => navegar('/')}
       />
     );
@@ -363,7 +363,7 @@ function HeaderApp() {
   useEffect(() => {
     let ativo = true;
     apiJSON<{ photo_url?: string }>('/perfil')
-      .then((perfil) => {
+      .then((perfil: any) => {
         if (ativo) setFotoPerfil(perfil.photo_url || '');
       })
       .catch(() => {
@@ -499,6 +499,6 @@ function FooterLanding() {
 
 function SaudeApi() {
   const [, setStatus] = useState<'verificando' | 'online' | 'offline'>('verificando');
-  useEffect(() => { checarSaude().then((ok) => setStatus(ok ? 'online' : 'offline')); }, []);
+  useEffect(() => { checarSaude().then((ok: boolean) => setStatus(ok ? 'online' : 'offline')); }, []);
   return null; // invisível na landing — só debug
 }
