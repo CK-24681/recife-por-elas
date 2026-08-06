@@ -245,11 +245,17 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
   display: flex; align-items: center; justify-content: space-between;
   gap: 24px; min-height: 68px; position: relative;
 }
-.hn-logo {
+.hn-logo, .hn-logo-app, .rp-logo, .auth-logo, .cd-onboard-logo {
   font-family: var(--fonte-titulo); font-weight: 800; font-size: 20px;
   color: var(--tinta); text-decoration: none; letter-spacing: -0.02em;
+  display: inline-flex; align-items: center; gap: 10px;
 }
-.hn-logo strong { color: var(--cor-primaria); }
+.brand-logo-img {
+  height: 36px; width: 36px; object-fit: cover;
+  border-radius: 8px; flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+.hn-logo strong, .hn-logo-app strong, .rp-logo strong, .auth-logo strong, .cd-onboard-logo strong { color: var(--cor-primaria); }
 .hn-nav { display: flex; align-items: center; gap: 28px; }
 .hn-nav a {
   color: var(--texto); text-decoration: none; font-size: 15px;

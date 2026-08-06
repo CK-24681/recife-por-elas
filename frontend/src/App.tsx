@@ -397,7 +397,10 @@ function HeaderApp() {
   return (
     <header className="hn-topo-app">
       <div className="container hn-linha-app">
-        <Link to="/" className="hn-logo-app">Recife<strong>PorElas</strong></Link>
+        <Link to="/" className="hn-logo-app">
+          <img src="/logos/quadrado.png" alt="Recife Por Elas" className="brand-logo-img" />
+          <span>Recife<strong>PorElas</strong></span>
+        </Link>
         <nav className="hn-menu-app">
           <Link to="/" className={ativo('/') && !ativo('/oportunidades') ? 'ativo' : ''}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -434,7 +437,10 @@ function HeaderLanding({ estado, encerrar }: { estado: string; encerrar: () => v
   return (
     <header className="hn-topo">
       <div className="container hn-linha">
-        <a href="/" className="hn-logo">Recife<strong>PorElas</strong></a>
+        <a href="/" className="hn-logo">
+          <img src="/logos/quadrado.png" alt="Recife Por Elas" className="brand-logo-img" />
+          <span>Recife<strong>PorElas</strong></span>
+        </a>
         <nav className="hn-nav">
           <a href="/#como-funciona">Como funciona</a>
           <a href="/#recursos">Recursos</a>
@@ -499,7 +505,10 @@ function FooterLanding() {
         </div>
         <div className="rp-grade">
           <div className="rp-marca">
-            <a href="/" className="rp-logo">Recife<strong>PorElas</strong></a>
+            <a href="/" className="rp-logo">
+              <img src="/logos/quadrado.png" alt="Recife Por Elas" className="brand-logo-img" />
+              <span>Recife<strong>PorElas</strong></span>
+            </a>
             <p>Conectando mulheres do Recife a oportunidades de trabalho, capacitação e apoio — respeitando sua rotina e seu território.</p>
           </div>
           <nav className="rp-col">
