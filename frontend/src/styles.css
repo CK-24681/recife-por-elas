@@ -246,16 +246,22 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
   gap: 24px; min-height: 68px; position: relative;
 }
 .hn-logo, .hn-logo-app, .rp-logo, .auth-logo, .cd-onboard-logo {
-  font-family: var(--fonte-titulo); font-weight: 800; font-size: 20px;
-  color: var(--tinta); text-decoration: none; letter-spacing: -0.02em;
-  display: inline-flex; align-items: center; gap: 10px;
+  display: inline-flex; align-items: center;
+  text-decoration: none; line-height: 1;
 }
 .brand-logo-img {
-  height: 36px; width: 36px; object-fit: cover;
-  border-radius: 8px; flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  height: clamp(42px, 5vw, 52px);
+  width: auto;
+  max-width: 240px;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.2s ease;
 }
-.hn-logo strong, .hn-logo-app strong, .rp-logo strong, .auth-logo strong, .cd-onboard-logo strong { color: var(--cor-primaria); }
+.hn-logo:hover .brand-logo-img,
+.hn-logo-app:hover .brand-logo-img,
+.rp-logo:hover .brand-logo-img {
+  transform: scale(1.03);
+}
 .hn-nav { display: flex; align-items: center; gap: 28px; }
 .hn-nav a {
   color: var(--texto); text-decoration: none; font-size: 15px;

@@ -87,7 +87,6 @@ export default function Cadastro() {
       <header className="cd-onboard-topo">
         <Link to="/" className="cd-onboard-logo">
           <img src="/logos/quadrado.png" alt="Recife Por Elas" className="brand-logo-img" />
-          <span>Recife<strong>PorElas</strong></span>
         </Link>
         <div className="cd-progresso">
           <span className={`cd-step-dot ${progresso >= 1 ? 'feito' : ''} ${progresso === 1 ? 'atual' : ''}`} />

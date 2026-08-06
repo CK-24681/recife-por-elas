@@ -399,7 +399,6 @@ function HeaderApp() {
       <div className="container hn-linha-app">
         <Link to="/" className="hn-logo-app">
           <img src="/logos/quadrado.png" alt="Recife Por Elas" className="brand-logo-img" />
-          <span>Recife<strong>PorElas</strong></span>
         </Link>
         <nav className="hn-menu-app">
           <Link to="/" className={ativo('/') && !ativo('/oportunidades') ? 'ativo' : ''}>
@@ -439,7 +438,6 @@ function HeaderLanding({ estado, encerrar }: { estado: string; encerrar: () => v
       <div className="container hn-linha">
         <a href="/" className="hn-logo">
           <img src="/logos/quadrado.png" alt="Recife Por Elas" className="brand-logo-img" />
-          <span>Recife<strong>PorElas</strong></span>
         </a>
         <nav className="hn-nav">
           <a href="/#como-funciona">Como funciona</a>
@@ -507,7 +505,6 @@ function FooterLanding() {
           <div className="rp-marca">
             <a href="/" className="rp-logo">
               <img src="/logos/quadrado.png" alt="Recife Por Elas" className="brand-logo-img" />
-              <span>Recife<strong>PorElas</strong></span>
             </a>
             <p>Conectando mulheres do Recife a oportunidades de trabalho, capacitação e apoio — respeitando sua rotina e seu território.</p>
           </div>
