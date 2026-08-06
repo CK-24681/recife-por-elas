@@ -163,15 +163,6 @@ function Conteudo() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
               </a>
             </div>
-            <div className="hp-parceiros">
-              <span>Apoiadores:</span>
-              <div className="hp-selos">
-                <span className="hp-selo"><span className="hp-selo-dot" style={{background:'var(--cor-primaria)'}}></span>Programa Recife Resolve</span>
-                <span className="hp-selo"><span className="hp-selo-dot" style={{background:'var(--coral)'}}></span>Prefeitura do Recife</span>
-                <span className="hp-selo"><span className="hp-selo-dot" style={{background:'#214E8A'}}></span>CESAR</span>
-                <span className="hp-selo"><span className="hp-selo-dot" style={{background:'#4A90E2'}}></span>UK-Brazil Tech Hub</span>
-              </div>
-            </div>
           </div>
           <div className="hp-foto hover-zoom-foto entrada-hero">
             <img
@@ -186,37 +177,68 @@ function Conteudo() {
       {/* IMPACTO E CONTEXTO */}
       <section className="nu-faixa" id="impacto">
         <div className="container">
+          <div className="secao-cabeca surgir" style={{marginBottom: '32px', textAlign: 'center'}}>
+            <h2 className="secao-titulo" style={{color: 'white', marginBottom: '8px'}}>A realidade que queremos transformar</h2>
+            <p className="secao-sub" style={{color: 'rgba(255,255,255,0.9)', maxWidth: '700px', margin: '0 auto'}}>Entendemos os desafios únicos enfrentados diariamente pelas mães solo e criamos o Recife por Elas para ser a ponte para um novo começo.</p>
+          </div>
           <div className="nu-grade surgir">
-            <div className="nu-item"><strong>11,3M</strong><span>de mães solo no Brasil</span></div>
-            <div className="nu-item"><strong>Recife e RMR</strong><span>foco total de atuação</span></div>
-            <div className="nu-item"><strong>100%</strong><span>gratuito para as mães</span></div>
+            <div className="nu-item">
+              <strong>+11 Milhões</strong>
+              <span>de mães solo no Brasil cuidando de lares inteiros sozinhas.</span>
+              <small style={{display: 'block', marginTop: '8px', fontSize: '12px', opacity: 0.7}}>Fonte: IBGE / Censo Demográfico</small>
+            </div>
+            <div className="nu-item">
+              <strong>47%</strong>
+              <span>das famílias chefiadas por mulheres vivem em situação de vulnerabilidade ou extrema pobreza.</span>
+              <small style={{display: 'block', marginTop: '8px', fontSize: '12px', opacity: 0.7}}>Fonte: FGV Social</small>
+            </div>
+            <div className="nu-item">
+              <strong>63%</strong>
+              <span>dos lares chefiados por mães solo dependem diretamente de auxílios e benefícios sociais.</span>
+              <small style={{display: 'block', marginTop: '8px', fontSize: '12px', opacity: 0.7}}>Fonte: CadÚnico / MDS</small>
+            </div>
+            <div className="nu-item">
+              <strong>74%</strong>
+              <span>das mães empreendedoras abriram o próprio negócio por absoluta necessidade de sustento.</span>
+              <small style={{display: 'block', marginTop: '8px', fontSize: '12px', opacity: 0.7}}>Fonte: Sebrae / GEM</small>
+            </div>
+            <div className="nu-item">
+              <strong>Elevada</strong>
+              <span>taxa de desemprego entre mulheres com filhos pequenos, superando a média nacional.</span>
+              <small style={{display: 'block', marginTop: '8px', fontSize: '12px', opacity: 0.7}}>Fonte: DIEESE / PNAD Contínua</small>
+            </div>
+            <div className="nu-item">
+              <strong>+80%</strong>
+              <span>relatam falta crônica de rede de apoio para conseguir trabalhar ou estudar em paz.</span>
+              <small style={{display: 'block', marginTop: '8px', fontSize: '12px', opacity: 0.7}}>Fonte: Instituto Mãe / Pesquisa Nacional</small>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* COMO FUNCIONA */}
-      <section className="secao cf-secao" id="como-funciona">
+      {/* POR QUE USAR O NOSSO SITE */}
+      <section className="secao cf-secao" id="por-que-usar">
         <div className="container">
           <div className="secao-cabeca surgir">
-            <span className="secao-etiqueta">Como funciona</span>
-            <h2 className="secao-titulo">Três passos para recomeçar</h2>
-            <p className="secao-sub">Simples, rápido e pensado para a sua realidade.</p>
+            <span className="secao-etiqueta">Um convite para você</span>
+            <h2 className="secao-titulo">Por que você tem que usar o nosso site?</h2>
+            <p className="secao-sub">Sabemos que sua rotina é exaustiva e que falta tempo. O Recife por Elas foi feito sob medida para acolher você e aliviar essa carga.</p>
           </div>
           <div className="cf-grade">
             <div className="cf-passo surgir">
               <span className="cf-num">1</span>
-              <h3>Crie seu perfil</h3>
-              <p>Conte pra gente seu bairro, horários disponíveis e o tipo de oportunidade que procura — emprego, curso, benefício ou apoio.</p>
+              <h3>Nós enxergamos o seu valor</h3>
+              <p>Esqueça os processos seletivos frios que julgam sua maternidade. Aqui, conectamos você a empresas que valorizam a força, a garra e a resiliência que só uma mãe solo tem.</p>
             </div>
             <div className="cf-passo surgir surgir-2">
               <span className="cf-num">2</span>
-              <h3>Receba recomendações</h3>
-              <p>Todo dia, uma seleção de vagas e cursos que cabem na sua rotina, filtrados por distância e compatibilidade familiar.</p>
+              <h3>Vagas na sua realidade</h3>
+              <p>Acabou a frustração de achar a vaga ideal do outro lado da cidade. Ofertamos oportunidades no seu bairro, respeitando os horários escolares e a sua carga de cuidados.</p>
             </div>
             <div className="cf-passo surgir surgir-3">
               <span className="cf-num">3</span>
-              <h3>Candidate-se com um toque</h3>
-              <p>Viu algo que encaixa? Candidate-se direto pelo app. Acompanhe o status e receba apoio da nossa rede em cada etapa.</p>
+              <h3>Você não está mais sozinha</h3>
+              <p>Dê o primeiro passo para o recomeço que você e seus filhos merecem. Aqui você terá apoio real, orientação social e uma rede de mulheres prontas para segurar a sua mão.</p>
             </div>
           </div>
         </div>
@@ -434,6 +456,15 @@ function FooterLanding() {
   return (
     <footer className="rp-rodape">
       <div className="container">
+        <div className="rp-apoiadores" style={{ paddingBottom: '32px', marginBottom: '32px', borderBottom: '1px solid var(--borda-card)', textAlign: 'center' }}>
+          <h4 style={{ color: 'var(--texto-suave)', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '24px' }}>Apoiadores e Parceiros Institucionais</h4>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '40px', alignItems: 'center' }}>
+            <img src="/logos/recife-resolve.png" alt="Programa Recife Resolve" style={{ height: '40px', objectFit: 'contain' }} />
+            <img src="/logos/prefeitura-recife.png" alt="Prefeitura do Recife" style={{ height: '45px', objectFit: 'contain' }} />
+            <img src="/logos/cesar.png" alt="CESAR" style={{ height: '35px', objectFit: 'contain' }} />
+            <img src="/logos/uk-brazil-tech-hub.png" alt="UK Brazil Tech Hub" style={{ height: '45px', objectFit: 'contain' }} />
+          </div>
+        </div>
         <div className="rp-grade">
           <div className="rp-marca">
             <a href="/" className="rp-logo">Recife<strong>PorElas</strong></a>
