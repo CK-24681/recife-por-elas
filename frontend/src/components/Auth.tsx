@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
-import { entrar, recuperar, redefinir, type Usuario } from './api';
-import { Link } from './roteador';
+import { entrar, recuperar, redefinir, type Usuario } from '../services/api';
+import { Link } from '../utils/roteador';
 
 type Modo = 'entrar' | 'recuperar' | 'redefinir';
 
