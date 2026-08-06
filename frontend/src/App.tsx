@@ -166,8 +166,8 @@ function Conteudo() {
           </div>
           <div className="hp-foto hover-zoom-foto entrada-hero">
             <img
-              src="https://images.unsplash.com/photo-1621353417044-d9585aee7346?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODQwNjl8MHwxfHNlYXJjaHw2fHxicmF6aWxpYW4lMjB3b21lbiUyMGNvbW11bml0eSUyMHN1cHBvcnQlMjBncm91cCUyMGVtcG93ZXJpbmclMjBkaXZlcnNlfGVufDF8MHx8fDE3ODU3NjkwMjB8MA&ixlib=rb-4.1.0&q=80&w=1080"
-              alt="Mulheres em círculo de apoio mútuo, sorrindo e se abraçando"
+              src="https://images.unsplash.com/photo-1511895426328-dc8714191300?ixlib=rb-4.0.3&auto=format&fit=crop&w=1080&q=80"
+              alt="Mãe e filho em um momento de afeto, sorrindo juntos, transmitindo força e esperança"
               loading="eager"
             />
           </div>
@@ -182,45 +182,38 @@ function Conteudo() {
             <p className="secao-sub" style={{color: 'rgba(255,255,255,0.9)', maxWidth: '700px', margin: '0 auto'}}>Entendemos os desafios únicos enfrentados diariamente pelas mães solo e criamos o Recife por Elas para ser a ponte para um novo começo.</p>
           </div>
           <div className="nu-grade surgir">
-            <div className="nu-item">
-              <strong>+2 Milhões</strong>
-              <span>de mães solo sem emprego formal no Brasil, buscando recolocação.</span>
+            <div className="nu-item" style={{display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '24px', background: 'rgba(255,255,255,0.08)', borderRadius: '12px'}}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--coral, #FF6B6B)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginBottom: '16px'}}><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+              <strong style={{fontSize: '2.5rem', color: 'var(--coral, #FF6B6B)', marginBottom: '8px'}}>+2 Milhões</strong>
+              <span style={{color: 'rgba(255,255,255,0.9)', fontSize: '1.1rem', lineHeight: '1.5'}}>de mães solo sem emprego formal no Brasil, buscando recolocação.</span>
             </div>
-            <div className="nu-item">
-              <strong>63%</strong>
-              <span>das famílias chefiadas por mães solo dependem de auxílios e benefícios sociais.</span>
+            <div className="nu-item" style={{display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '24px', background: 'rgba(255,255,255,0.08)', borderRadius: '12px'}}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--amarelo, #F4D03F)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginBottom: '16px'}}><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+              <strong style={{fontSize: '2.5rem', color: 'var(--amarelo, #F4D03F)', marginBottom: '8px'}}>63%</strong>
+              <span style={{color: 'rgba(255,255,255,0.9)', fontSize: '1.1rem', lineHeight: '1.5'}}>das famílias chefiadas por mães solo dependem de auxílios e benefícios sociais.</span>
             </div>
-            <div className="nu-item">
-              <strong>74%</strong>
-              <span>das mães solo empreendedoras iniciaram seus negócios por necessidade para sustentar a família.</span>
+            <div className="nu-item" style={{display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '24px', background: 'rgba(255,255,255,0.08)', borderRadius: '12px'}}>
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#4A90E2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginBottom: '16px'}}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+              <strong style={{fontSize: '2.5rem', color: '#4A90E2', marginBottom: '8px'}}>74%</strong>
+              <span style={{color: 'rgba(255,255,255,0.9)', fontSize: '1.1rem', lineHeight: '1.5'}}>das mães solo empreendedoras iniciaram seus negócios por necessidade para sustentar a família.</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* COMO FUNCIONA */}
-      <section className="secao cf-secao" id="como-funciona">
-        <div className="container">
+      {/* NOVO CONVITE IRRESISTÍVEL */}
+      <section className="secao" id="por-que-usar" style={{background: 'var(--fundo-destaque)'}}>
+        <div className="container" style={{textAlign: 'center', maxWidth: '800px', margin: '0 auto'}}>
           <div className="secao-cabeca surgir">
-            <span className="secao-etiqueta">Como funciona</span>
-            <h2 className="secao-titulo">Três passos para recomeçar</h2>
-            <p className="secao-sub">Simples, rápido e pensado para a sua realidade.</p>
-          </div>
-          <div className="cf-grade">
-            <div className="cf-passo surgir">
-              <span className="cf-num">1</span>
-              <h3>Crie seu perfil</h3>
-              <p>Conte pra gente seu bairro, horários disponíveis e o tipo de oportunidade que procura — emprego, curso, benefício ou apoio.</p>
-            </div>
-            <div className="cf-passo surgir surgir-2">
-              <span className="cf-num">2</span>
-              <h3>Receba recomendações</h3>
-              <p>Todo dia, uma seleção de vagas e cursos que cabem na sua rotina, filtrados por distância e compatibilidade familiar.</p>
-            </div>
-            <div className="cf-passo surgir surgir-3">
-              <span className="cf-num">3</span>
-              <h3>Candidate-se com um toque</h3>
-              <p>Viu algo que encaixa? Candidate-se direto pelo app. Acompanhe o status e receba apoio da nossa rede em cada etapa.</p>
+            <h2 className="secao-titulo" style={{fontSize: '2.5rem', marginBottom: '24px', lineHeight: 1.2}}>Por que você tem que usar o nosso site?</h2>
+            <p style={{fontSize: '1.2rem', color: 'var(--texto-base)', lineHeight: 1.8, marginBottom: '24px'}}>
+              Sabemos que ser mãe solo é carregar o mundo nas costas, enfrentando julgamentos e uma rotina exaustiva onde quase não sobra tempo para você. O <strong>Recife por Elas</strong> foi criado exatamente para aliviar esse peso. Aqui, nós não apenas mostramos vagas de emprego; nós conectamos você a oportunidades flexíveis, perto de casa e de escolas, cursos de capacitação pensados na sua realidade e, mais importante, a uma rede de mulheres que entende e acolhe suas lutas diárias.
+            </p>
+            <p style={{fontSize: '1.2rem', color: 'var(--texto-base)', lineHeight: 1.8, marginBottom: '40px'}}>
+              Não enfrente tudo isso sozinha. Deixe nossa plataforma abrir as portas para o recomeço que você e seus filhos merecem. Dê o primeiro passo hoje e descubra que o seu futuro pode ser diferente.
+            </p>
+            <div className="hp-ctas" style={{justifyContent: 'center', marginTop: '24px'}}>
+              <Link to="/cadastro" className="btn-primario" style={{fontSize: '1.125rem', padding: '16px 32px'}}>Quero transformar minha realidade</Link>
             </div>
           </div>
         </div>
@@ -441,10 +434,22 @@ function FooterLanding() {
         <div className="rp-apoiadores" style={{ paddingBottom: '32px', marginBottom: '32px', borderBottom: '1px solid var(--borda-card)', textAlign: 'center' }}>
           <h4 style={{ color: 'var(--texto-suave)', fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>Apoiadores e Parceiros Institucionais</h4>
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '24px', alignItems: 'center' }}>
-            <span className="hp-selo" style={{ background: 'var(--fundo-card)', padding: '8px 16px', borderRadius: '100px', fontSize: '14px', fontWeight: '500', color: 'var(--texto-base)', border: '1px solid var(--borda-card)', display: 'inline-flex', alignItems: 'center' }}><span className="hp-selo-dot" style={{background:'var(--cor-primaria)', display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', marginRight: '8px'}}></span>Programa Recife Resolve</span>
-            <span className="hp-selo" style={{ background: 'var(--fundo-card)', padding: '8px 16px', borderRadius: '100px', fontSize: '14px', fontWeight: '500', color: 'var(--texto-base)', border: '1px solid var(--borda-card)', display: 'inline-flex', alignItems: 'center' }}><span className="hp-selo-dot" style={{background:'var(--coral)', display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', marginRight: '8px'}}></span>Prefeitura do Recife</span>
-            <span className="hp-selo" style={{ background: 'var(--fundo-card)', padding: '8px 16px', borderRadius: '100px', fontSize: '14px', fontWeight: '500', color: 'var(--texto-base)', border: '1px solid var(--borda-card)', display: 'inline-flex', alignItems: 'center' }}><span className="hp-selo-dot" style={{background:'#214E8A', display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', marginRight: '8px'}}></span>CESAR</span>
-            <span className="hp-selo" style={{ background: 'var(--fundo-card)', padding: '8px 16px', borderRadius: '100px', fontSize: '14px', fontWeight: '500', color: 'var(--texto-base)', border: '1px solid var(--borda-card)', display: 'inline-flex', alignItems: 'center' }}><span className="hp-selo-dot" style={{background:'#4A90E2', display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', marginRight: '8px'}}></span>UK-Brazil Tech Hub</span>
+            <span className="hp-selo" style={{ background: 'var(--fundo-card)', padding: '8px 16px', borderRadius: '100px', fontSize: '14px', fontWeight: '500', color: 'var(--texto-base)', border: '1px solid var(--borda-card)', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cor-primaria)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+              Programa Recife Resolve
+            </span>
+            <span className="hp-selo" style={{ background: 'var(--fundo-card)', padding: '8px 16px', borderRadius: '100px', fontSize: '14px', fontWeight: '500', color: 'var(--texto-base)', border: '1px solid var(--borda-card)', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--coral)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+              Prefeitura do Recife
+            </span>
+            <span className="hp-selo" style={{ background: 'var(--fundo-card)', padding: '8px 16px', borderRadius: '100px', fontSize: '14px', fontWeight: '500', color: 'var(--texto-base)', border: '1px solid var(--borda-card)', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#214E8A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path><path d="M2 12h20"></path></svg>
+              CESAR
+            </span>
+            <span className="hp-selo" style={{ background: 'var(--fundo-card)', padding: '8px 16px', borderRadius: '100px', fontSize: '14px', fontWeight: '500', color: 'var(--texto-base)', border: '1px solid var(--borda-card)', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A90E2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+              UK-Brazil Tech Hub
+            </span>
           </div>
         </div>
         <div className="rp-grade">
