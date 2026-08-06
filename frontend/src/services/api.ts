@@ -1,8 +1,10 @@
-// Chama o backend configurado via VITE_API_URL ou fallback para /api.
-// BASE é exportado para os módulos satélite (acessos, upload, midia) evitarem
-// caminhos relativos hardcoded que causam erro 405 quando o frontend está na Vercel
-// e o backend está num servidor separado (Oracle Cloud).
-export const BASE = import.meta.env.VITE_API_URL || '/api';
+// Chama o backend configurado via VITE_API_URL (se relativa) ou força /api por padrão.
+// BASE é exportado para os módulos satélite (acessos, upload, midia) garantindo
+// caminhos relativos (/api) para roteamento via proxy no Vercel.
+const envUrl = import.meta.env.VITE_API_URL;
+export const BASE = (envUrl && envUrl.startsWith('/') && !envUrl.startsWith('//'))
+  ? envUrl
+  : '/api';
 const CHAVE_TOKEN = 'app_token';
 
 export function getToken(): string | null {
