@@ -838,7 +838,8 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
 
 .mapa-svg {
   width: 100%;
-  height: 100%;
+  height: 460px;
+  min-height: 460px;
   display: block;
 }
 
@@ -965,6 +966,26 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
   color: var(--texto-suave);
   font-size: 12px;
   line-height: 1.45;
+}
+
+.mapa-fonte-nota {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid var(--cor-primaria-borda);
+  border-radius: 16px;
+  background: var(--cor-primaria-suave);
+  color: var(--texto);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.mapa-fonte-nota strong {
+  color: var(--cor-primaria-escura);
+  font-size: 13px;
+}
+.mapa-fonte-nota span,
+.mapa-fonte-nota small {
+  color: var(--texto-suave);
 }
 
 @media (max-width: 980px) {

@@ -1,94 +1,328 @@
 import { useEffect, useMemo, useState } from 'react';
-import { apiJSON } from '../services/api';
 import { useToast } from '../utils/toast';
 
-interface Oportunidade {
-  id?: number;
+type Coordenadas = [number, number];
+type TipoPonto = 'escola' | 'emprego' | 'hospital' | 'maternidade' | 'mae_coruja';
+
+interface PontoMapa {
+  id: string;
+  tipo: TipoPonto;
   titulo: string;
   descricao: string;
-  empresa?: string;
-  tipo: 'Emprego' | 'Curso' | 'Benefício social' | 'Microcrédito' | 'Apoio' | string;
-  fonte?: string;
-  link_inscricao?: string;
-  bairro?: string;
-  endereco?: string;
-  endereco_completo?: string;
-  latitude: number | null;
-  longitude: number | null;
-  horario?: string;
-  isOnline?: boolean;
-  data_inicio_inscricao?: string;
-  data_fim_inscricao?: string;
-  localizacao?: {
-    lat: number;
-    lng: number;
+  bairro: string;
+  endereco: string;
+  telefone: string;
+  horario: string;
+  coords: Coordenadas;
+  fonte: string;
+}
+
+type GeoRing = Array<[number, number]>;
+type GeoPolygon = GeoRing[];
+
+interface BairroFeature {
+  properties?: Record<string, unknown>;
+  geometry?: {
+    type: 'Polygon' | 'MultiPolygon';
+    coordinates: GeoPolygon | GeoPolygon[];
   };
 }
 
-type Coordenadas = [number, number];
+interface DadosMapa {
+  pontos: PontoMapa[];
+  bairros: BairroFeature[];
+  redeCredenciada: number;
+}
 
-const CONFIG_TIPO: Record<string, { cor: string; corFundo: string; emoji: string; rotulo: string }> = {
-  Emprego: { cor: '#1d4ed8', corFundo: '#dbeafe', emoji: '💼', rotulo: 'Emprego' },
-  Curso: { cor: '#15803d', corFundo: '#dcfce7', emoji: '📚', rotulo: 'Curso' },
-  'Benefício social': { cor: '#ea580c', corFundo: '#fed7aa', emoji: '🧡', rotulo: 'Benefício' },
-  Microcrédito: { cor: '#db2777', corFundo: '#fce7f3', emoji: '💰', rotulo: 'Microcrédito' },
-  Apoio: { cor: '#7c3aed', corFundo: '#ede9fe', emoji: '🤝', rotulo: 'Rede de apoio' },
+interface Limites {
+  minLat: number;
+  maxLat: number;
+  minLng: number;
+  maxLng: number;
+}
+
+const CONFIG_TIPO: Record<TipoPonto, { cor: string; corFundo: string; emoji: string; rotulo: string }> = {
+  escola: { cor: '#15803d', corFundo: '#dcfce7', emoji: '📚', rotulo: 'Escolas profissionalizantes' },
+  emprego: { cor: '#1d4ed8', corFundo: '#dbeafe', emoji: '💼', rotulo: 'Postos de emprego' },
+  hospital: { cor: '#be123c', corFundo: '#ffe4e6', emoji: '✚', rotulo: 'Hospitais' },
+  maternidade: { cor: '#db2777', corFundo: '#fce7f3', emoji: '♡', rotulo: 'Maternidades' },
+  mae_coruja: { cor: '#c2410c', corFundo: '#ffedd5', emoji: '●', rotulo: 'Mãe Coruja' },
 };
 
-const FILTROS = [
-  { valor: '', rotulo: 'Todas', corAtiva: '#475569' },
-  { valor: 'Emprego', rotulo: 'Empregos', corAtiva: '#1d4ed8' },
-  { valor: 'Curso', rotulo: 'Cursos', corAtiva: '#15803d' },
-  { valor: 'Benefício social', rotulo: 'Benefícios', corAtiva: '#ea580c' },
-  { valor: 'Apoio', rotulo: 'Rede de apoio', corAtiva: '#7c3aed' },
+const FILTROS: Array<{ valor: TipoPonto | ''; rotulo: string; corAtiva: string }> = [
+  { valor: '', rotulo: 'Todos', corAtiva: '#475569' },
+  { valor: 'escola', rotulo: 'Escolas', corAtiva: '#15803d' },
+  { valor: 'emprego', rotulo: 'Emprego', corAtiva: '#1d4ed8' },
+  { valor: 'hospital', rotulo: 'Hospitais', corAtiva: '#be123c' },
+  { valor: 'maternidade', rotulo: 'Maternidades', corAtiva: '#db2777' },
+  { valor: 'mae_coruja', rotulo: 'Mãe Coruja', corAtiva: '#c2410c' },
 ];
 
-function extrairCoordenadas(op: Oportunidade): Coordenadas | null {
-  const lat = Number(op.latitude ?? op.localizacao?.lat);
-  const lng = Number(op.longitude ?? op.localizacao?.lng);
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+const CAMINHO_DADOS = `${import.meta.env.BASE_URL}dados/mapa`;
+
+function normalizarChave(valor: string): string {
+  return valor
+    .replace(/^\uFEFF/, '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+function dividirLinhaCsv(linha: string): string[] {
+  const valores: string[] = [];
+  let atual = '';
+  let entreAspas = false;
+
+  for (let indice = 0; indice < linha.length; indice += 1) {
+    const caractere = linha[indice];
+    const proximo = linha[indice + 1];
+
+    if (caractere === '"' && entreAspas && proximo === '"') {
+      atual += '"';
+      indice += 1;
+      continue;
+    }
+
+    if (caractere === '"') {
+      entreAspas = !entreAspas;
+    } else if (caractere === ';' && !entreAspas) {
+      valores.push(atual.trim());
+      atual = '';
+    } else {
+      atual += caractere;
+    }
+  }
+
+  valores.push(atual.trim());
+  return valores;
+}
+
+function lerCsv(conteudo: string): Array<Record<string, string>> {
+  const linhas = conteudo
+    .replace(/^\uFEFF/, '')
+    .split(/\r?\n/)
+    .filter((linha) => linha.trim().length > 0);
+
+  if (linhas.length < 2) return [];
+
+  const cabecalho = dividirLinhaCsv(linhas[0]).map(normalizarChave);
+  return linhas.slice(1).map((linha) => {
+    const valores = dividirLinhaCsv(linha);
+    return cabecalho.reduce<Record<string, string>>((registro, chave, indice) => {
+      registro[chave] = valores[indice] ?? '';
+      return registro;
+    }, {});
+  });
+}
+
+function campo(registro: Record<string, string>, ...chaves: string[]): string {
+  for (const chave of chaves) {
+    const valor = registro[normalizarChave(chave)]?.trim();
+    if (valor) return valor;
+  }
+  return '';
+}
+
+function numero(valor: string): number | null {
+  const resultado = Number(String(valor).trim().replace(',', '.'));
+  return Number.isFinite(resultado) ? resultado : null;
+}
+
+function formatarNome(valor: string): string {
+  const limpo = valor.replace(/\s+/g, ' ').trim();
+  if (!limpo) return 'Ponto de atendimento';
+
+  const base = limpo === limpo.toUpperCase() ? limpo.toLocaleLowerCase('pt-BR') : limpo;
+  return base.replace(/(^|[\s/-])([a-záàâãéêíóôõúç])/gi, (_match, separador: string, letra: string) => (
+    `${separador}${letra.toLocaleUpperCase('pt-BR')}`
+  ));
+}
+
+function formatarEndereco(logradouro: string, bairro: string): string {
+  const partes = [formatarNome(logradouro), formatarNome(bairro)].filter((item) => item !== 'Ponto de atendimento');
+  return partes.join(' · ') || 'Endereço não informado';
+}
+
+function resumo(texto: string, limite = 280): string {
+  const limpo = texto.replace(/\s+/g, ' ').trim();
+  return limpo.length > limite ? `${limpo.slice(0, limite - 1)}…` : limpo;
+}
+
+function coordenadasDoRegistro(registro: Record<string, string>): Coordenadas | null {
+  const lat = numero(campo(registro, 'latitude'));
+  const lng = numero(campo(registro, 'longitude'));
+  if (lat === null || lng === null) return null;
   return [lat, lng];
 }
 
-function getCfg(tipo: string) {
-  return CONFIG_TIPO[tipo] ?? { cor: '#db2777', corFundo: '#fce7f3', emoji: '📍', rotulo: tipo };
+function criarPonto(
+  registro: Record<string, string>,
+  tipo: TipoPonto,
+  indice: number,
+  fonte: string,
+  tituloChave: string,
+  descricaoChaves: string[],
+): PontoMapa | null {
+  const coords = coordenadasDoRegistro(registro);
+  if (!coords) return null;
+
+  const bairro = formatarNome(campo(registro, 'bairro'));
+  const logradouro = campo(registro, 'logradouro', 'endereco');
+  const descricao = descricaoChaves
+    .map((chave) => campo(registro, chave))
+    .filter(Boolean)
+    .join(' ');
+
+  return {
+    id: `${tipo}-${indice}`,
+    tipo,
+    titulo: formatarNome(campo(registro, tituloChave)),
+    descricao: resumo(descricao || `Ponto oficial de ${CONFIG_TIPO[tipo].rotulo.toLocaleLowerCase('pt-BR')}.`),
+    bairro,
+    endereco: formatarEndereco(logradouro, bairro),
+    telefone: campo(registro, 'telefone', 'fone'),
+    horario: campo(registro, 'horario'),
+    coords,
+    fonte,
+  };
+}
+
+function extrairCoordenadasBairro(feature: BairroFeature): Coordenadas[] {
+  const geometria = feature.geometry;
+  if (!geometria) return [];
+
+  const poligonos: GeoPolygon[] = geometria.type === 'Polygon'
+    ? [geometria.coordinates as GeoPolygon]
+    : geometria.coordinates as GeoPolygon[];
+
+  return poligonos.flatMap((poligono) => poligono.flatMap((anel) => (
+    anel.map(([lng, lat]) => [lat, lng] as Coordenadas)
+  )));
+}
+
+function pathDoBairro(feature: BairroFeature, limites: Limites): string[] {
+  const geometria = feature.geometry;
+  if (!geometria) return [];
+
+  const poligonos: GeoPolygon[] = geometria.type === 'Polygon'
+    ? [geometria.coordinates as GeoPolygon]
+    : geometria.coordinates as GeoPolygon[];
+
+  return poligonos.flatMap((poligono) => poligono.map((anel) => {
+    const comandos = anel.map(([lng, lat], indice) => {
+      const posicao = projectarPonto([lat, lng], limites);
+      return `${indice === 0 ? 'M' : 'L'}${posicao.x},${posicao.y}`;
+    });
+    return `${comandos.join(' ')} Z`;
+  }));
+}
+
+async function buscarTexto(nome: string): Promise<string> {
+  const resposta = await fetch(`${CAMINHO_DADOS}/${nome}`);
+  if (!resposta.ok) throw new Error(`Não foi possível carregar ${nome}`);
+  return resposta.text();
+}
+
+async function buscarJson(nome: string): Promise<{ features?: BairroFeature[] }> {
+  const resposta = await fetch(`${CAMINHO_DADOS}/${nome}`);
+  if (!resposta.ok) throw new Error(`Não foi possível carregar ${nome}`);
+  return resposta.json() as Promise<{ features?: BairroFeature[] }>;
+}
+
+async function carregarDadosMapa(): Promise<DadosMapa> {
+  const [escolasCsv, empregosCsv, hospitaisCsv, maternidadesCsv, maeCorujaCsv, redeCsv, bairrosJson] = await Promise.all([
+    buscarTexto('escolas-profissionalizantes.csv'),
+    buscarTexto('postos-emprego.csv'),
+    buscarTexto('hospitais.csv'),
+    buscarTexto('maternidades.csv'),
+    buscarTexto('mae-coruja.csv'),
+    buscarTexto('rede-credenciada.csv'),
+    buscarJson('bairros-recife.geojson'),
+  ]);
+
+  const pontos = [
+    ...lerCsv(escolasCsv).map((registro, indice) => criarPonto(
+      registro,
+      'escola',
+      indice,
+      'Escolas profissionalizantes',
+      'nome',
+      ['observacao'],
+    )),
+    ...lerCsv(empregosCsv).map((registro, indice) => criarPonto(
+      registro,
+      'emprego',
+      indice,
+      'Postos do sistema público de emprego',
+      'unidade',
+      ['horario'],
+    )),
+    ...lerCsv(hospitaisCsv).map((registro, indice) => criarPonto(
+      registro,
+      'hospital',
+      indice,
+      'Hospitais',
+      'nome_oficial',
+      ['especialidade', 'como_usar'],
+    )),
+    ...lerCsv(maternidadesCsv).map((registro, indice) => criarPonto(
+      registro,
+      'maternidade',
+      indice,
+      'Maternidades',
+      'nome_oficial',
+      ['especialidade', 'como_usar'],
+    )),
+    ...lerCsv(maeCorujaCsv).map((registro, indice) => criarPonto(
+      registro,
+      'mae_coruja',
+      indice,
+      'Espaços Mãe Coruja',
+      'nome_oficial',
+      ['especialidade', 'como_usar'],
+    )),
+  ].filter((ponto): ponto is PontoMapa => ponto !== null);
+
+  return {
+    pontos,
+    bairros: Array.isArray(bairrosJson.features) ? bairrosJson.features : [],
+    redeCredenciada: lerCsv(redeCsv).length,
+  };
+}
+
+function getCfg(tipo: TipoPonto) {
+  return CONFIG_TIPO[tipo];
 }
 
 function linkGoogleMapsExterno(lat: number, lng: number): string {
-  return `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}&heading=0&pitch=0&fov=80`;
-}
-
-function destaqueTexto(texto: string, max = 180): string {
-  const limpo = String(texto || '').replace(/\s+/g, ' ').trim();
-  return limpo.length > max ? `${limpo.slice(0, max - 1)}…` : limpo;
-}
-
-function getTitulo(op: Oportunidade) {
-  return String(op.titulo || 'Oportunidade');
+  return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
 }
 
 function projectarPonto(
   coords: Coordenadas,
-  limite: { minLat: number; maxLat: number; minLng: number; maxLng: number },
+  limites: Limites,
 ) {
-  const largura = Math.max(0.0001, limite.maxLng - limite.minLng);
-  const altura = Math.max(0.0001, limite.maxLat - limite.minLat);
-  const x = ((coords[1] - limite.minLng) / largura) * 100;
-  const y = (1 - (coords[0] - limite.minLat) / altura) * 100;
-  const xAjustado = Math.max(4, Math.min(96, x));
-  const yAjustado = Math.max(4, Math.min(96, y));
-  return { x: xAjustado, y: yAjustado };
+  const largura = Math.max(0.0001, limites.maxLng - limites.minLng);
+  const altura = Math.max(0.0001, limites.maxLat - limites.minLat);
+  const x = ((coords[1] - limites.minLng) / largura) * 100;
+  const y = (1 - (coords[0] - limites.minLat) / altura) * 100;
+  return {
+    x: Math.max(2, Math.min(98, x)),
+    y: Math.max(2, Math.min(98, y)),
+  };
 }
 
-function calcularLimites(pontos: Coordenadas[]) {
+function calcularLimites(pontos: Coordenadas[]): Limites {
   const latitudes = pontos.map(([lat]) => lat);
   const longitudes = pontos.map(([, lng]) => lng);
   const minLat = Math.min(...latitudes);
   const maxLat = Math.max(...latitudes);
   const minLng = Math.min(...longitudes);
   const maxLng = Math.max(...longitudes);
-  const paddingLat = Math.max(0.02, (maxLat - minLat) * 0.16 || 0.02);
-  const paddingLng = Math.max(0.02, (maxLng - minLng) * 0.16 || 0.02);
+  const paddingLat = Math.max(0.008, (maxLat - minLat) * 0.05 || 0.008);
+  const paddingLng = Math.max(0.008, (maxLng - minLng) * 0.05 || 0.008);
+
   return {
     minLat: minLat - paddingLat,
     maxLat: maxLat + paddingLat,
@@ -97,41 +331,35 @@ function calcularLimites(pontos: Coordenadas[]) {
   };
 }
 
-function nomeCurtoLocal(op: Oportunidade) {
-  return op.bairro || op.endereco_completo || op.endereco || 'Recife';
+function nomeCurtoLocal(ponto: PontoMapa): string {
+  return ponto.bairro || ponto.endereco || 'Recife';
 }
 
 export default function Mapa() {
-  const [filtro, setFiltro] = useState('');
-  const [oportunidades, setOportunidades] = useState<Oportunidade[]>([]);
-  const [estado, setEstado] = useState<'carregando' | 'erro' | 'ok'>('ok');
+  const [filtro, setFiltro] = useState<TipoPonto | ''>('');
+  const [dados, setDados] = useState<DadosMapa>({ pontos: [], bairros: [], redeCredenciada: 0 });
+  const [estado, setEstado] = useState<'carregando' | 'erro' | 'ok'>('carregando');
   const [posicaoUsuario, setPosicaoUsuario] = useState<Coordenadas | null>(null);
   const [selecionado, setSelecionado] = useState<string | null>(null);
-
   const toast = useToast();
 
   useEffect(() => {
-    let mounted = true;
-    const fetchData = async () => {
-      if (mounted) setEstado('carregando');
-      try {
-        const [internas, externas] = await Promise.all([
-          apiJSON<Oportunidade[]>('/oportunidades').catch(() => [] as Oportunidade[]),
-          apiJSON<Oportunidade[]>('/oportunidades/externas').catch(() => [] as Oportunidade[]),
-        ]);
-        if (!mounted) return;
-        setOportunidades([...internas, ...externas]);
+    let montado = true;
+
+    carregarDadosMapa()
+      .then((resultado) => {
+        if (!montado) return;
+        setDados(resultado);
         setEstado('ok');
-      } catch {
-        if (!mounted) return;
+      })
+      .catch(() => {
+        if (!montado) return;
         setEstado('erro');
-        setOportunidades([]);
-        toast.erro('Erro ao carregar oportunidades.');
-      }
-    };
-    fetchData();
+        toast.erro('Não foi possível carregar os pontos oficiais do mapa.');
+      });
+
     return () => {
-      mounted = false;
+      montado = false;
     };
   }, []);
 
@@ -140,63 +368,61 @@ export default function Mapa() {
       toast.erro('Geolocalização não suportada neste navegador.');
       return;
     }
+
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const coords: Coordenadas = [pos.coords.latitude, pos.coords.longitude];
-        setPosicaoUsuario(coords);
+      (posicao) => {
+        setPosicaoUsuario([posicao.coords.latitude, posicao.coords.longitude]);
         toast.sucesso('Localização obtida!');
       },
       () => toast.erro('Não foi possível obter a localização.'),
     );
   };
 
-  const pontosComCoords = oportunidades
-    .filter((o) => !o.isOnline)
-    .map((op) => ({ op, coords: extrairCoordenadas(op) }))
-    .filter((item): item is { op: Oportunidade; coords: Coordenadas } => item.coords !== null);
+  const filtrados = useMemo(
+    () => filtro ? dados.pontos.filter((ponto) => ponto.tipo === filtro) : dados.pontos,
+    [dados.pontos, filtro],
+  );
 
-  const filtrados = filtro
-    ? pontosComCoords.filter((item) => item.op.tipo === filtro)
-    : pontosComCoords;
-
-  const selecionadoAtual =
-    filtrados.find((item) => String(item.op.id ?? item.op.titulo) === selecionado) ?? filtrados[0] ?? null;
+  const selecionadoAtual = filtrados.find((ponto) => ponto.id === selecionado) ?? filtrados[0] ?? null;
 
   useEffect(() => {
-    const primeiro = filtrados[0];
-    if (!selecionado && primeiro) {
-      setSelecionado(String(primeiro.op.id ?? primeiro.op.titulo));
+    if (!selecionadoAtual) {
+      setSelecionado(null);
       return;
     }
-    if (selecionado && !filtrados.some((item) => String(item.op.id ?? item.op.titulo) === selecionado)) {
-      setSelecionado(primeiro ? String(primeiro.op.id ?? primeiro.op.titulo) : null);
+    if (!selecionado || !filtrados.some((ponto) => ponto.id === selecionado)) {
+      setSelecionado(selecionadoAtual.id);
     }
-  }, [selecionado, filtrados]);
+  }, [filtrados, selecionado, selecionadoAtual]);
+
+  const limites = useMemo(() => {
+    const coordenadasBairros = dados.bairros.flatMap(extrairCoordenadasBairro);
+    const pontosBase = [...coordenadasBairros, ...filtrados.map((ponto) => ponto.coords)];
+    if (posicaoUsuario) pontosBase.push(posicaoUsuario);
+
+    return pontosBase.length > 0
+      ? calcularLimites(pontosBase)
+      : { minLat: -8.12, maxLat: -7.98, minLng: -34.98, maxLng: -34.84 };
+  }, [dados.bairros, filtrados, posicaoUsuario]);
+
+  const caminhosBairros = useMemo(
+    () => dados.bairros.flatMap((bairro) => pathDoBairro(bairro, limites)),
+    [dados.bairros, limites],
+  );
 
   const total = filtrados.length;
-  const limites = useMemo(() => {
-    const pontosBase = filtrados.map((item) => item.coords);
-    if (posicaoUsuario) pontosBase.push(posicaoUsuario);
-    if (pontosBase.length === 0) {
-      return { minLat: -8.2, maxLat: -7.9, minLng: -34.95, maxLng: -34.75 };
-    }
-    if (pontosBase.length === 1) {
-      const [lat, lng] = pontosBase[0];
-      return { minLat: lat - 0.04, maxLat: lat + 0.04, minLng: lng - 0.04, maxLng: lng + 0.04 };
-    }
-    return calcularLimites(pontosBase);
-  }, [filtrados, posicaoUsuario]);
 
   return (
     <>
       <section className="mapa-secao">
         <div className="container">
-          <h1 className="mapa-titulo">Mapa de Oportunidades</h1>
+          <h1 className="mapa-titulo">Mapa de oportunidades</h1>
           <p className="mapa-subtitulo">
-            Street View aberto direto no Google Maps para evitar bloqueio de embed.
+            Pontos oficiais dos arquivos públicos enviados, organizados por localização em Recife.
           </p>
 
           <button
+            type="button"
             onClick={obterLocalizacao}
             className={`map-loc-btn ${posicaoUsuario ? 'map-loc-btn--ativo' : ''}`}
           >
@@ -204,19 +430,19 @@ export default function Mapa() {
               <circle cx="12" cy="12" r="10" />
               <circle cx="12" cy="12" r="3" />
             </svg>
-            {posicaoUsuario ? 'Localização ativa ✓' : 'Usar minha localização'}
+            {posicaoUsuario ? 'Localização ativa' : 'Usar minha localização'}
           </button>
         </div>
       </section>
 
       <section className="container mapa-secao-padding">
         {estado === 'carregando' ? (
-          <div className="mapa-carregando" aria-label="Carregando mapa…" />
+          <div className="mapa-carregando" aria-label="Carregando mapa" />
         ) : estado === 'erro' ? (
           <div className="fd-vazio">
-            <h3>Erro ao carregar</h3>
-            <p>Não foi possível carregar os pontos do mapa.</p>
-            <button className="btn-secundario" onClick={() => window.location.reload()}>
+            <h3>Não foi possível carregar o mapa</h3>
+            <p>Confira se os arquivos locais estão dentro da pasta pública da aplicação.</p>
+            <button type="button" className="btn-secundario" onClick={() => window.location.reload()}>
               Tentar novamente
             </button>
           </div>
@@ -224,28 +450,29 @@ export default function Mapa() {
           <div className="mapa-layout">
             <div className="mapa-canvas">
               <div className="map-filtros-flutuante">
-                {FILTROS.map((f) => {
-                  const ativo = filtro === f.valor;
+                {FILTROS.map((item) => {
+                  const ativo = filtro === item.valor;
                   return (
                     <button
-                      key={f.valor}
+                      key={item.valor || 'todos'}
+                      type="button"
                       className={`map-filtro-btn ${ativo ? 'map-filtro-btn--ativo' : ''}`}
-                      onClick={() => setFiltro(f.valor)}
-                      style={ativo ? { background: f.corAtiva, borderColor: f.corAtiva, color: '#fff' } : undefined}
+                      onClick={() => setFiltro(item.valor)}
+                      style={ativo ? { background: item.corAtiva, borderColor: item.corAtiva, color: '#fff' } : undefined}
                       aria-pressed={ativo}
                     >
-                      <span className="map-filtro-rotulo">{f.rotulo}</span>
+                      {item.rotulo}
                     </button>
                   );
                 })}
               </div>
 
               <div className="mapa-mapa-real">
-                <div className="mapa-preview-badge">Mapa com pontos de referência</div>
+                <div className="mapa-preview-badge">Base geográfica local</div>
                 <div className="mapa-mapa-topo">
                   <div>
-                    <h2>Pontos visíveis no mapa</h2>
-                    <p>Clique em um marcador para ver os detalhes e abrir o Street View do local selecionado.</p>
+                    <h2>Pontos reais no Recife</h2>
+                    <p>Os contornos mostram os bairros e os marcadores usam somente coordenadas presentes nos arquivos.</p>
                   </div>
                   <div className="mapa-mapa-resumo">
                     <strong>{total}</strong>
@@ -254,78 +481,80 @@ export default function Mapa() {
                 </div>
 
                 <div className="mapa-mapa-superficie">
-                  <svg viewBox="0 0 100 100" className="mapa-svg" role="img" aria-label="Mapa de oportunidades com pontos de referência">
+                  <svg viewBox="0 0 100 100" className="mapa-svg" role="img" aria-label="Mapa local de pontos de oportunidades do Recife">
                     <defs>
                       <linearGradient id="mapa-bg" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stopColor="#eff6ff" />
-                        <stop offset="100%" stopColor="#f8fafc" />
+                        <stop offset="0%" stopColor="#f8fbff" />
+                        <stop offset="100%" stopColor="#eef4ff" />
                       </linearGradient>
-                      <radialGradient id="mapa-glow" cx="50%" cy="30%" r="70%">
-                        <stop offset="0%" stopColor="rgba(219,39,119,0.18)" />
-                        <stop offset="100%" stopColor="rgba(219,39,119,0)" />
-                      </radialGradient>
                     </defs>
-                    <rect x="0" y="0" width="100" height="100" rx="18" fill="url(#mapa-bg)" />
-                    <circle cx="74" cy="24" r="24" fill="url(#mapa-glow)" />
-                    <path d="M8 76 C22 66, 26 78, 36 70 S58 62, 66 68 S80 77, 94 66" fill="none" stroke="#dbeafe" strokeWidth="2.5" strokeLinecap="round" />
-                    <path d="M10 28 C18 24, 24 20, 30 24 S44 38, 52 32 S68 18, 82 28 S92 44, 98 40" fill="none" stroke="#e2e8f0" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M14 52 C24 46, 34 48, 42 55 S58 63, 68 57 S82 48, 92 52" fill="none" stroke="#cbd5e1" strokeWidth="1.8" strokeLinecap="round" strokeDasharray="2 3" />
-                    {filtrados.map((item, index) => {
-                      const key = String(item.op.id ?? item.op.titulo);
-                      const ativo = selecionado === key;
-                      const pos = projectarPonto(item.coords, limites);
-                      const cfg = getCfg(item.op.tipo);
+                    <rect x="0" y="0" width="100" height="100" fill="url(#mapa-bg)" />
+                    {caminhosBairros.map((caminho, indice) => (
+                      <path
+                        key={`bairro-${indice}`}
+                        d={caminho}
+                        fill="rgba(255, 255, 255, 0.48)"
+                        stroke="rgba(100, 116, 139, 0.34)"
+                        strokeWidth="0.12"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    ))}
+                    {filtrados.map((ponto) => {
+                      const ativo = selecionado === ponto.id;
+                      const posicao = projectarPonto(ponto.coords, limites);
+                      const cfg = getCfg(ponto.tipo);
+
                       return (
                         <g
-                          key={key}
+                          key={ponto.id}
                           className={`mapa-ponto ${ativo ? 'mapa-ponto--ativo' : ''}`}
-                          transform={`translate(${pos.x} ${pos.y})`}
-                          onClick={() => setSelecionado(key)}
+                          transform={`translate(${posicao.x} ${posicao.y})`}
+                          onClick={() => setSelecionado(ponto.id)}
+                          onKeyDown={(evento) => {
+                            if (evento.key === 'Enter' || evento.key === ' ') {
+                              evento.preventDefault();
+                              setSelecionado(ponto.id);
+                            }
+                          }}
                           role="button"
                           tabIndex={0}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') setSelecionado(key);
-                          }}
+                          aria-label={`${ponto.titulo}, ${nomeCurtoLocal(ponto)}`}
                         >
-                          <circle cx="0" cy="0" r={ativo ? 2.8 : 2.2} fill={cfg.cor} opacity="0.22" />
-                          <circle cx="0" cy="0" r={ativo ? 2.1 : 1.8} fill={cfg.cor} stroke="#fff" strokeWidth="1.2" />
-                          <circle cx="0" cy="0" r={ativo ? 4.5 : 3.6} fill="transparent" stroke={cfg.cor} strokeWidth={ativo ? 1.4 : 1} opacity="0.8" />
-                          <g transform="translate(0 -5)">
-                            <rect x="-7" y="-8" width="14" height="6" rx="3" fill="#fff" opacity="0.9" />
-                            <text x="0" y="-3.4" textAnchor="middle" fontSize="4" fontWeight="700" fill={cfg.cor}>{index + 1}</text>
-                          </g>
-                          <title>{getTitulo(item.op)}</title>
+                          <circle cx="0" cy="0" r={ativo ? 3.1 : 2.3} fill={cfg.cor} opacity="0.2" />
+                          <circle cx="0" cy="0" r={ativo ? 2.2 : 1.7} fill={cfg.cor} stroke="#fff" strokeWidth="0.8" vectorEffect="non-scaling-stroke" />
+                          <circle cx="0" cy="0" r={ativo ? 4.8 : 3.6} fill="transparent" stroke={cfg.cor} strokeWidth={ativo ? 1.4 : 0.8} opacity="0.82" vectorEffect="non-scaling-stroke" />
+                          <title>{ponto.titulo}</title>
                         </g>
                       );
                     })}
-                    {posicaoUsuario ? (
-                      <g transform={`translate(${projectarPonto(posicaoUsuario, limites).x} ${projectarPonto(posicaoUsuario, limites).y})`}>
-                        <circle cx="0" cy="0" r="3.8" fill="#ef4444" opacity="0.25" />
-                        <circle cx="0" cy="0" r="2.3" fill="#ef4444" stroke="#fff" strokeWidth="1.2" />
+                    {posicaoUsuario && (
+                      <g transform={`translate(${projectarPonto(posicaoUsuario, limites).x} ${projectarPonto(posicaoUsuario, limites).y})`} aria-label="Sua localização">
+                        <circle cx="0" cy="0" r="4" fill="#ef4444" opacity="0.2" />
+                        <circle cx="0" cy="0" r="2.3" fill="#ef4444" stroke="#fff" strokeWidth="1" vectorEffect="non-scaling-stroke" />
                       </g>
-                    ) : null}
+                    )}
                   </svg>
 
                   <div className="mapa-mapa-overlay">
                     <div className="mapa-mapa-card">
-                      <strong>{selecionadoAtual ? getTitulo(selecionadoAtual.op) : 'Selecione um ponto'}</strong>
-                      <span>{selecionadoAtual ? nomeCurtoLocal(selecionadoAtual.op) : 'Clique em um marcador para ver o local'}</span>
+                      <strong>{selecionadoAtual ? selecionadoAtual.titulo : 'Selecione um ponto'}</strong>
+                      <span>{selecionadoAtual ? nomeCurtoLocal(selecionadoAtual) : 'Clique em um marcador para ver os detalhes'}</span>
                     </div>
-                    {selecionadoAtual ? (
+                    {selecionadoAtual && (
                       <a
                         className="mapa-preview-btn mapa-preview-btn--inline"
                         href={linkGoogleMapsExterno(selecionadoAtual.coords[0], selecionadoAtual.coords[1])}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        Abrir Street View
+                        Abrir no Google Maps
                       </a>
-                    ) : null}
+                    )}
                   </div>
                 </div>
 
                 <div className="mapa-badge">
-                  {total} ponto{total === 1 ? '' : 's'} com coordenadas no filtro atual
+                  {total} ponto{total === 1 ? '' : 's'} com coordenadas reais
                 </div>
               </div>
             </div>
@@ -338,27 +567,27 @@ export default function Mapa() {
                     <span
                       className="mapa-popup-tag"
                       style={{
-                        color: getCfg(selecionadoAtual.op.tipo).cor,
-                        background: getCfg(selecionadoAtual.op.tipo).corFundo,
+                        color: getCfg(selecionadoAtual.tipo).cor,
+                        background: getCfg(selecionadoAtual.tipo).corFundo,
                       }}
                     >
-                      {getCfg(selecionadoAtual.op.tipo).emoji} {getCfg(selecionadoAtual.op.tipo).rotulo}
+                      {getCfg(selecionadoAtual.tipo).emoji} {getCfg(selecionadoAtual.tipo).rotulo}
                     </span>
                     <h3 className="mapa-popup-titulo" style={{ marginTop: 8 }}>
-                      {getTitulo(selecionadoAtual.op)}
+                      {selecionadoAtual.titulo}
                     </h3>
-                    {selecionadoAtual.op.empresa && (
-                      <p className="mapa-popup-empresa">{selecionadoAtual.op.empresa}</p>
-                    )}
+                    <p className="mapa-popup-empresa">Fonte: {selecionadoAtual.fonte}</p>
                     <p className="mapa-popup-end">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                         <circle cx="12" cy="10" r="3" />
                       </svg>
-                      <span>{selecionadoAtual.op.endereco_completo || selecionadoAtual.op.endereco || selecionadoAtual.op.bairro || 'Sem endereço informado'}</span>
+                      <span>{selecionadoAtual.endereco}</span>
                     </p>
+                    {selecionadoAtual.telefone && <p className="mapa-popup-empresa">Telefone: {selecionadoAtual.telefone}</p>}
+                    {selecionadoAtual.horario && <p className="mapa-popup-empresa">Horário: {selecionadoAtual.horario}</p>}
                     <p className="mapa-popup-desc" style={{ marginTop: 10 }}>
-                      {destaqueTexto(selecionadoAtual.op.descricao)}
+                      {selecionadoAtual.descricao}
                     </p>
                     <div className="mapa-acoes">
                       <a
@@ -367,24 +596,14 @@ export default function Mapa() {
                         rel="noopener noreferrer"
                         className="mapa-btn-chegar"
                       >
-                        Abrir Street View no Google Maps
+                        Abrir endereço no Google Maps
                       </a>
-                      {selecionadoAtual.op.link_inscricao && (
-                        <a
-                          href={selecionadoAtual.op.link_inscricao}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mapa-btn-detalhes"
-                        >
-                          Abrir oportunidade →
-                        </a>
-                      )}
                     </div>
                   </div>
                 ) : (
                   <div className="fd-vazio" style={{ margin: 0, minHeight: 220 }}>
                     <h3>Sem pontos</h3>
-                    <p>Não encontrei oportunidades com coordenadas para este filtro.</p>
+                    <p>Não há pontos com coordenadas neste filtro.</p>
                   </div>
                 )}
               </div>
@@ -398,21 +617,27 @@ export default function Mapa() {
                 ))}
               </div>
 
+              <div className="mapa-fonte-nota">
+                <strong>Base utilizada</strong>
+                <span>{dados.pontos.length} pontos com latitude e longitude nos arquivos enviados.</span>
+                <small>{dados.redeCredenciada} registros da rede credenciada foram mantidos na base, mas não viraram pinos porque o CSV não possui coordenadas.</small>
+              </div>
+
               <div className="mapa-lista">
                 <span className="secao-etiqueta" style={{ marginBottom: 8 }}>Pontos no filtro</span>
-                {filtrados.slice(0, 8).map((item, index) => {
-                  const key = String(item.op.id ?? item.op.titulo);
-                  const ativo = selecionado === key;
+                {filtrados.map((ponto, indice) => {
+                  const ativo = selecionado === ponto.id;
                   return (
                     <button
-                      key={key}
+                      key={ponto.id}
+                      type="button"
                       className={`mapa-lista-item ${ativo ? 'ativo' : ''}`}
-                      onClick={() => setSelecionado(key)}
+                      onClick={() => setSelecionado(ponto.id)}
                     >
-                      <span className="mapa-lista-num">{index + 1}</span>
+                      <span className="mapa-lista-num">{indice + 1}</span>
                       <span className="mapa-lista-texto">
-                        <strong>{getTitulo(item.op)}</strong>
-                        <small>{item.op.bairro || item.op.endereco || 'Sem bairro'}</small>
+                        <strong>{ponto.titulo}</strong>
+                        <small>{nomeCurtoLocal(ponto)}</small>
                       </span>
                     </button>
                   );
