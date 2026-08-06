@@ -3906,3 +3906,7 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
   letter-spacing: -0.01em;
 }
 
+.brand-logo-img { height: 85px !important; width: auto !important; max-height: none !important; max-width: none !important; }
+.hn-linha { min-height: 100px !important; }
+
+
