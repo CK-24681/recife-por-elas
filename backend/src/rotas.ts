@@ -64,13 +64,21 @@ export async function inicializarBanco(pool: Pool, schema: string): Promise<void
     )`);
 
   await pool.query(`
-    CREATE TABLE IF NOT EXISTS equipamentos_publicos (
+    CREATE TABLE IF NOT EXISTS equipamentos_locais (
       id         VARCHAR PRIMARY KEY,
       nome       VARCHAR,
       categoria  VARCHAR,
       endereco   TEXT,
+      bairro     TEXT,
+      telefone   TEXT,
+      horario_funcionamento TEXT,
       latitude   NUMERIC,
-      longitude  NUMERIC
+      longitude  NUMERIC,
+      fonte_dados VARCHAR DEFAULT 'desconhecida',
+      verificado_manualmente BOOLEAN DEFAULT false,
+      ativo      BOOLEAN DEFAULT true,
+      atualizado_em TIMESTAMPTZ DEFAULT now(),
+      criado_em  TIMESTAMPTZ DEFAULT now()
     )`);
 
 
@@ -622,13 +630,13 @@ export function registrarRotas(app: Express, pool: Pool): void {
     }
   });
 
-  app.get('/api/equipamentos', async (_req: Request, res: Response) => {
+  app.get('/api/mapa/locais', async (_req: Request, res: Response) => {
     if (!pool) return res.status(503).json({ erro: 'banco de dados nao disponivel' });
     try {
-      const { rows } = await pool.query('SELECT * FROM equipamentos_publicos');
+      const { rows } = await pool.query('SELECT * FROM equipamentos_locais');
       res.json(rows);
     } catch (e) {
-      console.error('Erro ao buscar equipamentos_publicos:', e);
+      console.error('Erro ao buscar equipamentos_locais:', e);
       res.status(500).json({ erro: 'erro interno' });
     }
   });

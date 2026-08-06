@@ -207,17 +207,17 @@ export async function sincronizarEquipamentosCKAN(pool: Pool): Promise<void> {
   for (const eq of deduplicados) {
     try {
       await pool.query(
-        `INSERT INTO equipamentos_publicos (id, nome, categoria, endereco, bairro, telefone, horario_funcionamento, latitude, longitude, fonte_dados)
+        `INSERT INTO equipamentos_locais (id, nome, categoria, endereco, bairro, telefone, horario_funcionamento, latitude, longitude, fonte_dados)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
          ON CONFLICT (id) DO UPDATE SET
-           nome = CASE WHEN equipamentos_publicos.verificado_manualmente = true THEN equipamentos_publicos.nome ELSE EXCLUDED.nome END,
-           categoria = CASE WHEN equipamentos_publicos.verificado_manualmente = true THEN equipamentos_publicos.categoria ELSE EXCLUDED.categoria END,
-           endereco = CASE WHEN equipamentos_publicos.verificado_manualmente = true THEN equipamentos_publicos.endereco ELSE EXCLUDED.endereco END,
-           bairro = CASE WHEN equipamentos_publicos.verificado_manualmente = true THEN equipamentos_publicos.bairro ELSE EXCLUDED.bairro END,
-           telefone = CASE WHEN equipamentos_publicos.verificado_manualmente = true THEN equipamentos_publicos.telefone ELSE EXCLUDED.telefone END,
-           horario_funcionamento = CASE WHEN equipamentos_publicos.verificado_manualmente = true THEN equipamentos_publicos.horario_funcionamento ELSE EXCLUDED.horario_funcionamento END,
-           latitude = CASE WHEN equipamentos_publicos.verificado_manualmente = true THEN equipamentos_publicos.latitude ELSE EXCLUDED.latitude END,
-           longitude = CASE WHEN equipamentos_publicos.verificado_manualmente = true THEN equipamentos_publicos.longitude ELSE EXCLUDED.longitude END,
+           nome = CASE WHEN equipamentos_locais.verificado_manualmente = true THEN equipamentos_locais.nome ELSE EXCLUDED.nome END,
+           categoria = CASE WHEN equipamentos_locais.verificado_manualmente = true THEN equipamentos_locais.categoria ELSE EXCLUDED.categoria END,
+           endereco = CASE WHEN equipamentos_locais.verificado_manualmente = true THEN equipamentos_locais.endereco ELSE EXCLUDED.endereco END,
+           bairro = CASE WHEN equipamentos_locais.verificado_manualmente = true THEN equipamentos_locais.bairro ELSE EXCLUDED.bairro END,
+           telefone = CASE WHEN equipamentos_locais.verificado_manualmente = true THEN equipamentos_locais.telefone ELSE EXCLUDED.telefone END,
+           horario_funcionamento = CASE WHEN equipamentos_locais.verificado_manualmente = true THEN equipamentos_locais.horario_funcionamento ELSE EXCLUDED.horario_funcionamento END,
+           latitude = CASE WHEN equipamentos_locais.verificado_manualmente = true THEN equipamentos_locais.latitude ELSE EXCLUDED.latitude END,
+           longitude = CASE WHEN equipamentos_locais.verificado_manualmente = true THEN equipamentos_locais.longitude ELSE EXCLUDED.longitude END,
            fonte_dados = EXCLUDED.fonte_dados,
            atualizado_em = now()`,
         [eq.id, eq.nome, eq.categoria, eq.endereco, eq.bairro, eq.telefone, eq.horario_funcionamento, eq.latitude, eq.longitude, eq.fonte_dados]

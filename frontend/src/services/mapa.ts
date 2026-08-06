@@ -35,7 +35,7 @@ const MOCK_CRAWLER_FALLBACK: PontoNormalizado[] = [
 // Busca os equipamentos públicos sincronizados no banco de dados via API local /api/equipamentos
 export async function buscarEquipamentosBackend(): Promise<PontoNormalizado[]> {
   try {
-    const res = await fetch(`${BASE}/equipamentos`);
+    const res = await fetch(`${BASE}/mapa/locais`);
     if (!res.ok) throw new Error('Falha ao buscar equipamentos do backend');
     const data = await res.json();
     if (Array.isArray(data) && data.length > 0) {

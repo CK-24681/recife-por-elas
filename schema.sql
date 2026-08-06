@@ -224,7 +224,7 @@ CREATE TABLE app_recife_por_elas.usuarios (
 -- Name: equipamentos_publicos; Type: TABLE; Schema: app_recife_por_elas; Owner: -
 --
 
-CREATE TABLE app_recife_por_elas.equipamentos_publicos (
+CREATE TABLE app_recife_por_elas.equipamentos_locais (
     id character varying NOT NULL,
     nome character varying,
     categoria character varying,
@@ -273,11 +273,11 @@ ALTER TABLE ONLY app_recife_por_elas.acessos
 
 
 --
--- Name: equipamentos_publicos equipamentos_publicos_pkey; Type: CONSTRAINT; Schema: app_recife_por_elas; Owner: -
+-- Name: equipamentos_locais equipamentos_locais_pkey; Type: CONSTRAINT; Schema: app_recife_por_elas; Owner: -
 --
 
-ALTER TABLE ONLY app_recife_por_elas.equipamentos_publicos
-    ADD CONSTRAINT equipamentos_publicos_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY app_recife_por_elas.equipamentos_locais
+    ADD CONSTRAINT equipamentos_locais_pkey PRIMARY KEY (id);
 
 
 
