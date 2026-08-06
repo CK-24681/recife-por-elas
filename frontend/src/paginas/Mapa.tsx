@@ -35,7 +35,6 @@ function criarIcone(cor: string, emoji: string) {
   });
 }
 
-// Retorna item de configuração por ID
 function findCategoriaConfig(id: string): ItemCategoria | undefined {
   for (const grupo of ESTRUTURA_CATEGORIAS) {
     const item = grupo.itens.find((i) => i.id === id);
@@ -64,9 +63,6 @@ export default function Mapa() {
 
   // Estado de carregamento por categoria
   const [carregando, setCarregando] = useState<Record<string, boolean>>({});
-
-  // Estado de visibilidade do painel em telas menores
-  const [painelAberto, setPainelAberto] = useState<boolean>(true);
 
   // Carrega dados iniciais das categorias marcadas por padrão no boot
   useEffect(() => {
@@ -140,176 +136,173 @@ export default function Mapa() {
   });
 
   return (
-    <div className="mapa-conecta-container">
-      {/* MAPA INTERATIVO FULL BLEED (100% da área) */}
-      <MapContainer
-        center={[-8.0475, -34.8770]}
-        zoom={13}
-        scrollWheelZoom={true}
-        className="mapa-conecta-leaflet"
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://dados.recife.pe.gov.br">Prefeitura do Recife (CKAN)</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-
-        {/* MARCADORES DAS CATEGORIAS SELECIONADAS */}
-        {todosPontos.map((ponto) => (
-          <Marker
-            key={ponto.id}
-            position={[ponto.latitude, ponto.longitude]}
-            icon={criarIcone(ponto.config?.cor || '#e11d48', ponto.config?.emoji || '📍')}
-          >
-            <Popup className="mapa-conecta-popup">
-              <div className="mapa-popup-conteudo">
-                <span
-                  className="mapa-popup-badge"
-                  style={{
-                    color: ponto.config?.cor || '#e11d48',
-                    backgroundColor: `${ponto.config?.cor || '#e11d48'}15`,
-                    borderColor: `${ponto.config?.cor || '#e11d48'}33`,
-                  }}
-                >
-                  {ponto.config?.emoji} {ponto.config?.nome}
-                </span>
-                <h3 className="mapa-popup-titulo">{ponto.nome}</h3>
-                <p className="mapa-popup-endereco">
-                  <strong>📍 Endereço:</strong> {ponto.endereco}
-                </p>
-                {ponto.telefone && (
-                  <p className="mapa-popup-tel">
-                    <strong>📞 Contato:</strong> {ponto.telefone}
-                  </p>
-                )}
-                {ponto.descricao && (
-                  <p className="mapa-popup-desc">{ponto.descricao}</p>
-                )}
-                <div className="mapa-popup-acoes">
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${ponto.latitude},${ponto.longitude}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mapa-popup-btn"
-                  >
-                    Como chegar (Google Maps) →
-                  </a>
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
-
-      {/* BOTÃO FLUTUANTE DE TOGGLE DO PAINEL (MOBILE E TELAS MENORES) */}
-      <button
-        className="mapa-painel-toggle-btn"
-        onClick={() => setPainelAberto(!painelAberto)}
-        aria-label="Abrir ou fechar painel de categorias"
-      >
-        <span>{painelAberto ? '◀ Ocultar Filtros' : '▶ Filtros do Mapa'}</span>
-        {selecionadas.length > 0 && (
-          <span className="mapa-toggle-count">{todosPontos.length}</span>
-        )}
-      </button>
-
-      {/* PAINEL FLUTUANTE SOBRE O MAPA (CARD BRANCO COM SOMBRA E SCROLL INTERNO) */}
-      <aside className={`mapa-painel-flutuante ${painelAberto ? 'aberto' : 'fechado'}`}>
-        <header className="mapa-painel-cabecalho">
-          <div className="mapa-painel-titulo-wrap">
-            <span className="mapa-painel-tag">Prefeitura do Recife • CKAN</span>
-            <h2 className="mapa-painel-titulo">Recife por Elas</h2>
-            <p className="mapa-painel-subtitulo">
-              Equipamentos públicos, apoio e serviços direcionados às mulheres.
-            </p>
-          </div>
-        </header>
-
-        {/* ÁRVORE DE CATEGORIAS (ACCORDION / COLLAPSIBLE COM CHECKBOXES) */}
-        <div className="mapa-painel-corpo">
-          <div className="mapa-arvore-categorias">
-            {ESTRUTURA_CATEGORIAS.map((grupo) => {
-              const expandido = gruposExpandidos[grupo.id] ?? true;
-              const itensSelecionados = grupo.itens.filter((i) => selecionadas.includes(i.id));
-              const todosMarcados = itensSelecionados.length === grupo.itens.length;
-
-              return (
-                <div key={grupo.id} className="mapa-grupo-item">
-                  <div className="mapa-grupo-cabeca">
-                    <button
-                      type="button"
-                      className="mapa-grupo-btn"
-                      onClick={() => alternarGrupo(grupo.id)}
-                    >
-                      <span className="mapa-grupo-seta">{expandido ? '▼' : '▶'}</span>
-                      <span className="mapa-grupo-icone">{grupo.icone}</span>
-                      <strong className="mapa-grupo-titulo">{grupo.titulo}</strong>
-                    </button>
-                    <button
-                      type="button"
-                      className="mapa-grupo-atalho"
-                      onClick={() => alternarTodosDoGrupo(grupo)}
-                      title={todosMarcados ? 'Desmarcar todos' : 'Marcar todos'}
-                    >
-                      {todosMarcados ? 'Desmarcar' : 'Marcar'}
-                    </button>
-                  </div>
-
-                  {expandido && (
-                    <ul className="mapa-grupo-lista">
-                      {grupo.itens.map((item) => {
-                        const marcado = selecionadas.includes(item.id);
-                        const estaCarregando = carregando[item.id];
-                        const qtdPontos = pontosPorCategoria[item.id]?.length;
-
-                        return (
-                          <li key={item.id} className="mapa-categoria-linha">
-                            <label className="mapa-checkbox-label">
-                              <input
-                                type="checkbox"
-                                checked={marcado}
-                                onChange={() => alternarCategoria(item)}
-                                className="mapa-checkbox-input"
-                              />
-                              <span
-                                className="mapa-cor-indicador"
-                                style={{ backgroundColor: item.cor }}
-                              />
-                              <span className="mapa-item-emoji">{item.emoji}</span>
-                              <span className="mapa-item-nome">{item.nome}</span>
-                            </label>
-                            {estaCarregando ? (
-                              <span className="mapa-item-spinner" title="Buscando na API do CKAN..." />
-                            ) : marcado && qtdPontos !== undefined ? (
-                              <span className="mapa-item-qtd">{qtdPontos}</span>
-                            ) : null}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+    <div className="mapa-estatico-pagina">
+      {/* CABEÇALHO DA PÁGINA */}
+      <section className="mapa-secao-cabecalho">
+        <div className="container">
+          <span className="secao-etiqueta">Prefeitura do Recife • CKAN</span>
+          <h1 className="mapa-estatico-titulo">Recife por Elas — Mapa de Equipamentos</h1>
+          <p className="mapa-estatico-subtitulo">
+            Encontre hospitais da mulher, delegacias, creches, escolas profissionalizantes e unidades do Compaz na cidade.
+          </p>
         </div>
+      </section>
 
-        {/* RODAPÉ DO PAINEL COM RESUMO */}
-        <footer className="mapa-painel-rodape">
-          <div className="mapa-resumo-info">
-            <strong>{todosPontos.length}</strong>
-            <span>equipamento{todosPontos.length === 1 ? '' : 's'} no mapa</span>
-          </div>
-          {selecionadas.length > 0 && (
-            <button
-              type="button"
-              className="mapa-btn-limpar"
-              onClick={() => setSelecionadas([])}
-            >
-              Limpar marcadores
-            </button>
-          )}
-        </footer>
-      </aside>
+      {/* CONTEÚDO PRINCIPAL (CONTAINER PADRÃO DA PÁGINA) */}
+      <section className="container mapa-secao-conteudo">
+        <div className="mapa-estatico-grid">
+          {/* COLUNA ESQUERDA (40% DESKTOP): FILTROS EM ACORDEÃO */}
+          <aside className="mapa-coluna-filtros">
+            <div className="mapa-painel-estatico">
+              <header className="mapa-painel-estatico-cabeca">
+                <h3>Filtrar por Categoria</h3>
+                <span className="mapa-contador-badge">
+                  {todosPontos.length} ponto{todosPontos.length === 1 ? '' : 's'}
+                </span>
+              </header>
+
+              <div className="mapa-arvore-categorias">
+                {ESTRUTURA_CATEGORIAS.map((grupo) => {
+                  const expandido = gruposExpandidos[grupo.id] ?? true;
+                  const itensSelecionados = grupo.itens.filter((i) => selecionadas.includes(i.id));
+                  const todosMarcados = itensSelecionados.length === grupo.itens.length;
+
+                  return (
+                    <div key={grupo.id} className="mapa-grupo-item">
+                      <div className="mapa-grupo-cabeca">
+                        <button
+                          type="button"
+                          className="mapa-grupo-btn"
+                          onClick={() => alternarGrupo(grupo.id)}
+                        >
+                          <span className="mapa-grupo-seta">{expandido ? '▼' : '▶'}</span>
+                          <span className="mapa-grupo-icone">{grupo.icone}</span>
+                          <strong className="mapa-grupo-titulo">{grupo.titulo}</strong>
+                        </button>
+                        <button
+                          type="button"
+                          className="mapa-grupo-atalho"
+                          onClick={() => alternarTodosDoGrupo(grupo)}
+                        >
+                          {todosMarcados ? 'Desmarcar' : 'Marcar'}
+                        </button>
+                      </div>
+
+                      {expandido && (
+                        <ul className="mapa-grupo-lista">
+                          {grupo.itens.map((item) => {
+                            const marcado = selecionadas.includes(item.id);
+                            const estaCarregando = carregando[item.id];
+                            const qtdPontos = pontosPorCategoria[item.id]?.length;
+
+                            return (
+                              <li key={item.id} className="mapa-categoria-linha">
+                                <label className="mapa-checkbox-label">
+                                  <input
+                                    type="checkbox"
+                                    checked={marcado}
+                                    onChange={() => alternarCategoria(item)}
+                                    className="mapa-checkbox-input"
+                                  />
+                                  <span
+                                    className="mapa-cor-indicador"
+                                    style={{ backgroundColor: item.cor }}
+                                  />
+                                  <span className="mapa-item-emoji">{item.emoji}</span>
+                                  <span className="mapa-item-nome">{item.nome}</span>
+                                </label>
+                                {estaCarregando ? (
+                                  <span className="mapa-item-spinner" title="Buscando na API do CKAN..." />
+                                ) : marcado && qtdPontos !== undefined ? (
+                                  <span className="mapa-item-qtd">{qtdPontos}</span>
+                                ) : null}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {selecionadas.length > 0 && (
+                <div className="mapa-painel-estatico-pe">
+                  <button
+                    type="button"
+                    className="mapa-btn-limpar-estatico"
+                    onClick={() => setSelecionadas([])}
+                  >
+                    Limpar todas as categorias
+                  </button>
+                </div>
+              )}
+            </div>
+          </aside>
+
+          {/* COLUNA DIREITA (60% DESKTOP): MAPA ESTRITAMENTE ESTÁTICO (ALTURA FIXA, SEM STICKY/FIXED) */}
+          <main className="mapa-coluna-mapa">
+            <div className="mapa-frame-estatico">
+              <MapContainer
+                center={[-8.0475, -34.8770]}
+                zoom={13}
+                scrollWheelZoom={false}
+                className="mapa-leaflet-estatico"
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://dados.recife.pe.gov.br">Prefeitura do Recife (CKAN)</a>'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+
+                {todosPontos.map((ponto) => (
+                  <Marker
+                    key={ponto.id}
+                    position={[ponto.latitude, ponto.longitude]}
+                    icon={criarIcone(ponto.config?.cor || '#e11d48', ponto.config?.emoji || '📍')}
+                  >
+                    <Popup className="mapa-conecta-popup">
+                      <div className="mapa-popup-conteudo">
+                        <span
+                          className="mapa-popup-badge"
+                          style={{
+                            color: ponto.config?.cor || '#e11d48',
+                            backgroundColor: `${ponto.config?.cor || '#e11d48'}15`,
+                            borderColor: `${ponto.config?.cor || '#e11d48'}33`,
+                          }}
+                        >
+                          {ponto.config?.emoji} {ponto.config?.nome}
+                        </span>
+                        <h3 className="mapa-popup-titulo">{ponto.nome}</h3>
+                        <p className="mapa-popup-endereco">
+                          <strong>📍 Endereço:</strong> {ponto.endereco}
+                        </p>
+                        {ponto.telefone && (
+                          <p className="mapa-popup-tel">
+                            <strong>📞 Contato:</strong> {ponto.telefone}
+                          </p>
+                        )}
+                        {ponto.descricao && (
+                          <p className="mapa-popup-desc">{ponto.descricao}</p>
+                        )}
+                        <div className="mapa-popup-acoes">
+                          <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${ponto.latitude},${ponto.longitude}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mapa-popup-btn"
+                          >
+                            Como chegar (Google Maps) →
+                          </a>
+                        </div>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
+            </div>
+          </main>
+        </div>
+      </section>
     </div>
   );
 }
