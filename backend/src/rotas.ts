@@ -64,6 +64,17 @@ export async function inicializarBanco(pool: Pool, schema: string): Promise<void
     )`);
 
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS equipamentos_publicos (
+      id         VARCHAR PRIMARY KEY,
+      nome       VARCHAR,
+      categoria  VARCHAR,
+      endereco   TEXT,
+      latitude   NUMERIC,
+      longitude  NUMERIC
+    )`);
+
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS candidatura (
       id               SERIAL PRIMARY KEY,
       usuario_id       UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -607,6 +618,17 @@ export function registrarRotas(app: Express, pool: Pool): void {
       res.json({ ok: true });
     } catch (e) {
       console.error('perfil put', e);
+      res.status(500).json({ erro: 'erro interno' });
+    }
+  });
+
+  app.get('/api/equipamentos', async (_req: Request, res: Response) => {
+    if (!pool) return res.status(503).json({ erro: 'banco de dados nao disponivel' });
+    try {
+      const { rows } = await pool.query('SELECT * FROM equipamentos_publicos');
+      res.json(rows);
+    } catch (e) {
+      console.error('Erro ao buscar equipamentos_publicos:', e);
       res.status(500).json({ erro: 'erro interno' });
     }
   });

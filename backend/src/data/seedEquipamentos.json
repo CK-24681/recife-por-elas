@@ -1,0 +1,54 @@
+[
+  {
+    "id": "seed_hm_01",
+    "nome": "Hospital da Mulher do Recife Dra. Mercês Pontes Cunha",
+    "categoria": "saude",
+    "endereco": "BR-101, s/n - Curado, Recife - PE",
+    "bairro": "Curado",
+    "telefone": "(81) 2011-0100",
+    "horario_funcionamento": "24 horas",
+    "latitude": -8.0772,
+    "longitude": -34.9546,
+    "fonte_dados": "Curadoria Manual (Seed)",
+    "verificado_manualmente": true
+  },
+  {
+    "id": "seed_deam_01",
+    "nome": "Delegacia Especializada de Atendimento à Mulher (DEAM) - Santo Amaro",
+    "categoria": "seguranca",
+    "endereco": "Praça do Campo Santo, s/n - Santo Amaro, Recife - PE",
+    "bairro": "Santo Amaro",
+    "telefone": "(81) 3184-3352",
+    "horario_funcionamento": "24 horas",
+    "latitude": -8.0469,
+    "longitude": -34.8812,
+    "fonte_dados": "Curadoria Manual (Seed)",
+    "verificado_manualmente": true
+  },
+  {
+    "id": "seed_compaz_01",
+    "nome": "Compaz Governador Eduardo Campos",
+    "categoria": "empreendedorismo",
+    "endereco": "Av. Aníbal Benévolo, s/n - Alto Santa Terezinha, Recife - PE",
+    "bairro": "Alto Santa Terezinha",
+    "telefone": "(81) 3355-6831",
+    "horario_funcionamento": "Terça a Domingo",
+    "latitude": -8.0135,
+    "longitude": -34.8961,
+    "fonte_dados": "Curadoria Manual (Seed)",
+    "verificado_manualmente": true
+  },
+  {
+    "id": "seed_cras_01",
+    "nome": "CRAS - Centro de Referência de Assistência Social (Santo Amaro)",
+    "categoria": "apoio",
+    "endereco": "Av. Cruz Cabugá, s/n - Santo Amaro, Recife - PE",
+    "bairro": "Santo Amaro",
+    "telefone": "(81) 3355-1234",
+    "horario_funcionamento": "Segunda a Sexta, 08:00 - 17:00",
+    "latitude": -8.0501,
+    "longitude": -34.8770,
+    "fonte_dados": "Curadoria Manual (Seed)",
+    "verificado_manualmente": true
+  }
+]

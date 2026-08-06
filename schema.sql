@@ -221,6 +221,29 @@ CREATE TABLE app_recife_por_elas.usuarios (
 
 
 --
+-- Name: equipamentos_publicos; Type: TABLE; Schema: app_recife_por_elas; Owner: -
+--
+
+CREATE TABLE app_recife_por_elas.equipamentos_publicos (
+    id character varying NOT NULL,
+    nome character varying,
+    categoria character varying,
+    endereco text,
+    bairro text,
+    telefone text,
+    horario_funcionamento text,
+    latitude numeric,
+    longitude numeric,
+    fonte_dados character varying DEFAULT 'desconhecida',
+    verificado_manualmente boolean DEFAULT false,
+    ativo boolean DEFAULT true,
+    atualizado_em timestamp with time zone DEFAULT now(),
+    criado_em timestamp with time zone DEFAULT now()
+);
+
+
+
+--
 -- Name: candidatura id; Type: DEFAULT; Schema: app_recife_por_elas; Owner: -
 --
 
@@ -247,6 +270,15 @@ ALTER TABLE ONLY app_recife_por_elas.oportunidade ALTER COLUMN id SET DEFAULT ne
 
 ALTER TABLE ONLY app_recife_por_elas.acessos
     ADD CONSTRAINT acessos_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: equipamentos_publicos equipamentos_publicos_pkey; Type: CONSTRAINT; Schema: app_recife_por_elas; Owner: -
+--
+
+ALTER TABLE ONLY app_recife_por_elas.equipamentos_publicos
+    ADD CONSTRAINT equipamentos_publicos_pkey PRIMARY KEY (id);
+
 
 
 --
