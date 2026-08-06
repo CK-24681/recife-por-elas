@@ -3916,14 +3916,15 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
   overflow: visible !important;
 }
 
-/* Força a imagem da logo em grande destaque em todo o site */
+/* Ajusta a altura da imagem da logo */
 .brand-logo-img,
+.rp-logo,
 .hn-logo img,
 .hn-logo-app img,
 .rp-logo img,
 .auth-logo img,
 .cd-onboard-logo img {
-  height: 135px !important;
+  height: 55px !important;
   width: auto !important;
   max-height: none !important;
   max-width: none !important;
@@ -3933,8 +3934,9 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
 
 /* Garante espaço nos cabeçalhos */
 .hn-linha, .hn-linha-app, .cd-onboard-topo {
-  min-height: 150px !important;
+  min-height: 80px !important;
 }
+
 
 
 
