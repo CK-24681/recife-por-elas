@@ -166,7 +166,7 @@ function Conteudo() {
           </div>
           <div className="hp-foto hover-zoom-foto entrada-hero">
             <img
-              src="https://images.unsplash.com/photo-1621353417044-d9585aee7346?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w5ODQwNjl8MHwxfHNlYXJjaHw2fHxicmF6aWxpYW4lMjB3b21lbiUyMGNvbW11bml0eSUyMHN1cHBvcnQlMjBncm91cCUyMGVtcG93ZXJpbmclMjBkaXZlcnNlfGVufDF8MHx8fDE3ODU3NjkwMjB8MA&ixlib=rb-4.1.0&q=80&w=1080"
+              src="https://img.magnific.com/fotos-gratis/retrato-intimo-da-linda-mae-segurando-seu-filho_23-2150551743.jpg"
               alt="Mulheres em círculo de apoio mútuo, sorrindo e se abraçando"
               loading="eager"
             />
@@ -178,8 +178,8 @@ function Conteudo() {
       <section className="nu-faixa" id="impacto">
         <div className="container">
           <div className="secao-cabeca surgir" style={{marginBottom: '32px', textAlign: 'center'}}>
-            <h2 className="secao-titulo" style={{color: 'white', marginBottom: '8px'}}>A realidade que queremos transformar</h2>
-            <p className="secao-sub" style={{color: 'rgba(255,255,255,0.9)', maxWidth: '700px', margin: '0 auto'}}>Entendemos os desafios únicos enfrentados diariamente pelas mães solo e criamos o Recife por Elas para ser a ponte para um novo começo.</p>
+           <h2 className="secao-titulo">A realidade que queremos transformar</h2>
+            <p className="secao-sub">Entendemos os desafios únicos enfrentados diariamente pelas mães solo e criamos o Recife por Elas para ser a ponte para um novo começo.</p>
           </div>
           <div className="nu-grade surgir">
             <div className="nu-item">
