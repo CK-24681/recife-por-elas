@@ -4798,3 +4798,60 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
 .pc-icone-grande { font-size: 48px; display: block; margin-bottom: 16px; }
 .pc-estado-bloqueado h2 { margin-bottom: 12px; color: var(--tinta); }
 .pc-estado-bloqueado p { margin-bottom: 24px; color: var(--texto-suave); }
+
+/* WORKALOVE AESTHETIC */
+.wl-page { padding: 48px 24px; max-width: 900px; margin: 0 auto; }
+.wl-hero { text-align: center; margin-bottom: 48px; }
+.wl-badge { background: #e0e7ff; color: #4338ca; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 16px; display: inline-block; }
+.wl-hero-title { font-size: 32px; font-weight: 800; color: #111827; margin-bottom: 12px; }
+.wl-hero-subtitle { font-size: 16px; color: #6b7280; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+.wl-grid-onboarding { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+.wl-card-onboarding { background: #ffffff; border: 1px solid #f3f4f6; border-radius: 16px; padding: 32px; text-align: left; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.2s; cursor: pointer; }
+.wl-card-onboarding:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border-color: #e5e7eb; }
+.wl-card-icon { font-size: 40px; margin-bottom: 16px; }
+.wl-card-title { font-size: 18px; font-weight: 700; color: #111827; margin-bottom: 8px; }
+.wl-card-desc { font-size: 14px; color: #6b7280; line-height: 1.6; }
+.wl-header-dashboard { margin-bottom: 40px; }
+.wl-btn-voltar { background: none; border: none; color: #6b7280; font-weight: 600; cursor: pointer; padding: 0; margin-bottom: 24px; font-size: 14px; transition: color 0.2s; }
+.wl-btn-voltar:hover { color: #111827; }
+.wl-header-content { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap; }
+.wl-dashboard-title { font-size: 28px; font-weight: 800; color: #111827; margin-bottom: 8px; }
+.wl-dashboard-subtitle { font-size: 15px; color: #6b7280; }
+.wl-progresso-card { background: #ffffff; border: 1px solid #e5e7eb; padding: 16px 24px; border-radius: 12px; min-width: 240px; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); }
+.wl-progresso-texto { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.wl-progresso-label { font-size: 13px; color: #6b7280; font-weight: 600; text-transform: uppercase; }
+.wl-progresso-valor { font-size: 18px; font-weight: 800; color: #4338ca; }
+.wl-progress-bar-bg { height: 8px; background: #eef2ff; border-radius: 999px; overflow: hidden; }
+.wl-progress-bar-fill { height: 100%; background: #4f46e5; transition: width 0.5s ease-out; }
+.wl-trilha-lista { display: flex; flex-direction: column; gap: 32px; }
+.wl-card-nivel { background: #ffffff; border: 1px solid #f3f4f6; border-radius: 20px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); transition: all 0.3s; }
+.wl-bloqueado { opacity: 0.6; filter: grayscale(80%); pointer-events: none; }
+.wl-nivel-header { margin-bottom: 32px; border-bottom: 1px solid #f3f4f6; padding-bottom: 24px; }
+.wl-nivel-badge { background: #f3f4f6; color: #4b5563; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; text-transform: uppercase; margin-bottom: 16px; display: inline-block; }
+.wl-concluido .wl-nivel-badge { background: #dcfce7; color: #166534; }
+.wl-nivel-title { font-size: 24px; font-weight: 800; color: #111827; margin-bottom: 8px; }
+.wl-nivel-desc { font-size: 15px; color: #6b7280; line-height: 1.6; }
+.wl-nivel-content { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+@media (max-width: 768px) { .wl-nivel-content { grid-template-columns: 1fr; } .wl-card-nivel { padding: 24px; } }
+.wl-secao-title { font-size: 16px; font-weight: 700; color: #374151; margin-bottom: 20px; }
+.wl-tarefas-lista { display: flex; flex-direction: column; gap: 12px; }
+.wl-tarefa-item { display: flex; align-items: flex-start; gap: 16px; padding: 16px; border: 1px solid #e5e7eb; border-radius: 12px; cursor: pointer; transition: all 0.2s; }
+.wl-tarefa-item:hover:not(.wl-tarefa-concluida) { background: #f9fafb; border-color: #d1d5db; }
+.wl-tarefa-concluida { background: #f0fdf4; border-color: #bbf7d0; }
+.wl-checkbox { width: 20px; height: 20px; margin-top: 2px; accent-color: #22c55e; cursor: pointer; }
+.wl-tarefa-texto { font-size: 14px; color: #4b5563; font-weight: 500; user-select: none; line-height: 1.5; transition: color 0.2s; }
+.wl-tarefa-concluida .wl-tarefa-texto { text-decoration: line-through; color: #9ca3af; }
+@keyframes check-pop { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); } 50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
+.wl-tarefa-animando { animation: check-pop 0.6s ease-out; }
+.wl-habilidades-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+.wl-tag { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 6px; }
+.wl-tag-hard { background: #e0f2fe; color: #0369a1; }
+.wl-tag-soft { background: #fef08a; color: #854d0e; }
+.wl-oportunidades-lista { display: flex; flex-direction: column; gap: 12px; }
+.wl-oportunidade-card { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: #f9fafb; border: 1px solid #f3f4f6; border-radius: 12px; }
+.wl-op-tipo { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #6b7280; display: block; margin-bottom: 4px; }
+.wl-op-title { font-size: 14px; font-weight: 600; color: #111827; }
+.wl-btn-pequeno { background: #ffffff; border: 1px solid #d1d5db; color: #374151; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 6px; text-decoration: none; transition: all 0.2s; }
+.wl-btn-pequeno:hover { background: #f3f4f6; }
+.wl-vazio-bloqueado, .wl-vazio { padding: 32px; text-align: center; background: #f9fafb; border: 1px dashed #d1d5db; border-radius: 12px; color: #6b7280; font-size: 14px; }
+.wl-cadeado { font-size: 32px; display: block; margin-bottom: 12px; }

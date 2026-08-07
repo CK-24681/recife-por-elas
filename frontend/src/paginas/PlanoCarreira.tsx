@@ -264,7 +264,6 @@ function normalizar(valor: string): string {
 
 export default function PlanoCarreira() {
   const [momentoAtivo, setMomentoAtivo] = useState<Momento | null>(null);
-  const [nivelAtivo, setNivelAtivo] = useState<Nivel>(1);
   const [oportunidades, setOportunidades] = useState<Oportunidade[]>([]);
   const [carregando, setCarregando] = useState(true);
   
@@ -294,14 +293,27 @@ export default function PlanoCarreira() {
     };
   }, []);
 
-  const toggleTarefa = (id: string) => {
+  const toggleTarefa = (id: string, nivel: number) => {
     setTarefasConcluidas(prev => {
       const concluido = prev.includes(id);
       if (!concluido) {
         // Dispara animação de sucesso
         setAnimandoTarefa(id);
         setTimeout(() => setAnimandoTarefa(null), 800);
-        return [...prev, id];
+        
+        const novasTarefas = [...prev, id];
+        
+        if (momentoAtivo) {
+          const passoAtualRef = momentoAtivo.trilha.find(p => p.nivel === nivel);
+          if (passoAtualRef) {
+            const completouNivel = passoAtualRef.tarefas.every(t => novasTarefas.includes(t.id));
+            if (completouNivel) {
+               alert(`Parabéns! Você concluiu o Nível ${nivel}! 🚀🎉`);
+            }
+          }
+        }
+
+        return novasTarefas;
       }
       return prev.filter(t => t !== id);
     });
@@ -311,7 +323,6 @@ export default function PlanoCarreira() {
     if (nivel === 1) return false;
     const nivelAnterior = trilha.find(p => p.nivel === nivel - 1);
     if (!nivelAnterior) return false;
-    // O nível está bloqueado se alguma tarefa do nível anterior NÃO estiver concluída
     return nivelAnterior.tarefas.some(t => !tarefasConcluidas.includes(t.id));
   };
 
@@ -324,28 +335,27 @@ export default function PlanoCarreira() {
 
   if (!momentoAtivo) {
     return (
-      <main className="container" style={{ paddingBlock: '48px', minHeight: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div style={{ textAlign: 'center', marginBottom: '40px', maxWidth: '600px' }}>
-          <span className="pc-badge-destaque" style={{ display: 'inline-block', marginBottom: '16px' }}>Plano de Carreira Interativo</span>
-          <h1 style={{ fontSize: '32px', color: 'var(--tinta)', marginBottom: '16px' }}>Onde você está hoje?</h1>
-          <p style={{ color: 'var(--texto-suave)', fontSize: '16px', lineHeight: 1.6 }}>
-            Sabemos que o tempo é curto e os desafios são reais. Escolha o momento que melhor descreve sua realidade atual para montarmos uma trilha passo a passo focada em resultados práticos.
+      <main className="container wl-page">
+        <div className="wl-hero">
+          <span className="wl-badge">Dashboard de Progressão</span>
+          <h1 className="wl-hero-title">Onde você está hoje?</h1>
+          <p className="wl-hero-subtitle">
+            Selecione o seu momento atual. Vamos criar um roteiro claro, acionável e focado em resultados.
           </p>
         </div>
 
-        <div className="pc-diagnostico-grid">
+        <div className="wl-grid-onboarding">
           {MOMENTOS.map(momento => (
             <button 
               key={momento.id} 
-              className="pc-diagnostico-card"
+              className="wl-card-onboarding"
               onClick={() => {
                 setMomentoAtivo(momento);
-                setNivelAtivo(1);
               }}
             >
-              <span className="pc-diagnostico-icone">{momento.icone}</span>
-              <h3>{momento.titulo}</h3>
-              <p>{momento.descricao}</p>
+              <div className="wl-card-icon">{momento.icone}</div>
+              <h3 className="wl-card-title">{momento.titulo}</h3>
+              <p className="wl-card-desc">{momento.descricao}</p>
             </button>
           ))}
         </div>
@@ -354,170 +364,122 @@ export default function PlanoCarreira() {
   }
 
   const progressoTotal = calcularProgresso(momentoAtivo.trilha);
-  const passoAtual = momentoAtivo.trilha.find(p => p.nivel === nivelAtivo)!;
-  const isPassoAtualBloqueado = verificarNivelBloqueado(nivelAtivo, momentoAtivo.trilha);
-
-  const oportunidadesFiltradas = oportunidades.filter(op => {
-    const tipoNormalizado = normalizar(op.tipo);
-    const tituloNormalizado = normalizar(op.titulo);
-    return passoAtual.filtrosTipo.some(filtro => {
-      const fNorm = normalizar(filtro);
-      return tipoNormalizado.includes(fNorm) || tituloNormalizado.includes(fNorm);
-    });
-  }).slice(0, 4);
 
   return (
-    <main className="container" style={{ paddingBlock: '40px' }}>
-      <header className="pc-dashboard-header">
-        <div>
-          <button className="pc-btn-voltar" onClick={() => setMomentoAtivo(null)}>
-            ← Voltar para as opções
-          </button>
-          <h1>{momentoAtivo.icone} {momentoAtivo.titulo}</h1>
-          <p>
-            {progressoTotal > 0 
-              ? `Incrível! Você avançou ${progressoTotal}% no seu plano hoje.` 
-              : 'Sua trilha de progressão começou. Um passo de cada vez.'}
-          </p>
-        </div>
-        <div className="pc-dashboard-gamification">
-          <div className="pc-progress-bar">
-            <div className="pc-progress-fill" style={{ width: `${progressoTotal}%` }}></div>
+    <main className="container wl-page">
+      <header className="wl-header-dashboard">
+        <button className="wl-btn-voltar" onClick={() => setMomentoAtivo(null)}>
+          &larr; Trocar Trilha
+        </button>
+        <div className="wl-header-content">
+          <div>
+            <h1 className="wl-dashboard-title">{momentoAtivo.icone} {momentoAtivo.titulo}</h1>
+            <p className="wl-dashboard-subtitle">
+              Seu mapa de carreira. Complete as tarefas de um nível para desbloquear o próximo.
+            </p>
           </div>
-          <span>Concluído: {progressoTotal}%</span>
-          <button className="btn-secundario" style={{ marginTop: '12px', fontSize: '13px', width: '100%' }} onClick={() => alert('Assistente IA indisponível no momento.')}>
-            💬 Tirar dúvidas
-          </button>
+          <div className="wl-progresso-card">
+            <div className="wl-progresso-texto">
+              <span className="wl-progresso-label">Progresso Geral</span>
+              <span className="wl-progresso-valor">{progressoTotal}%</span>
+            </div>
+            <div className="wl-progress-bar-bg">
+              <div className="wl-progress-bar-fill" style={{ width: `${progressoTotal}%` }}></div>
+            </div>
+          </div>
         </div>
       </header>
 
-      <div className="pc-dashboard-layout">
-        <aside className="pc-trilha-nav">
-          {momentoAtivo.trilha.map((passo, index) => {
-            const isBloqueado = verificarNivelBloqueado(passo.nivel, momentoAtivo.trilha);
-            const todasTarefasFeitas = passo.tarefas.every(t => tarefasConcluidas.includes(t.id));
-            const classAtivo = nivelAtivo === passo.nivel ? 'ativo' : '';
-            const classConcluido = todasTarefasFeitas ? 'concluido' : '';
-            const classBloqueado = isBloqueado ? 'bloqueado' : '';
-            
-            return (
-              <div 
-                key={passo.nivel} 
-                className={`pc-trilha-step ${classAtivo} ${classConcluido} ${classBloqueado}`}
-                onClick={() => {
-                  if (!isBloqueado || classConcluido) {
-                    setNivelAtivo(passo.nivel as Nivel);
-                  }
-                }}
-              >
-                <div className="pc-step-indicator">
-                  {isBloqueado && !todasTarefasFeitas ? '🔒' : todasTarefasFeitas ? '✓' : passo.nivel}
-                </div>
-                <div className="pc-step-content">
-                  <strong>Nível {passo.nivel} {isBloqueado && !todasTarefasFeitas ? '(Bloqueado)' : ''}</strong>
-                  <span>{passo.titulo}</span>
-                </div>
-                {index < momentoAtivo.trilha.length - 1 && <div className="pc-step-connector"></div>}
-              </div>
-            );
-          })}
-        </aside>
+      <div className="wl-trilha-lista">
+        {momentoAtivo.trilha.map((passo) => {
+          const isBloqueado = verificarNivelBloqueado(passo.nivel, momentoAtivo.trilha);
+          const todasTarefasFeitas = passo.tarefas.every(t => tarefasConcluidas.includes(t.id));
+          
+          const oportunidadesFiltradas = oportunidades.filter(op => {
+            const tipoNormalizado = normalizar(op.tipo);
+            const tituloNormalizado = normalizar(op.titulo);
+            return passo.filtrosTipo.some(filtro => {
+              const fNorm = normalizar(filtro);
+              return tipoNormalizado.includes(fNorm) || tituloNormalizado.includes(fNorm);
+            });
+          }).slice(0, 3);
 
-        <section className="pc-trilha-detalhe">
-          <div className="pc-card-detalhe">
-            {isPassoAtualBloqueado ? (
-              <div className="pc-estado-bloqueado">
-                <span className="pc-icone-grande">🔒</span>
-                <h2>Nível Bloqueado</h2>
-                <p>Para destravar o Nível {nivelAtivo}, você precisa primeiro concluir todas as tarefas práticas do Nível {nivelAtivo - 1}.</p>
-                <button className="btn-primario" onClick={() => setNivelAtivo((nivelAtivo - 1) as Nivel)}>
-                  Voltar para o Nível {nivelAtivo - 1}
-                </button>
+          return (
+            <section key={passo.nivel} className={`wl-card-nivel ${isBloqueado ? 'wl-bloqueado' : ''} ${todasTarefasFeitas ? 'wl-concluido' : ''}`}>
+              <div className="wl-nivel-header">
+                <div>
+                  <span className="wl-nivel-badge">Nível {passo.nivel} {isBloqueado && '(Bloqueado)'} {todasTarefasFeitas && '🎉'}</span>
+                  <h2 className="wl-nivel-title">{passo.titulo}</h2>
+                  <p className="wl-nivel-desc">{passo.descricao}</p>
+                </div>
               </div>
-            ) : (
-              <>
-                <span className="pc-badge-destaque">Sua Missão Agora</span>
-                <h2>{passoAtual.titulo}</h2>
-                <p className="pc-descricao-passo">{passoAtual.descricao}</p>
-                
-                <div className="pc-tarefas-bloco">
-                  <h3>Checklist Prático</h3>
-                  <div className="pc-tarefas-lista">
-                    {passoAtual.tarefas.map(tarefa => {
+
+              <div className="wl-nivel-content">
+                <div className="wl-tarefas-secao">
+                  <h3 className="wl-secao-title">Tarefas Práticas</h3>
+                  <div className="wl-tarefas-lista">
+                    {passo.tarefas.map(tarefa => {
                       const isConcluida = tarefasConcluidas.includes(tarefa.id);
                       const isAnimando = animandoTarefa === tarefa.id;
                       return (
-                        <label key={tarefa.id} className={`pc-tarefa-item ${isConcluida ? 'concluida' : ''} ${isAnimando ? 'animando' : ''}`}>
+                        <label key={tarefa.id} className={`wl-tarefa-item ${isConcluida ? 'wl-tarefa-concluida' : ''} ${isAnimando ? 'wl-tarefa-animando' : ''}`}>
                           <input 
                             type="checkbox" 
                             checked={isConcluida}
-                            onChange={() => toggleTarefa(tarefa.id)}
-                            className="pc-checkbox"
+                            onChange={() => toggleTarefa(tarefa.id, passo.nivel)}
+                            className="wl-checkbox"
+                            disabled={isBloqueado}
                           />
-                          <span className="pc-tarefa-texto">{tarefa.texto}</span>
+                          <span className="wl-tarefa-texto">{tarefa.texto}</span>
                         </label>
                       );
                     })}
                   </div>
                 </div>
 
-                <div className="pc-habilidades-grid" style={{ marginTop: '32px' }}>
-                  <div>
-                    <h4 className="pc-habilidades-title">📚 Hard Skills (Práticas)</h4>
-                    <div className="pc-skill-cloud">
-                      {passoAtual.habilidades.filter(h => h.tipo === 'hard').map(h => (
-                        <span key={h.nome} className="pc-skill-chip hard">{h.nome}</span>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="pc-habilidades-title">🤝 Soft Skills (Comportamentais)</h4>
-                    <div className="pc-skill-cloud">
-                      {passoAtual.habilidades.filter(h => h.tipo === 'soft').map(h => (
-                        <span key={h.nome} className="pc-skill-chip soft">{h.nome}</span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pc-acoes-box" style={{ marginTop: '32px' }}>
-                  <h3>Apoio para essas Tarefas</h3>
-                  {carregando ? (
-                    <p style={{ color: 'var(--texto-suave)', fontSize: '14px' }}>Buscando recomendações no ecossistema...</p>
-                  ) : oportunidadesFiltradas.length > 0 ? (
-                    <div className="pc-oportunidades-grid">
-                      {oportunidadesFiltradas.map(op => (
-                        <div key={op.id || op.titulo} className="pc-oportunidade-card">
-                          <span className="pc-op-tipo">{op.tipo}</span>
-                          <h4>{op.titulo}</h4>
-                          {op.empresa && <strong className="pc-op-empresa">{op.empresa}</strong>}
-                          <p>{op.descricao.substring(0, 80)}...</p>
-                          
-                          {op.link_inscricao ? (
-                            <a href={op.link_inscricao} target="_blank" rel="noopener noreferrer" className="btn-secundario pc-op-btn">
-                              Acessar ↗
-                            </a>
-                          ) : op.id ? (
-                            <Link to={`/oportunidades/${op.id}`} className="btn-secundario pc-op-btn">
-                              Ver Detalhes →
-                            </Link>
-                          ) : null}
+                <div className="wl-apoio-secao">
+                   <h3 className="wl-secao-title">Recomendações e Apoio</h3>
+                   {isBloqueado ? (
+                     <div className="wl-vazio-bloqueado">
+                       <span className="wl-cadeado">🔒</span>
+                       <p>Termine o Nível {passo.nivel - 1} para ver cursos e vagas desta etapa.</p>
+                     </div>
+                   ) : (
+                     <>
+                        <div className="wl-habilidades-tags">
+                          {passo.habilidades.map(h => (
+                            <span key={h.nome} className={`wl-tag wl-tag-${h.tipo}`}>{h.nome}</span>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="pc-oportunidade-vazia">
-                      <p>Não encontramos vagas ou cursos públicos exatos para este nível no momento.</p>
-                      <Link to="/mapa" className="btn-primario">
-                        Acessar o Mapa de Apoio
-                      </Link>
-                    </div>
-                  )}
+
+                        {carregando ? (
+                          <p className="wl-loading">Buscando oportunidades...</p>
+                        ) : oportunidadesFiltradas.length > 0 ? (
+                          <div className="wl-oportunidades-lista">
+                            {oportunidadesFiltradas.map(op => (
+                              <div key={op.id || op.titulo} className="wl-oportunidade-card">
+                                <div>
+                                  <span className="wl-op-tipo">{op.tipo}</span>
+                                  <h4 className="wl-op-title">{op.titulo}</h4>
+                                </div>
+                                {op.link_inscricao ? (
+                                  <a href={op.link_inscricao} target="_blank" rel="noopener noreferrer" className="wl-btn-pequeno">Abrir ↗</a>
+                                ) : op.id ? (
+                                  <Link to={`/oportunidades/${op.id}`} className="wl-btn-pequeno">Detalhes →</Link>
+                                ) : null}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="wl-vazio">Nenhuma recomendação pública agora.</div>
+                        )}
+                     </>
+                   )}
                 </div>
-              </>
-            )}
-          </div>
-        </section>
+              </div>
+            </section>
+          );
+        })}
       </div>
     </main>
   );
