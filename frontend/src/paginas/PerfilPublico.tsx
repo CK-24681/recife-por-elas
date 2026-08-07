@@ -6,7 +6,6 @@ export default function PerfilPublico() {
   const [abaAtual, setAbaAtual] = useState<'postagens' | 'servicos'>('postagens');
 
   // Mocks
-  const id = window.location.pathname.split('/').pop() || '123';
   const nome = 'Maria Silva';
   const bairro = 'Santo Amaro';
   const bio = 'Mãe do Leo, confeiteira e buscando vagas na área de tecnologia.';
