@@ -263,18 +263,38 @@ function normalizar(valor: string): string {
 }
 
 export default function PlanoCarreira() {
-  const [momentoAtivo, setMomentoAtivo] = useState<Momento | null>(null);
+  const [momentoAtivo, setMomentoAtivo] = useState<Momento | null>(() => {
+    const salvo = localStorage.getItem('plano_momentoAtivo');
+    return salvo ? JSON.parse(salvo) : null;
+  });
   
   // Wizard States
-  const [passoWizard, setPassoWizard] = useState(1);
-  const [isProcessando, setIsProcessando] = useState(false);
+  const [passoWizard, setPassoWizard] = useState(() => {
+    const salvo = localStorage.getItem('plano_passoWizard');
+    return salvo ? JSON.parse(salvo) : 1;
+  });
 
   const [oportunidades, setOportunidades] = useState<Oportunidade[]>([]);
   const [carregando, setCarregando] = useState(true);
   
   // Estado gamificado
-  const [tarefasConcluidas, setTarefasConcluidas] = useState<string[]>([]);
+  const [tarefasConcluidas, setTarefasConcluidas] = useState<string[]>(() => {
+    const salvo = localStorage.getItem('plano_tarefasConcluidas');
+    return salvo ? JSON.parse(salvo) : [];
+  });
   const [animandoTarefa, setAnimandoTarefa] = useState<string | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem('plano_momentoAtivo', JSON.stringify(momentoAtivo));
+  }, [momentoAtivo]);
+
+  useEffect(() => {
+    localStorage.setItem('plano_passoWizard', JSON.stringify(passoWizard));
+  }, [passoWizard]);
+
+  useEffect(() => {
+    localStorage.setItem('plano_tarefasConcluidas', JSON.stringify(tarefasConcluidas));
+  }, [tarefasConcluidas]);
 
   useEffect(() => {
     let ativo = true;
@@ -299,14 +319,9 @@ export default function PlanoCarreira() {
   }, []);
 
   const handleRespostaWizard = (passo: number, _resposta: string, metaId?: string) => {
-    
     if (passo === 4 && metaId) {
-       setIsProcessando(true);
-       setTimeout(() => {
-           setIsProcessando(false);
-           const m = MOMENTOS.find(mom => mom.id === metaId) || MOMENTOS[0];
-           setMomentoAtivo(m);
-       }, 2500); // 2.5s delay fake para processamento de IA/análise
+       const m = MOMENTOS.find(mom => mom.id === metaId) || MOMENTOS[0];
+       setMomentoAtivo(m);
     } else {
        setPassoWizard(p => p + 1);
     }
@@ -316,6 +331,9 @@ export default function PlanoCarreira() {
     setMomentoAtivo(null);
     setPassoWizard(1);
     setTarefasConcluidas([]);
+    localStorage.removeItem('plano_momentoAtivo');
+    localStorage.removeItem('plano_passoWizard');
+    localStorage.removeItem('plano_tarefasConcluidas');
   };
 
   const toggleTarefa = (id: string, nivel: number) => {
@@ -327,15 +345,6 @@ export default function PlanoCarreira() {
         
         const novasTarefas = [...prev, id];
         
-        if (momentoAtivo) {
-          const passoAtualRef = momentoAtivo.trilha.find(p => p.nivel === nivel);
-          if (passoAtualRef) {
-            const completouNivel = passoAtualRef.tarefas.every(t => novasTarefas.includes(t.id));
-            if (completouNivel) {
-               alert(`Parabéns! Você concluiu o Nível ${nivel}. O próximo nível foi desbloqueado.`);
-            }
-          }
-        }
         return novasTarefas;
       }
       return prev.filter(t => t !== id);
@@ -355,17 +364,6 @@ export default function PlanoCarreira() {
     const concluidas = trilha.flatMap(p => p.tarefas).filter(t => tarefasConcluidas.includes(t.id)).length;
     return Math.round((concluidas / total) * 100);
   };
-
-  // TELA DE PROCESSAMENTO
-  if (isProcessando) {
-    return (
-      <main className="plano-container plano-processando">
-        <div className="plano-spinner"></div>
-        <h2>Construindo seu roteiro...</h2>
-        <p>Analisando seu perfil e cruzando com oportunidades no Recife.</p>
-      </main>
-    );
-  }
 
   // WIZARD DE DIAGNÓSTICO (ESTADO INICIAL)
   if (!momentoAtivo) {
@@ -592,7 +590,6 @@ export default function PlanoCarreira() {
                    <h3>Recomendações e Apoio</h3>
                    {isBloqueado ? (
                      <div className="plano-bloqueio-msg">
-                       <span className="icone-bloqueio">🔒</span>
                        <p>Termine o Nível {passo.nivel - 1} para desbloquear recursos desta etapa.</p>
                      </div>
                    ) : (
