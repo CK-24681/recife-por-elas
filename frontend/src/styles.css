@@ -5386,3 +5386,312 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ——— MURAL SOCIAL HUB ——— */
+.mural-container {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: sans-serif;
+}
+
+.mural-composer, .post-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.post-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.post-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #fdf2f8;
+  color: #E24C8F;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.post-header-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.post-header-info strong {
+  font-size: 15px;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.post-header-info p {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.post-badges {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.mural-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.mural-badge.pedido {
+  background: #fdf2f8;
+  color: #db2777;
+}
+
+.mural-badge.postagem {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.post-actions {
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid #f3f4f6;
+  padding-top: 12px;
+  margin-top: 16px;
+}
+
+.btn-acao {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  background: transparent;
+  border: none;
+  color: #4b5563;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.btn-acao:hover {
+  background: #f3f4f6;
+}
+
+.btn-acao.ativo {
+  color: #E24C8F;
+}
+
+.mural-comentario {
+  border-left: 2px solid #f3f4f6;
+  margin-left: 24px;
+  padding-left: 16px;
+  margin-top: 12px;
+}
+
+.mural-media-content {
+  width: 100%;
+  border-radius: 8px;
+  margin-top: 12px;
+  object-fit: cover;
+}
+
+.mural-composer-main {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.mural-composer-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mural-textarea {
+  width: 100%;
+  border: none;
+  resize: none;
+  outline: none;
+  font-size: 15px;
+  color: #374151;
+  background: transparent;
+}
+
+.mural-textarea::placeholder {
+  color: #9ca3af;
+}
+
+.mural-composer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #f3f4f6;
+  padding-top: 12px;
+  margin-top: 16px;
+}
+
+.mural-composer-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.mural-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.mural-tab {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 999px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.mural-tab:hover {
+  background: #f3f4f6;
+}
+
+.mural-tab.ativo {
+  background: #111827;
+  color: #ffffff;
+}
+
+.mural-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mural-chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #4b5563;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.mural-chip.ativo {
+  background: #db2777;
+  color: #ffffff;
+}
+
+.mural-campo-bairro {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f9fafb;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+}
+
+.mural-campo-bairro input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  width: 120px;
+}
+
+.mural-filtros {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.mural-filtro {
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #4b5563;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.mural-filtro.ativo {
+  background: #fdf2f8;
+  border-color: #fbcfe8;
+  color: #db2777;
+}
+
+.mural-miniacao {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.mural-miniacao:hover {
+  background: #f3f4f6;
+}
+
+.mural-miniacao.ativo {
+  color: #db2777;
+}
+
+.mural-comentario-topo {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.mural-comentario-topo strong {
+  font-size: 14px;
+  color: #111827;
+}
+
+.mural-comentario-topo span {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.mural-comentario-texto {
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 8px;
+}

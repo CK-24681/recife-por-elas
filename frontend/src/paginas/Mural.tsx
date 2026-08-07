@@ -235,12 +235,11 @@ export default function Mural() {
 
   return (
     <>
-      <section className="container mural-conteudo">
-        <div className="mural-cabecalho">
+      <section className="mural-container">
+        <div className="mural-cabecalho" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <div>
-            <span className="mural-hero-tag">Rede de apoio</span>
-            <h1 className="mural-titulo">Mural</h1>
-            <p className="mural-subtitulo">
+            <h1 className="mural-titulo" style={{ fontSize: '24px', fontWeight: 'bold', color: '#111827' }}>Rede de Conexões</h1>
+            <p className="mural-subtitulo" style={{ fontSize: '15px', color: '#6b7280', marginTop: '4px' }}>
               {posts.length} publicações
               {bairroBase ? ` · Bairro base: ${bairroBase}` : ''}
               {usuario?.nome ? ` · Olá, ${usuario.nome.split(' ')[0]}` : ''}
@@ -248,7 +247,8 @@ export default function Mural() {
           </div>
           <button
             type="button"
-            className="mural-ajuda-btn"
+            className="btn-secundario"
+            style={{ borderRadius: '999px', padding: '6px 16px', fontSize: '14px' }}
             onClick={() => setMostrarAjuda((valor) => !valor)}
           >
             {mostrarAjuda ? 'Ocultar ajuda' : 'Como funciona'}
@@ -256,16 +256,15 @@ export default function Mural() {
         </div>
 
         {mostrarAjuda && (
-          <article className="mural-ajuda-card mural-card">
-            <div className="mural-hero-card-linha">
-              <strong>Como funciona</strong>
-              <span>rápido e direto</span>
+          <article className="post-card" style={{ background: '#fdf2f8', borderColor: '#fbcfe8' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <strong style={{ color: '#db2777', fontSize: '16px' }}>Como funciona</strong>
             </div>
-            <ul className="mural-hero-lista">
-              <li>1. Escolha entre postagem ou pedido</li>
-              <li>2. Defina um tema para o pedido</li>
-              <li>3. Publique e receba respostas no mural</li>
-              <li>4. Curta e responda os comentários de outras mães</li>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: '#4b5563', fontSize: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <li><strong>1.</strong> Escolha entre postagem ou pedido</li>
+              <li><strong>2.</strong> Defina um tema para o pedido</li>
+              <li><strong>3.</strong> Publique e receba respostas no mural</li>
+              <li><strong>4.</strong> Curta e responda os comentários de outras mães</li>
             </ul>
           </article>
         )}
@@ -288,114 +287,91 @@ export default function Mural() {
             </button>
           </div>
 
-          <div className="mural-composer-topo">
-            <div className="mural-avatar" aria-hidden="true">
+          <div className="mural-composer-main">
+            <div className="post-avatar" aria-hidden="true">
               {iniciais(usuario?.nome || 'M')}
             </div>
-            <div>
-              <strong>{usuario?.nome || 'Sua publicação'}</strong>
-              <p>{destaque}</p>
-            </div>
-          </div>
-
-          {modoNovo === 'pedido' && (
-            <div className="mural-chips">
-              {categoriasPedido.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  className={categoriaPedido === item ? 'mural-chip ativo' : 'mural-chip'}
-                  onClick={() => setCategoriaPedido(item)}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          )}
-
-          <textarea
-            value={texto}
-            onChange={(e) => setTexto(e.target.value)}
-            placeholder={
-              modoNovo === 'pedido'
-                ? 'Ex: Preciso de ajuda para levar meu filho à escola nesta semana...'
-                : 'Compartilhe uma conquista, dica, aviso ou apoio para outras mães...'
-            }
-            rows={5}
-            required
-          />
-
-          <div className="mural-anexo-area">
-            <label className="mural-anexo-btn">
-              <input
-                type="file"
-                accept="image/*,video/*"
-                onChange={(e) => {
-                  const arquivo = e.target.files?.[0] || null;
-                  setAnexoErro('');
-                  if (arquivo && !arquivo.type.startsWith('image/') && !arquivo.type.startsWith('video/')) {
-                    setAnexo(null);
-                    setAnexoErro('Selecione uma imagem ou vídeo.');
-                    return;
-                  }
-                  setAnexo(arquivo);
-                }}
-              />
-              {anexo ? 'Trocar anexo' : 'Adicionar imagem ou vídeo'}
-            </label>
-            {anexo && (
-              <button
-                type="button"
-                className="mural-anexo-limpar"
-                onClick={() => setAnexo(null)}
-              >
-                Remover anexo
-              </button>
-            )}
-          </div>
-
-          {anexoErro ? <p className="mural-anexo-erro">{anexoErro}</p> : null}
-
-          {anexo && (
-            <div className="mural-anexo-preview">
-              {anexo.type.startsWith('image/') ? (
-                <img src={anexoPreview} alt={`Prévia do anexo ${anexo.name}`} />
-              ) : (
-                <video src={anexoPreview} controls playsInline />
+            <div className="mural-composer-content">
+              {modoNovo === 'pedido' && (
+                <div className="mural-chips">
+                  {categoriasPedido.map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      className={categoriaPedido === item ? 'mural-chip ativo' : 'mural-chip'}
+                      onClick={() => setCategoriaPedido(item)}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
               )}
-              <div className="mural-anexo-meta">
-                <strong>{anexo.name}</strong>
-                <span>{anexo.type.startsWith('video/') ? 'Vídeo' : 'Imagem'}</span>
-              </div>
-            </div>
-          )}
-
-          <div className="mural-composer-actions">
-            <label className="mural-campo">
-              <span>Bairro</span>
-              <input
-                value={bairroPublicacao}
-                onChange={(e) => setBairroPublicacao(e.target.value)}
-                placeholder="Ex: Ibura"
+              
+              <textarea
+                value={texto}
+                onChange={(e) => setTexto(e.target.value)}
+                placeholder="No que você precisa de ajuda hoje ou o que gostaria de compartilhar com as outras mães?"
+                rows={3}
+                required
+                className="mural-textarea"
               />
-            </label>
 
-            <div className="mural-botoes">
-              <button
-                type="button"
-                className="btn-secundario"
-                onClick={() => {
-                  setTexto('');
-                  setModoNovo('postagem');
-                  setCategoriaPedido(categoriasPedido[0]);
-                }}
-              >
-                Limpar
-              </button>
-              <button type="submit" className="btn-primario" disabled={publicando}>
-                {publicando ? 'Publicando...' : modoNovo === 'pedido' ? 'Publicar pedido' : 'Publicar post'}
-              </button>
+              {anexoErro ? <p className="mural-anexo-erro" style={{color: 'red', fontSize: '13px'}}>{anexoErro}</p> : null}
+
+              {anexo && (
+                <div className="mural-anexo-preview" style={{position: 'relative', display: 'inline-block', marginTop: '12px'}}>
+                  {anexo.type.startsWith('image/') ? (
+                    <img src={anexoPreview} alt={`Prévia do anexo ${anexo.name}`} className="mural-media-content" style={{maxHeight: '200px', width: 'auto'}} />
+                  ) : (
+                    <video src={anexoPreview} controls playsInline className="mural-media-content" style={{maxHeight: '200px', width: 'auto'}} />
+                  )}
+                  <button
+                    type="button"
+                    style={{position: 'absolute', top: '8px', right: '8px', background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'}}
+                    onClick={() => setAnexo(null)}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                  </button>
+                </div>
+              )}
             </div>
+          </div>
+
+          <div className="mural-composer-footer">
+            <div className="mural-composer-actions">
+              <label className="mural-miniacao" style={{cursor: 'pointer'}}>
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  style={{ display: 'none' }}
+                  onChange={(e) => {
+                    const arquivo = e.target.files?.[0] || null;
+                    setAnexoErro('');
+                    if (arquivo && !arquivo.type.startsWith('image/') && !arquivo.type.startsWith('video/')) {
+                      setAnexo(null);
+                      setAnexoErro('Selecione uma imagem ou vídeo.');
+                      return;
+                    }
+                    setAnexo(arquivo);
+                  }}
+                />
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                <span style={{marginLeft: '4px'}}>{anexo ? 'Trocar' : 'Mídia'}</span>
+              </label>
+
+              <label className="mural-campo-bairro">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                <input
+                  value={bairroPublicacao}
+                  onChange={(e) => setBairroPublicacao(e.target.value)}
+                  placeholder="Seu Bairro"
+                />
+              </label>
+            </div>
+
+            <button type="submit" className="btn-primario" disabled={publicando} style={{padding: '8px 24px', borderRadius: '999px', minHeight: '36px', fontSize: '14px'}}>
+              {publicando ? 'Publicando...' : 'Publicar'}
+            </button>
           </div>
         </form>
 
@@ -434,7 +410,7 @@ export default function Mural() {
         {estado === 'carregando' ? (
           <div className="mural-loading">
             {[1, 2, 3].map((i) => (
-              <article key={i} className="mural-card skeleton">
+              <article key={i} className="post-card skeleton">
                 <div className="mural-skeleton-header" />
                 <div className="mural-skeleton-line" />
                 <div className="mural-skeleton-line curta" />
@@ -546,47 +522,44 @@ function PostCard({
   const contarComentarios = post.comments_count;
 
   return (
-    <article className="mural-card surgir">
-      <header className="mural-header">
-        <div className="mural-autor">
-          <div className="mural-avatar grande" aria-hidden="true">
-            {iniciais(post.autor_nome)}
-          </div>
-          <div>
-            <strong>{post.autor_nome}</strong>
-            <p>
-              {post.bairro}
-              <span aria-hidden="true"> • </span>
-              {formatarData(post.criado_em)}
-            </p>
-          </div>
+    <article className="post-card surgir">
+      <header className="post-header">
+        <div className="post-avatar" aria-hidden="true">
+          {iniciais(post.autor_nome)}
         </div>
-
-        <div className="mural-badges">
-          <span className={post.tipo === 'pedido' ? 'mural-badge pedido' : 'mural-badge postagem'}>
-            {badgeTipo(post.tipo)}
-          </span>
-          {post.categoria ? <span className="mural-badge neutro">{post.categoria}</span> : null}
+        <div className="post-header-info">
+          <strong>{post.autor_nome}</strong>
+          <p>
+            {post.bairro}
+            <span aria-hidden="true"> • </span>
+            {formatarData(post.criado_em)}
+          </p>
         </div>
       </header>
 
-      <p className="mural-texto">{post.texto}</p>
+      <div className="post-badges">
+        <span className={post.tipo === 'pedido' ? 'mural-badge pedido' : 'mural-badge postagem'}>
+          {badgeTipo(post.tipo)}
+        </span>
+        {post.categoria ? <span className="mural-badge neutro" style={{marginLeft: '8px'}}>{post.categoria}</span> : null}
+      </div>
+
+      <p className="mural-texto" style={{fontSize: '15px', color: '#374151', lineHeight: '1.5'}}>{post.texto}</p>
 
       {post.media_url ? (
         <div className="mural-media">
           {post.media_tipo.startsWith('video/') ? (
-            <video src={post.media_url} controls playsInline preload="metadata" />
+            <video src={post.media_url} controls playsInline preload="metadata" className="mural-media-content" />
           ) : (
-            <img src={post.media_url} alt={post.media_nome || `Anexo de ${post.autor_nome}`} />
+            <img src={post.media_url} alt={post.media_nome || `Anexo de ${post.autor_nome}`} className="mural-media-content" />
           )}
-          {post.media_nome ? <span className="mural-media-legenda">{post.media_nome}</span> : null}
         </div>
       ) : null}
 
-      <div className="mural-acoes">
+      <div className="post-actions">
         <button
           type="button"
-          className={post.me_liked ? 'mural-acao ativo' : 'mural-acao'}
+          className={post.me_liked ? 'btn-acao ativo' : 'btn-acao'}
           onClick={async () => {
             try {
               await onCurtirPost(post.id);
@@ -595,11 +568,11 @@ function PostCard({
             }
           }}
         >
-          <span>♥</span>
-          <span>{post.likes_count} curtir</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill={post.me_liked ? "#E24C8F" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+          <span>{post.likes_count} {post.likes_count === 1 ? 'curtida' : 'curtidas'}</span>
         </button>
-        <button type="button" className="mural-acao" onClick={alternarComentarios}>
-          <span>💬</span>
+        <button type="button" className="btn-acao" onClick={alternarComentarios}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
           <span>{contarComentarios} comentário{contarComentarios === 1 ? '' : 's'}</span>
         </button>
       </div>
@@ -639,11 +612,11 @@ function PostCard({
             </div>
           )}
 
-          <form className="mural-resposta" onSubmit={enviarComentario}>
+          <form className="mural-resposta" onSubmit={enviarComentario} style={{marginTop: '16px', background: '#f9fafb', padding: '16px', borderRadius: '8px', border: '1px solid #e5e7eb'}}>
             {respondendoA && (
-              <div className="mural-resposta-contexto">
-                Respondendo a <strong>{respondendoA.nome}</strong>
-                <button type="button" onClick={() => setRespondendoA(null)}>
+              <div className="mural-resposta-contexto" style={{fontSize: '13px', color: '#6b7280', marginBottom: '8px', display: 'flex', justifyContent: 'space-between'}}>
+                <span>Respondendo a <strong>{respondendoA.nome}</strong></span>
+                <button type="button" onClick={() => setRespondendoA(null)} style={{background: 'none', border: 'none', color: '#db2777', cursor: 'pointer', fontSize: '13px'}}>
                   cancelar
                 </button>
               </div>
@@ -653,8 +626,10 @@ function PostCard({
               onChange={(e) => setTextoComentario(e.target.value)}
               placeholder="Escreva uma resposta..."
               rows={3}
+              className="mural-textarea"
+              style={{background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '8px', padding: '12px'}}
             />
-            <div className="mural-resposta-acoes">
+            <div className="mural-resposta-acoes" style={{display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '12px'}}>
               <button
                 type="button"
                 className="btn-secundario"
@@ -662,10 +637,11 @@ function PostCard({
                   setTextoComentario('');
                   setRespondendoA(null);
                 }}
+                style={{padding: '8px 16px', borderRadius: '999px', fontSize: '14px', minHeight: '36px'}}
               >
                 Limpar
               </button>
-              <button type="submit" className="btn-primario" disabled={salvandoComentario}>
+              <button type="submit" className="btn-primario" disabled={salvandoComentario} style={{padding: '8px 16px', borderRadius: '999px', fontSize: '14px', minHeight: '36px'}}>
                 {salvandoComentario ? 'Enviando...' : 'Responder'}
               </button>
             </div>
@@ -688,9 +664,12 @@ function ComentarioItem({
   onCurtir: (commentId: string) => Promise<void>;
 }) {
   return (
-    <article className="mural-comentario" style={{ marginLeft: nivel > 0 ? 20 : 0 }}>
+    <article className="mural-comentario" style={nivel > 0 ? { borderLeft: '2px solid #f3f4f6', marginLeft: '24px', paddingLeft: '16px', marginTop: '12px' } : { marginTop: '16px' }}>
       <div className="mural-comentario-topo">
-        <div>
+        <div className="post-avatar" style={{width: '32px', height: '32px', fontSize: '14px'}} aria-hidden="true">
+          {iniciais(comentario.autor_nome)}
+        </div>
+        <div style={{display: 'flex', flexDirection: 'column'}}>
           <strong>{comentario.autor_nome}</strong>
           <span>{formatarData(comentario.criado_em)}</span>
         </div>
@@ -698,16 +677,18 @@ function ComentarioItem({
 
       <p className="mural-comentario-texto">{comentario.texto}</p>
 
-      <div className="mural-comentario-acoes">
+      <div className="mural-comentario-acoes" style={{display: 'flex', gap: '8px'}}>
         <button
           type="button"
           className={comentario.me_liked ? 'mural-miniacao ativo' : 'mural-miniacao'}
           onClick={() => onCurtir(comentario.id)}
         >
-          ♥ {comentario.likes_count}
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill={comentario.me_liked ? "#E24C8F" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+          <span style={{marginLeft: '4px'}}>{comentario.likes_count}</span>
         </button>
         <button type="button" className="mural-miniacao" onClick={() => onResponder(comentario)}>
-          Responder
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+          <span style={{marginLeft: '4px'}}>Responder</span>
         </button>
       </div>
 
