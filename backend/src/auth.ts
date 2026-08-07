@@ -102,6 +102,9 @@ export async function inicializarAuth(pool: Pool): Promise<void> {
       criado_em     TIMESTAMPTZ NOT NULL DEFAULT now()
     )`);
   await pool.query(`
+    ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS foto_url VARCHAR DEFAULT ''
+  `);
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS reset_senha (
       id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       usuario_id  UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,

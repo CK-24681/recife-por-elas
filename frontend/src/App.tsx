@@ -387,23 +387,9 @@ function Conteudo() {
 function HeaderApp() {
   const { usuario, encerrar } = useSessao();
   const caminho = useCaminho();
-  const [fotoPerfil, setFotoPerfil] = useState('');
   const ativo = (p: string) => caminho === p || (p !== '/' && caminho.startsWith(p));
   const iniciais = (usuario?.nome || 'A').split(' ').map((p: string) => p[0]).slice(0, 2).join('').toUpperCase();
-
-  useEffect(() => {
-    let ativo = true;
-    apiJSON<{ photo_url?: string }>('/perfil')
-      .then((perfil: any) => {
-        if (ativo) setFotoPerfil(perfil.photo_url || '');
-      })
-      .catch(() => {
-        if (ativo) setFotoPerfil('');
-      });
-    return () => {
-      ativo = false;
-    };
-  }, []);
+  const fotoPerfil = usuario?.foto_url || '';
 
   return (
     <header className="hn-topo-app">

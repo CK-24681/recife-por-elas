@@ -79,6 +79,7 @@ export interface Usuario {
   id: string;
   nome: string;
   email?: string;
+  foto_url?: string;
 }
 
 export async function cadastrar(nome: string, email: string, senha: string): Promise<Usuario> {

@@ -11,7 +11,6 @@ interface ReqAuth extends Request {
 }
 
 let _pool: Pool | null = null;
-let _schema = '';
 
 type MuralTipo = 'postagem' | 'pedido';
 
@@ -40,9 +39,8 @@ function normalizarCurtidas<T extends { likes_count?: unknown; comments_count?: 
   }));
 }
 
-export async function inicializarBanco(pool: Pool, schema: string): Promise<void> {
+export async function inicializarBanco(pool: Pool, _schema: string): Promise<void> {
   _pool = pool;
-  _schema = schema;
 
   await pool.query('CREATE EXTENSION IF NOT EXISTS pgcrypto');
 
@@ -107,15 +105,6 @@ export async function inicializarBanco(pool: Pool, schema: string): Promise<void
       mensagem         TEXT DEFAULT '',
       status           TEXT NOT NULL DEFAULT 'Enviada' CHECK (status IN ('Enviada','Em análise','Aprovada','Não selecionada')),
       UNIQUE(usuario_id, oportunidade_id)
-    )`);
-
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS mensagem_mural (
-      id              SERIAL PRIMARY KEY,
-      bairro          TEXT NOT NULL,
-      autor_nome      TEXT NOT NULL,
-      texto           TEXT NOT NULL,
-      data_publicacao TIMESTAMPTZ NOT NULL DEFAULT now()
     )`);
 
   await pool.query(`
@@ -218,6 +207,25 @@ export async function inicializarBanco(pool: Pool, schema: string): Promise<void
       texto           TEXT NOT NULL,
       lida            BOOLEAN NOT NULL DEFAULT false,
       criado_em       TIMESTAMPTZ NOT NULL DEFAULT now()
+    )`);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS eventos (
+      id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      titulo     VARCHAR NOT NULL,
+      data_hora  TIMESTAMP NOT NULL,
+      local      VARCHAR NOT NULL,
+      criador_id UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+      criado_em  TIMESTAMPTZ NOT NULL DEFAULT now()
+    )`);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS progresso_plano (
+      usuario_id         UUID PRIMARY KEY REFERENCES usuarios(id) ON DELETE CASCADE,
+      momento_ativo      VARCHAR NOT NULL DEFAULT 'INICIO',
+      passo_wizard       INT NOT NULL DEFAULT 1,
+      tarefas_concluidas JSON NOT NULL DEFAULT '[]',
+      atualizado_em      TIMESTAMPTZ NOT NULL DEFAULT now()
     )`);
 }
 
@@ -636,10 +644,14 @@ export function registrarRotas(app: Express, pool: Pool): void {
 
   app.put('/api/perfil', autenticar, async (req: ReqAuth, res: Response) => {
     try {
-      const { nome, email, telefone, cpf, data_nascimento, bairro, filhos, idades_filhos, turno_disponivel, interesses, photo_url, sobre_mim, experiencias, cursos, habilidades } = req.body || {};
+      const { nome, telefone, cpf, data_nascimento, bairro, filhos, idades_filhos, turno_disponivel, interesses, photo_url, sobre_mim, experiencias, cursos, habilidades } = req.body || {};
 
       if (nome && typeof nome === 'string' && nome.trim()) {
         await pool.query('UPDATE usuarios SET nome=$1 WHERE id=$2', [nome.trim(), req.usuarioId]);
+      }
+      
+      if (typeof photo_url === 'string') {
+        await pool.query('UPDATE usuarios SET foto_url=$1 WHERE id=$2', [photo_url, req.usuarioId]);
       }
 
       await pool.query(
@@ -823,6 +835,66 @@ export function registrarRotas(app: Express, pool: Pool): void {
       res.json(rows[0]);
     } catch (e) {
       console.error('post mensagem erro', e);
+      res.status(500).json({ erro: 'erro interno' });
+    }
+  });
+
+  // --- Hub Social: Eventos ---
+  app.get('/api/eventos', async (_req: Request, res: Response) => {
+    try {
+      const { rows } = await pool.query('SELECT * FROM eventos ORDER BY data_hora ASC');
+      res.json(rows);
+    } catch (e) {
+      res.status(500).json({ erro: 'erro interno' });
+    }
+  });
+
+  app.post('/api/eventos', autenticar, async (req: ReqAuth, res: Response) => {
+    try {
+      const { titulo, data_hora, local } = req.body;
+      if (!titulo || !data_hora || !local) return res.status(400).json({ erro: 'dados incompletos' });
+      
+      const { rows } = await pool.query(
+        'INSERT INTO eventos (titulo, data_hora, local, criador_id) VALUES ($1, $2, $3, $4) RETURNING *',
+        [titulo, data_hora, local, req.usuarioId]
+      );
+      res.json(rows[0]);
+    } catch (e) {
+      res.status(500).json({ erro: 'erro interno' });
+    }
+  });
+
+  // --- Plano de Carreira (Persistência) ---
+  app.get('/api/plano', autenticar, async (req: ReqAuth, res: Response) => {
+    try {
+      const { rows } = await pool.query('SELECT * FROM progresso_plano WHERE usuario_id = $1', [req.usuarioId]);
+      if (rows.length === 0) {
+        return res.json({ momento_ativo: 'INICIO', passo_wizard: 1, tarefas_concluidas: [] });
+      }
+      res.json(rows[0]);
+    } catch (e) {
+      res.status(500).json({ erro: 'erro interno' });
+    }
+  });
+
+  app.put('/api/plano', autenticar, async (req: ReqAuth, res: Response) => {
+    try {
+      const { momento_ativo, passo_wizard, tarefas_concluidas } = req.body;
+      const tarefasJson = JSON.stringify(tarefas_concluidas || []);
+
+      const { rows } = await pool.query(`
+        INSERT INTO progresso_plano (usuario_id, momento_ativo, passo_wizard, tarefas_concluidas)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (usuario_id) DO UPDATE SET
+          momento_ativo = EXCLUDED.momento_ativo,
+          passo_wizard = EXCLUDED.passo_wizard,
+          tarefas_concluidas = EXCLUDED.tarefas_concluidas,
+          atualizado_em = now()
+        RETURNING *
+      `, [req.usuarioId, momento_ativo || 'INICIO', passo_wizard || 1, tarefasJson]);
+      
+      res.json(rows[0]);
+    } catch (e) {
       res.status(500).json({ erro: 'erro interno' });
     }
   });

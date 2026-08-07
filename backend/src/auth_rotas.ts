@@ -138,10 +138,10 @@ export function registrarRotasAuth(app: Express, pool: Pool | null): void {
   app.get('/api/auth/eu', autenticar, async (req: ReqAuth, res: Response) => {
     if (!pool) return res.status(503).json({ erro: 'banco indisponivel' });
     try {
-      const { rows } = await pool.query('SELECT id, nome, email_cifrado FROM usuarios WHERE id=$1', [req.usuarioId]);
+      const { rows } = await pool.query('SELECT id, nome, email_cifrado, foto_url FROM usuarios WHERE id=$1', [req.usuarioId]);
       const u = rows[0];
       if (!u) return res.status(401).json({ erro: 'nao autenticado' });
-      res.json({ id: u.id, nome: u.nome, email: decifrarEmail(u.email_cifrado) });
+      res.json({ id: u.id, nome: u.nome, email: decifrarEmail(u.email_cifrado), foto_url: u.foto_url });
     } catch (e) {
       console.error('eu', e);
       res.status(500).json({ erro: 'erro interno' });

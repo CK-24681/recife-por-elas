@@ -5864,3 +5864,36 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
   justify-content: flex-end;
   width: 100%;
 }
+
+/* ——— MURAL TABS (Pill Style) ——— */
+.mural-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  background: #fdf2f8;
+  padding: 4px;
+  border-radius: 999px;
+  width: max-content;
+}
+
+.mural-tab {
+  background: transparent;
+  border: none;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #db2777;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mural-tab:hover {
+  background: #fbcfe8;
+}
+
+.mural-tab.ativo {
+  background: #E24C8F;
+  color: white;
+  box-shadow: 0 2px 4px rgba(226, 76, 143, 0.3);
+}

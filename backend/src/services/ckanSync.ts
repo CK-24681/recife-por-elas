@@ -67,7 +67,7 @@ function categorizarEquipamento(record: any): string {
   return 'Outros'; 
 }
 
-function formatarNomeEquipamento(rawNome: any, record: any, categoria: string, idStr: string): string {
+function formatarNomeEquipamento(rawNome: any, _record: any, categoria: string, idStr: string): string {
   if (!rawNome) return `Equipamento ${idStr}`;
   let nome = String(rawNome).trim();
 

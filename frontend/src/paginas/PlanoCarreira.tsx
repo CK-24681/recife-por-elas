@@ -263,38 +263,44 @@ function normalizar(valor: string): string {
 }
 
 export default function PlanoCarreira() {
-  const [momentoAtivo, setMomentoAtivo] = useState<Momento | null>(() => {
-    const salvo = localStorage.getItem('plano_momentoAtivo');
-    return salvo ? JSON.parse(salvo) : null;
-  });
+  const [momentoAtivo, setMomentoAtivo] = useState<Momento | null>(null);
+  const [passoWizard, setPassoWizard] = useState<number>(1);
+  const [tarefasConcluidas, setTarefasConcluidas] = useState<string[]>([]);
   
-  // Wizard States
-  const [passoWizard, setPassoWizard] = useState<number>(() => {
-    const salvo = localStorage.getItem('plano_passoWizard');
-    return salvo ? JSON.parse(salvo) : 1;
-  });
-
   const [oportunidades, setOportunidades] = useState<Oportunidade[]>([]);
   const [carregando, setCarregando] = useState(true);
-  
-  // Estado gamificado
-  const [tarefasConcluidas, setTarefasConcluidas] = useState<string[]>(() => {
-    const salvo = localStorage.getItem('plano_tarefasConcluidas');
-    return salvo ? JSON.parse(salvo) : [];
-  });
+  const [carregandoPlano, setCarregandoPlano] = useState(true);
   const [animandoTarefa, setAnimandoTarefa] = useState<string | null>(null);
 
-  useEffect(() => {
-    localStorage.setItem('plano_momentoAtivo', JSON.stringify(momentoAtivo));
-  }, [momentoAtivo]);
+  // Sync function
+  const salvarPlanoDB = (novoMomento: string | null, novoPasso: number, novasTarefas: string[]) => {
+    apiJSON('/plano', {
+      method: 'PUT',
+      corpo: {
+        momento_ativo: novoMomento || 'INICIO',
+        passo_wizard: novoPasso,
+        tarefas_concluidas: novasTarefas
+      }
+    }).catch(e => console.error('Falha ao salvar plano:', e));
+  };
 
   useEffect(() => {
-    localStorage.setItem('plano_passoWizard', JSON.stringify(passoWizard));
-  }, [passoWizard]);
-
-  useEffect(() => {
-    localStorage.setItem('plano_tarefasConcluidas', JSON.stringify(tarefasConcluidas));
-  }, [tarefasConcluidas]);
+    let ativo = true;
+    apiJSON<{ momento_ativo: string, passo_wizard: number, tarefas_concluidas: string[] }>('/plano')
+      .then(res => {
+        if (!ativo) return;
+        if (res.momento_ativo && res.momento_ativo !== 'INICIO') {
+          const m = MOMENTOS.find(mom => mom.id === res.momento_ativo) || MOMENTOS[0];
+          setMomentoAtivo(m);
+        }
+        setPassoWizard(res.passo_wizard || 1);
+        setTarefasConcluidas(res.tarefas_concluidas || []);
+      })
+      .catch(e => console.error('Erro carregando plano:', e))
+      .finally(() => { if (ativo) setCarregandoPlano(false); });
+    
+    return () => { ativo = false; };
+  }, []);
 
   useEffect(() => {
     let ativo = true;
@@ -322,8 +328,11 @@ export default function PlanoCarreira() {
     if (passo === 4 && metaId) {
        const m = MOMENTOS.find(mom => mom.id === metaId) || MOMENTOS[0];
        setMomentoAtivo(m);
+       salvarPlanoDB(m.id, passoWizard, tarefasConcluidas);
     } else {
-       setPassoWizard((p: number) => p + 1);
+       const novoPasso = passoWizard + 1;
+       setPassoWizard(novoPasso);
+       salvarPlanoDB(momentoAtivo?.id || null, novoPasso, tarefasConcluidas);
     }
   };
 
@@ -331,23 +340,22 @@ export default function PlanoCarreira() {
     setMomentoAtivo(null);
     setPassoWizard(1);
     setTarefasConcluidas([]);
-    localStorage.removeItem('plano_momentoAtivo');
-    localStorage.removeItem('plano_passoWizard');
-    localStorage.removeItem('plano_tarefasConcluidas');
+    salvarPlanoDB(null, 1, []);
   };
 
   const toggleTarefa = (id: string) => {
     setTarefasConcluidas(prev => {
       const concluido = prev.includes(id);
+      let novasTarefas;
       if (!concluido) {
         setAnimandoTarefa(id);
         setTimeout(() => setAnimandoTarefa(null), 800);
-        
-        const novasTarefas = [...prev, id];
-        
-        return novasTarefas;
+        novasTarefas = [...prev, id];
+      } else {
+        novasTarefas = prev.filter(t => t !== id);
       }
-      return prev.filter(t => t !== id);
+      salvarPlanoDB(momentoAtivo?.id || null, passoWizard, novasTarefas);
+      return novasTarefas;
     });
   };
 
@@ -366,6 +374,17 @@ export default function PlanoCarreira() {
   };
 
   // WIZARD DE DIAGNÓSTICO (ESTADO INICIAL)
+  if (carregandoPlano) {
+    return (
+      <main className="plano-container">
+        <div className="plano-header">
+          <span className="plano-header-tag">Carregando...</span>
+          <h1>Sincronizando seu plano...</h1>
+        </div>
+      </main>
+    );
+  }
+
   if (!momentoAtivo) {
     return (
       <main className="plano-container">

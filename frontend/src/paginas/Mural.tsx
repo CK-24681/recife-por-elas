@@ -117,6 +117,18 @@ export default function Mural() {
   const [anexoPreview, setAnexoPreview] = useState('');
   const [anexoErro, setAnexoErro] = useState('');
 
+  const [eventos, setEventos] = useState<any[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const evs = await apiJSON<any[]>('/eventos');
+        setEventos(evs);
+      } catch {
+        setEventos([]);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -302,8 +314,12 @@ export default function Mural() {
           </div>
 
           <div className="mural-composer-main">
-            <div className="post-avatar" aria-hidden="true">
-              {iniciais(usuario?.nome || 'M')}
+            <div className="post-avatar" aria-hidden="true" style={{ overflow: 'hidden' }}>
+              {usuario?.foto_url ? (
+                <img src={usuario.foto_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                iniciais(usuario?.nome || 'M')
+              )}
             </div>
             <div className="mural-composer-content">
               {modoNovo === 'pedido' && (
@@ -469,6 +485,44 @@ export default function Mural() {
           </div>
           
           <aside className="mural-sidebar">
+            <div className="mural-sidebar-widget" style={{ marginBottom: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 className="mural-sidebar-titulo" style={{ margin: 0 }}>Próximos Eventos</h3>
+                <button 
+                  className="btn-secundario" 
+                  style={{ padding: '4px 8px', fontSize: '12px' }}
+                  onClick={() => toast.sucesso('Em breve: Criar Evento!')}
+                >
+                  + Criar
+                </button>
+              </div>
+              
+              {eventos.length === 0 ? (
+                <p style={{ fontSize: '13px', color: '#6b7280' }}>Nenhum evento próximo.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {eventos.map((ev) => {
+                    const data = new Date(ev.data_hora);
+                    return (
+                      <div key={ev.id} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                        <div style={{ background: '#fdf2f8', color: '#db2777', borderRadius: '8px', padding: '6px', textAlign: 'center', minWidth: '45px' }}>
+                          <strong style={{ display: 'block', fontSize: '16px', lineHeight: '1' }}>{data.getDate()}</strong>
+                          <span style={{ fontSize: '10px', textTransform: 'uppercase' }}>{data.toLocaleString('pt-BR', { month: 'short' })}</span>
+                        </div>
+                        <div>
+                          <strong style={{ display: 'block', fontSize: '14px', color: '#111827', marginBottom: '2px' }}>{ev.titulo}</strong>
+                          <span style={{ fontSize: '12px', color: '#6b7280', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                            {ev.local}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             <div className="mural-sidebar-widget">
               <h3 className="mural-sidebar-titulo">Comunidades</h3>
               <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>

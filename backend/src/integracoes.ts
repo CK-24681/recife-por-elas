@@ -99,56 +99,14 @@ async function geocodeEndereco(
 // Reativar na v2 quando houver filtro de perfil digital/remoto.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function buscarArbeitnow(): Promise<OportunidadeExterna[]> {
-  const data = await fetchJSON('https://www.arbeitnow.com/api/job-board-api');
-  if (!data) return [];
-  const vagas: any[] = data?.data || [];
-  return vagas.slice(0, 20).map((v: any) => ({
-    titulo: String(v.title || 'Vaga de trabalho').slice(0, 200),
-    descricao: String(v.description || '').replace(/<[^>]*>/g, '').slice(0, 1000),
-    empresa: String(v.company_name || '').slice(0, 200),
-    tipo: 'Emprego' as const,
-    fonte: 'Arbeitnow',
-    link_inscricao: String(v.url || ''),
-    bairro: 'Remoto',
-    endereco: String(v.location || 'Trabalho remoto'),
-    latitude: null,
-    longitude: null,
-    isOnline: true,
-    horario: 'Flexível',
-    data_inicio_inscricao: new Date().toISOString().slice(0, 10),
-    data_fim_inscricao: '',
-  }));
-}
+
 
 // ─── REMOTIVE — DESATIVADO v1 ───────────────────────────────────────────────
 // Razão: vagas 100% remotas exigem infraestrutura (internet estável, computador)
 // que a persona v1 tipicamente não possui. Fora do escopo.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function buscarRemotive(): Promise<OportunidadeExterna[]> {
-  const data = await fetchJSON('https://remotive.com/api/remote-jobs');
-  if (!data) return [];
-  const vagas: any[] = data?.jobs || [];
-  return vagas.slice(0, 20).map((v: any) => ({
-    titulo: String(v.title || 'Vaga remota').slice(0, 200),
-    descricao: String(v.description || '').replace(/<[^>]*>/g, '').slice(0, 1000),
-    empresa: String(v.company_name || '').slice(0, 200),
-    tipo: 'Emprego' as const,
-    fonte: 'Remotive',
-    link_inscricao: String(v.url || ''),
-    bairro: 'Remoto',
-    endereco: String(v.candidate_required_location || 'Trabalho 100% remoto'),
-    latitude: null,
-    longitude: null,
-    isOnline: true,
-    horario: 'Flexível',
-    data_inicio_inscricao: new Date().toISOString().slice(0, 10),
-    data_fim_inscricao: '',
-  }));
-}
+
 
 // ─── ADZUNA (busca geolocalizada — App ID + App Key via env) ───
 // Geocoding automático via Nominatim quando a API omite lat/lng.
@@ -203,34 +161,7 @@ async function buscarAdzuna(): Promise<OportunidadeExterna[]> {
 // salários em dólar/euro — confuso e irrelevante para a persona.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function buscarTheMuse(): Promise<OportunidadeExterna[]> {
-  const apiKey = process.env.THE_MUSE_API_KEY;
-  if (!apiKey) return [];
 
-  const data = await fetchJSON(
-    'https://www.themuse.com/api/public/v2/jobs?location=Brazil&page=0&descending=true',
-    { 'X-Muse-Api-Key': apiKey }
-  );
-  if (!data) return [];
-  const vagas: any[] = data?.results || [];
-  return vagas.slice(0, 20).map((v: any) => ({
-    titulo: String(v.name || 'Vaga').slice(0, 200),
-    descricao: (v.contents || '').replace(/<[^>]*>/g, '').slice(0, 1000),
-    empresa: String(v.company?.name || '').slice(0, 200),
-    tipo: 'Emprego' as const,
-    fonte: 'The Muse',
-    link_inscricao: String(v.refs?.landing_page || ''),
-    bairro: 'Internacional',
-    endereco: (v.locations || []).map((l: any) => l.name).join(', ') || 'Brasil',
-    latitude: null,
-    longitude: null,
-    isOnline: true,
-    horario: 'A consultar',
-    data_inicio_inscricao: new Date().toISOString().slice(0, 10),
-    data_fim_inscricao: '',
-  }));
-}
 
 // ─── EV.G (ENAP — aberto, público) ───
 
