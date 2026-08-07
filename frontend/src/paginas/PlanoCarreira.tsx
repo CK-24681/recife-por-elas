@@ -44,7 +44,7 @@ interface Momento {
 const MOMENTOS: Momento[] = [
   {
     id: 'renda_imediata',
-    icone: '🚀',
+    icone: '',
     titulo: 'Preciso de renda imediata',
     descricao: 'Alternativas rápidas e flexíveis para gerar dinheiro e estabilizar as contas de casa.',
     trilha: [
@@ -97,7 +97,7 @@ const MOMENTOS: Momento[] = [
   },
   {
     id: 'formalizacao',
-    icone: '📝',
+    icone: '',
     titulo: 'Quero me formalizar (MEI)',
     descricao: 'Já tenho uma atividade e preciso de segurança jurídica e crédito para crescer.',
     trilha: [
@@ -149,7 +149,7 @@ const MOMENTOS: Momento[] = [
   },
   {
     id: 'recolocacao_formal',
-    icone: '💼',
+    icone: '',
     titulo: 'Busco recolocação (CLT)',
     descricao: 'Quero estabilidade, carteira assinada e direitos garantidos no fim do mês.',
     trilha: [
@@ -202,7 +202,7 @@ const MOMENTOS: Momento[] = [
   },
   {
     id: 'migracao_tec',
-    icone: '💡',
+    icone: '',
     titulo: 'Quero ir para Tecnologia',
     descricao: 'Vejo o mercado digital crescendo e quero me capacitar para vagas em Tech.',
     trilha: [
@@ -332,7 +332,7 @@ export default function PlanoCarreira() {
           if (passoAtualRef) {
             const completouNivel = passoAtualRef.tarefas.every(t => novasTarefas.includes(t.id));
             if (completouNivel) {
-               alert(`Parabéns! Você concluiu o Nível ${nivel}! 🚀🎉`);
+               alert(`Parabéns! Você concluiu o Nível ${nivel}. O próximo nível foi desbloqueado.`);
             }
           }
         }
@@ -450,19 +450,19 @@ export default function PlanoCarreira() {
               <h2 className="wl-wizard-question">Qual a sua meta número 1 para os próximos 3 meses?</h2>
               <div className="wl-wizard-options-grid">
                 <button className="wl-wizard-option wl-meta-option" onClick={() => handleRespostaWizard(4, 'Renda Imediata', 'renda_imediata')}>
-                  <strong>Renda Rápida 🚀</strong>
+                  <strong>Renda Rápida</strong>
                   <p>Qualquer alternativa flexível para fechar as contas.</p>
                 </button>
                 <button className="wl-wizard-option wl-meta-option" onClick={() => handleRespostaWizard(4, 'Formalizar Negócio', 'formalizacao')}>
-                  <strong>Abrir MEI 📝</strong>
+                  <strong>Abrir MEI</strong>
                   <p>Me formalizar e conseguir crédito.</p>
                 </button>
                 <button className="wl-wizard-option wl-meta-option" onClick={() => handleRespostaWizard(4, 'Carteira Assinada', 'recolocacao_formal')}>
-                  <strong>Vaga CLT 💼</strong>
+                  <strong>Vaga CLT</strong>
                   <p>Estabilidade e direitos trabalhistas.</p>
                 </button>
                 <button className="wl-wizard-option wl-meta-option" onClick={() => handleRespostaWizard(4, 'Estudar TI', 'migracao_tec')}>
-                  <strong>Mudar para Tech 💡</strong>
+                  <strong>Mudar para Tecnologia</strong>
                   <p>Aprender digital e buscar vagas remotas.</p>
                 </button>
               </div>
@@ -519,7 +519,7 @@ export default function PlanoCarreira() {
             <section key={passo.nivel} className={`wl-card-nivel ${isBloqueado ? 'wl-bloqueado' : ''} ${todasTarefasFeitas ? 'wl-concluido' : ''}`}>
               <div className="wl-nivel-header">
                 <div>
-                  <span className="wl-nivel-badge">Nível {passo.nivel} {isBloqueado && '(Bloqueado)'} {todasTarefasFeitas && '🎉'}</span>
+                  <span className="wl-nivel-badge">Nível {passo.nivel} {isBloqueado && '(Bloqueado)'} {todasTarefasFeitas && '(Concluído)'}</span>
                   <h2 className="wl-nivel-title">{passo.titulo}</h2>
                   <p className="wl-nivel-desc">{passo.descricao}</p>
                 </div>
@@ -552,7 +552,7 @@ export default function PlanoCarreira() {
                    <h3 className="wl-secao-title">Recomendações e Apoio</h3>
                    {isBloqueado ? (
                      <div className="wl-vazio-bloqueado">
-                       <span className="wl-cadeado">🔒</span>
+                       <span className="wl-cadeado-svg"></span>
                        <p>Termine o Nível {passo.nivel - 1} para ver cursos e vagas desta etapa.</p>
                      </div>
                    ) : (
