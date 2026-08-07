@@ -46,7 +46,7 @@ const MOMENTOS: Momento[] = [
     id: 'renda_imediata',
     icone: '🚀',
     titulo: 'Preciso de renda imediata',
-    descricao: 'Busco alternativas rápidas e flexíveis para gerar dinheiro e estabilizar as contas de casa.',
+    descricao: 'Alternativas rápidas e flexíveis para gerar dinheiro e estabilizar as contas de casa.',
     trilha: [
       {
         nivel: 1,
@@ -66,7 +66,7 @@ const MOMENTOS: Momento[] = [
       {
         nivel: 2,
         titulo: 'Micro-Qualificação Rápida',
-        descricao: 'Aprenda uma habilidade prática de curta duração (ex: culinária, beleza, artesanato) que possa ser vendida imediatamente.',
+        descricao: 'Aprenda uma habilidade prática de curta duração (ex: culinária, beleza, artesanato).',
         habilidades: [
           { nome: 'Atendimento ao Cliente', tipo: 'soft' },
           { nome: 'Técnicas de Venda', tipo: 'hard' }
@@ -81,7 +81,7 @@ const MOMENTOS: Momento[] = [
       {
         nivel: 3,
         titulo: 'Geração de Renda Ativa',
-        descricao: 'Comece a oferecer seus serviços no bairro ou internet, usando redes sociais para captar os primeiros clientes.',
+        descricao: 'Comece a oferecer seus serviços no bairro ou internet, captando os primeiros clientes.',
         habilidades: [
           { nome: 'Uso de Redes Sociais', tipo: 'hard' },
           { nome: 'Comunicação Clara', tipo: 'soft' }
@@ -98,13 +98,13 @@ const MOMENTOS: Momento[] = [
   {
     id: 'formalizacao',
     icone: '📝',
-    titulo: 'Quero me formalizar (Autônoma/MEI)',
-    descricao: 'Já tenho uma atividade ou quero abrir um pequeno negócio e preciso de segurança jurídica e crédito.',
+    titulo: 'Quero me formalizar (MEI)',
+    descricao: 'Já tenho uma atividade e preciso de segurança jurídica e crédito para crescer.',
     trilha: [
       {
         nivel: 1,
         titulo: 'Mapeamento do Negócio',
-        descricao: 'Entenda o que você vende, quem é seu cliente e separe o dinheiro da casa do dinheiro do negócio.',
+        descricao: 'Entenda o que você vende, quem é seu cliente e separe o dinheiro da casa.',
         habilidades: [
           { nome: 'Educação Financeira', tipo: 'hard' },
           { nome: 'Planejamento', tipo: 'soft' }
@@ -119,7 +119,7 @@ const MOMENTOS: Momento[] = [
       {
         nivel: 2,
         titulo: 'Formalização MEI',
-        descricao: 'Abra seu CNPJ MEI gratuitamente. Isso garante seus direitos previdenciários (auxílio-doença, salário maternidade).',
+        descricao: 'Abra seu CNPJ MEI gratuitamente e garanta seus direitos previdenciários.',
         habilidades: [
           { nome: 'Navegação em Portais', tipo: 'hard' }
         ],
@@ -133,7 +133,7 @@ const MOMENTOS: Momento[] = [
       {
         nivel: 3,
         titulo: 'Escala e Microcrédito',
-        descricao: 'Com o CNPJ em mãos, acesse linhas de crédito focadas em mulheres e amplie sua produção ou serviços.',
+        descricao: 'Com o CNPJ em mãos, acesse linhas de crédito e amplie sua produção.',
         habilidades: [
           { nome: 'Gestão de Estoque', tipo: 'hard' },
           { nome: 'Negociação', tipo: 'soft' }
@@ -150,13 +150,13 @@ const MOMENTOS: Momento[] = [
   {
     id: 'recolocacao_formal',
     icone: '💼',
-    titulo: 'Busco recolocação formal (CLT)',
-    descricao: 'Quero estabilidade, carteira assinada e direitos trabalhistas garantidos no fim do mês.',
+    titulo: 'Busco recolocação (CLT)',
+    descricao: 'Quero estabilidade, carteira assinada e direitos garantidos no fim do mês.',
     trilha: [
       {
         nivel: 1,
         titulo: 'Preparação e Currículo',
-        descricao: 'Atualize seus dados, faça um currículo claro focando em suas experiências reais (mesmo as informais).',
+        descricao: 'Atualize seus dados, faça um currículo claro focando em suas experiências reais.',
         habilidades: [
           { nome: 'Autoconhecimento', tipo: 'soft' },
           { nome: 'Ferramentas de Texto', tipo: 'hard' }
@@ -171,7 +171,7 @@ const MOMENTOS: Momento[] = [
       {
         nivel: 2,
         titulo: 'Atualização Profissional',
-        descricao: 'Faça cursos técnicos gratuitos (SENAI, SENAC) na sua área para voltar competitiva ao mercado.',
+        descricao: 'Faça cursos técnicos gratuitos (SENAI, SENAC) na sua área.',
         habilidades: [
           { nome: 'Adaptação', tipo: 'soft' },
           { nome: 'Pacote Office Básico', tipo: 'hard' }
@@ -186,7 +186,7 @@ const MOMENTOS: Momento[] = [
       {
         nivel: 3,
         titulo: 'Entrevistas e Vagas',
-        descricao: 'Aprenda a se portar em entrevistas e acione sua rede de contatos para indicações.',
+        descricao: 'Aprenda a se portar em entrevistas e acione sua rede de contatos.',
         habilidades: [
           { nome: 'Comunicação e Oratória', tipo: 'soft' },
           { nome: 'Inteligência Emocional', tipo: 'soft' }
@@ -203,13 +203,13 @@ const MOMENTOS: Momento[] = [
   {
     id: 'migracao_tec',
     icone: '💡',
-    titulo: 'Quero mudar de área (Tecnologia)',
-    descricao: 'Vejo o mercado digital crescendo e quero me capacitar para vagas administrativas, tecnologia ou serviços modernos.',
+    titulo: 'Quero ir para Tecnologia',
+    descricao: 'Vejo o mercado digital crescendo e quero me capacitar para vagas em Tech.',
     trilha: [
       {
         nivel: 1,
         titulo: 'Letramento Digital Básico',
-        descricao: 'Ganhe fluência com computadores, digitação, navegadores e ferramentas de trabalho remoto (Zoom, Drive).',
+        descricao: 'Ganhe fluência com computadores, digitação e ferramentas de trabalho remoto.',
         habilidades: [
           { nome: 'Informática Básica', tipo: 'hard' },
           { nome: 'Curiosidade', tipo: 'soft' }
@@ -218,13 +218,13 @@ const MOMENTOS: Momento[] = [
         tarefas: [
           { id: 'mt_1_1', texto: 'Aprender a usar Google Drive e Docs' },
           { id: 'mt_1_2', texto: 'Participar de uma chamada no Zoom/Meet' },
-          { id: 'mt_1_3', texto: 'Fazer curso básico de Informática (Nave do Conhecimento)' }
+          { id: 'mt_1_3', texto: 'Fazer curso básico de Informática' }
         ]
       },
       {
         nivel: 2,
         titulo: 'Formação Específica',
-        descricao: 'Entre em bootcamps ou formações técnicas focadas em Mulheres (ex: Programação, Design, Assistente Virtual).',
+        descricao: 'Entre em bootcamps focados em Mulheres (ex: Programação, Design, Assistente Virtual).',
         habilidades: [
           { nome: 'Lógica', tipo: 'hard' },
           { nome: 'Gestão de Tempo', tipo: 'soft' }
@@ -239,7 +239,7 @@ const MOMENTOS: Momento[] = [
       {
         nivel: 3,
         titulo: 'Primeira Oportunidade Júnior',
-        descricao: 'Monte um portfólio prático com projetos reais e candidate-se a vagas júnior remotas ou híbridas na RMR.',
+        descricao: 'Monte um portfólio prático com projetos reais e candidate-se a vagas remotas/híbridas.',
         habilidades: [
           { nome: 'Trabalho em Equipe', tipo: 'soft' },
           { nome: 'Metodologias Ágeis', tipo: 'hard' }
@@ -264,6 +264,11 @@ function normalizar(valor: string): string {
 
 export default function PlanoCarreira() {
   const [momentoAtivo, setMomentoAtivo] = useState<Momento | null>(null);
+  
+  // Wizard States
+  const [passoWizard, setPassoWizard] = useState(1);
+  const [isProcessando, setIsProcessando] = useState(false);
+
   const [oportunidades, setOportunidades] = useState<Oportunidade[]>([]);
   const [carregando, setCarregando] = useState(true);
   
@@ -293,11 +298,30 @@ export default function PlanoCarreira() {
     };
   }, []);
 
+  const handleRespostaWizard = (passo: number, _resposta: string, metaId?: string) => {
+    
+    if (passo === 4 && metaId) {
+       setIsProcessando(true);
+       setTimeout(() => {
+           setIsProcessando(false);
+           const m = MOMENTOS.find(mom => mom.id === metaId) || MOMENTOS[0];
+           setMomentoAtivo(m);
+       }, 2500); // 2.5s delay fake para processamento de IA/análise
+    } else {
+       setPassoWizard(p => p + 1);
+    }
+  };
+
+  const refazerDiagnostico = () => {
+    setMomentoAtivo(null);
+    setPassoWizard(1);
+    setTarefasConcluidas([]);
+  };
+
   const toggleTarefa = (id: string, nivel: number) => {
     setTarefasConcluidas(prev => {
       const concluido = prev.includes(id);
       if (!concluido) {
-        // Dispara animação de sucesso
         setAnimandoTarefa(id);
         setTimeout(() => setAnimandoTarefa(null), 800);
         
@@ -312,7 +336,6 @@ export default function PlanoCarreira() {
             }
           }
         }
-
         return novasTarefas;
       }
       return prev.filter(t => t !== id);
@@ -333,49 +356,137 @@ export default function PlanoCarreira() {
     return Math.round((concluidas / total) * 100);
   };
 
+  // TELA DE PROCESSAMENTO
+  if (isProcessando) {
+    return (
+      <main className="container wl-page" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <div className="wl-spinner"></div>
+        <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#111827', marginTop: '24px', textAlign: 'center' }}>Construindo seu roteiro...</h2>
+        <p style={{ color: '#6b7280', marginTop: '8px', textAlign: 'center' }}>Analisando seu perfil e cruzando com oportunidades no Recife.</p>
+      </main>
+    );
+  }
+
+  // WIZARD DE DIAGNÓSTICO (ESTADO INICIAL)
   if (!momentoAtivo) {
     return (
       <main className="container wl-page">
-        <div className="wl-hero">
-          <span className="wl-badge">Dashboard de Progressão</span>
-          <h1 className="wl-hero-title">Onde você está hoje?</h1>
+        <div className="wl-hero" style={{ marginBottom: '32px' }}>
+          <span className="wl-badge">Diagnóstico Interativo</span>
+          <h1 className="wl-hero-title">Vamos conhecer você.</h1>
           <p className="wl-hero-subtitle">
-            Selecione o seu momento atual. Vamos criar um roteiro claro, acionável e focado em resultados.
+            Responda estas {passoWizard} de 4 perguntas rápidas para montarmos um plano de carreira totalmente personalizado para sua rotina.
           </p>
         </div>
 
-        <div className="wl-grid-onboarding">
-          {MOMENTOS.map(momento => (
-            <button 
-              key={momento.id} 
-              className="wl-card-onboarding"
-              onClick={() => {
-                setMomentoAtivo(momento);
-              }}
-            >
-              <div className="wl-card-icon">{momento.icone}</div>
-              <h3 className="wl-card-title">{momento.titulo}</h3>
-              <p className="wl-card-desc">{momento.descricao}</p>
-            </button>
-          ))}
+        <div className="wl-wizard-container">
+          <div className="wl-wizard-progress-bg">
+             <div className="wl-wizard-progress-fill" style={{ width: `${(passoWizard / 4) * 100}%` }}></div>
+          </div>
+          <p className="wl-wizard-step-counter">Passo {passoWizard} de 4</p>
+
+          {passoWizard === 1 && (
+            <div className="wl-wizard-step animate-fade-in">
+              <h2 className="wl-wizard-question">Qual o seu momento profissional atual?</h2>
+              <div className="wl-wizard-options-grid">
+                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(1, 'Informal / Autônoma')}>
+                  Informal ou Autônoma
+                </button>
+                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(1, 'Desempregada')}>
+                  Desempregada buscando vaga
+                </button>
+                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(1, 'Trabalhando CLT')}>
+                  Trabalho, mas quero mudar
+                </button>
+                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(1, 'Apenas Cuidado Familiar')}>
+                  Dedicada ao cuidado da casa/filhos
+                </button>
+              </div>
+            </div>
+          )}
+
+          {passoWizard === 2 && (
+            <div className="wl-wizard-step animate-fade-in">
+              <h2 className="wl-wizard-question">Qual a sua maior barreira de tempo hoje?</h2>
+              <div className="wl-wizard-options-grid">
+                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(2, 'Filhos pequenos')}>
+                  Cuidar de filhos pequenos
+                </button>
+                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(2, 'Parentes idosos/doentes')}>
+                  Cuidar de idosos ou doentes
+                </button>
+                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(2, 'Dupla jornada')}>
+                  Dupla jornada (Trabalho + Casa)
+                </button>
+                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(2, 'Nenhuma barreira')}>
+                  Tenho tempo livre razoável
+                </button>
+              </div>
+            </div>
+          )}
+
+          {passoWizard === 3 && (
+            <div className="wl-wizard-step animate-fade-in">
+              <h2 className="wl-wizard-question">Qual área desperta mais seu interesse?</h2>
+              <div className="wl-wizard-options-grid">
+                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(3, 'Comércio e Vendas')}>
+                  Comércio, Vendas e Atendimento
+                </button>
+                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(3, 'Tecnologia')}>
+                  Tecnologia e Administração
+                </button>
+                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(3, 'Beleza e Culinária')}>
+                  Beleza, Estética ou Culinária
+                </button>
+                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(3, 'Serviços Gerais')}>
+                  Serviços Gerais ou Saúde
+                </button>
+              </div>
+            </div>
+          )}
+
+          {passoWizard === 4 && (
+            <div className="wl-wizard-step animate-fade-in">
+              <h2 className="wl-wizard-question">Qual a sua meta número 1 para os próximos 3 meses?</h2>
+              <div className="wl-wizard-options-grid">
+                <button className="wl-wizard-option wl-meta-option" onClick={() => handleRespostaWizard(4, 'Renda Imediata', 'renda_imediata')}>
+                  <strong>Renda Rápida 🚀</strong>
+                  <p>Qualquer alternativa flexível para fechar as contas.</p>
+                </button>
+                <button className="wl-wizard-option wl-meta-option" onClick={() => handleRespostaWizard(4, 'Formalizar Negócio', 'formalizacao')}>
+                  <strong>Abrir MEI 📝</strong>
+                  <p>Me formalizar e conseguir crédito.</p>
+                </button>
+                <button className="wl-wizard-option wl-meta-option" onClick={() => handleRespostaWizard(4, 'Carteira Assinada', 'recolocacao_formal')}>
+                  <strong>Vaga CLT 💼</strong>
+                  <p>Estabilidade e direitos trabalhistas.</p>
+                </button>
+                <button className="wl-wizard-option wl-meta-option" onClick={() => handleRespostaWizard(4, 'Estudar TI', 'migracao_tec')}>
+                  <strong>Mudar para Tech 💡</strong>
+                  <p>Aprender digital e buscar vagas remotas.</p>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     );
   }
 
+  // DASHBOARD DE PROGRESSÃO (RESULTADO)
   const progressoTotal = calcularProgresso(momentoAtivo.trilha);
 
   return (
     <main className="container wl-page">
       <header className="wl-header-dashboard">
-        <button className="wl-btn-voltar" onClick={() => setMomentoAtivo(null)}>
-          &larr; Trocar Trilha
+        <button className="wl-btn-voltar" onClick={refazerDiagnostico}>
+          &larr; Refazer Diagnóstico
         </button>
         <div className="wl-header-content">
           <div>
-            <h1 className="wl-dashboard-title">{momentoAtivo.icone} {momentoAtivo.titulo}</h1>
+            <h1 className="wl-dashboard-title">{momentoAtivo.icone} Plano: {momentoAtivo.titulo}</h1>
             <p className="wl-dashboard-subtitle">
-              Seu mapa de carreira. Complete as tarefas de um nível para desbloquear o próximo.
+              Seu roteiro personalizado baseado no seu perfil. Complete as tarefas para evoluir.
             </p>
           </div>
           <div className="wl-progresso-card">
