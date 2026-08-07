@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { checarSaude, apiJSON } from './services/api';
+import { checarSaude } from './services/api';
 import Auth from './components/Auth';
 import { Link, navegar, useCaminho, rolarParaAncora } from './utils/roteador';
 import { SessaoProvider, useSessao, Protegido } from './context/sessao';
