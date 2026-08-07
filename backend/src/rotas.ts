@@ -84,6 +84,21 @@ export async function inicializarBanco(pool: Pool, schema: string): Promise<void
 
   await pool.query(`ALTER TABLE equipamentos_locais ADD COLUMN IF NOT EXISTS dados_brutos JSONB`);
 
+  // Auto-sincronizar dados do CKAN no startup caso a tabela esteja vazia (ex: primeira execução em produção)
+  try {
+    const countRes = await pool.query('SELECT COUNT(*)::int as total FROM equipamentos_locais');
+    if (countRes.rows[0]?.total === 0) {
+      console.log('[Startup] Tabela equipamentos_locais vazia. Sincronizando dados do CKAN automaticamente...');
+      import('./services/ckanSync.js').then(({ sincronizarEquipamentosCKAN }) => {
+        sincronizarEquipamentosCKAN(pool).catch((err) => {
+          console.error('[Startup Sync CKAN] Erro na sincronização inicial:', err);
+        });
+      });
+    }
+  } catch (err) {
+    console.error('[Startup] Erro ao checar tabela equipamentos_locais:', err);
+  }
+
 
 
   await pool.query(`
