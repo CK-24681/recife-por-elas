@@ -370,35 +370,38 @@ export default function PlanoCarreira() {
   // WIZARD DE DIAGNÓSTICO (ESTADO INICIAL)
   if (!momentoAtivo) {
     return (
-      <main className="container wl-page">
-        <div className="wl-hero" style={{ marginBottom: '32px' }}>
-          <span className="wl-badge">Diagnóstico Interativo</span>
-          <h1 className="wl-hero-title">Vamos conhecer você.</h1>
-          <p className="wl-hero-subtitle">
-            Responda estas {passoWizard} de 4 perguntas rápidas para montarmos um plano de carreira totalmente personalizado para sua rotina.
-          </p>
-        </div>
-
-        <div className="wl-wizard-container">
-          <div className="wl-wizard-progress-bg">
-             <div className="wl-wizard-progress-fill" style={{ width: `${(passoWizard / 4) * 100}%` }}></div>
+      <main className="min-h-screen bg-[#FAF9F7] py-16 px-4 font-sans">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-10">
+            <span className="bg-[#F46E5D] text-white text-xs font-bold tracking-wider uppercase px-4 py-1.5 rounded-full mb-4 inline-block">
+              Diagnóstico Interativo
+            </span>
+            <h1 className="text-3xl font-semibold text-[#214E8A] mb-3">Vamos conhecer você.</h1>
+            <p className="text-gray-600">
+              Responda estas {passoWizard} de 4 perguntas rápidas para montarmos um plano de carreira totalmente personalizado para sua rotina.
+            </p>
           </div>
-          <p className="wl-wizard-step-counter">Passo {passoWizard} de 4</p>
+
+          <div className="bg-white shadow-md border border-[#E6E1EA] rounded-2xl p-8">
+            <div className="h-2 bg-gray-200 rounded-full mb-4 overflow-hidden">
+               <div className="h-full bg-[#6B3FA0] rounded-full transition-all duration-500 ease-out" style={{ width: `${(passoWizard / 4) * 100}%` }}></div>
+            </div>
+            <p className="text-sm color-gray-500 font-semibold uppercase tracking-wide mb-8 text-center text-gray-500">Passo {passoWizard} de 4</p>
 
           {passoWizard === 1 && (
-            <div className="wl-wizard-step animate-fade-in">
-              <h2 className="wl-wizard-question">Qual o seu momento profissional atual?</h2>
-              <div className="wl-wizard-options-grid">
-                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(1, 'Informal / Autônoma')}>
+            <div className="animate-fade-in">
+              <h2 className="text-2xl font-semibold text-[#214E8A] mb-6 text-center">Qual o seu momento profissional atual?</h2>
+              <div className="flex flex-col gap-4">
+                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(1, 'Informal / Autônoma')}>
                   Informal ou Autônoma
                 </button>
-                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(1, 'Desempregada')}>
+                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(1, 'Desempregada')}>
                   Desempregada buscando vaga
                 </button>
-                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(1, 'Trabalhando CLT')}>
+                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(1, 'Trabalhando CLT')}>
                   Trabalho, mas quero mudar
                 </button>
-                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(1, 'Apenas Cuidado Familiar')}>
+                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(1, 'Apenas Cuidado Familiar')}>
                   Dedicada ao cuidado da casa/filhos
                 </button>
               </div>
@@ -406,19 +409,19 @@ export default function PlanoCarreira() {
           )}
 
           {passoWizard === 2 && (
-            <div className="wl-wizard-step animate-fade-in">
-              <h2 className="wl-wizard-question">Qual a sua maior barreira de tempo hoje?</h2>
-              <div className="wl-wizard-options-grid">
-                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(2, 'Filhos pequenos')}>
+            <div className="animate-fade-in">
+              <h2 className="text-2xl font-semibold text-[#214E8A] mb-6 text-center">Qual a sua maior barreira de tempo hoje?</h2>
+              <div className="flex flex-col gap-4">
+                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(2, 'Filhos pequenos')}>
                   Cuidar de filhos pequenos
                 </button>
-                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(2, 'Parentes idosos/doentes')}>
+                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(2, 'Parentes idosos/doentes')}>
                   Cuidar de idosos ou doentes
                 </button>
-                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(2, 'Dupla jornada')}>
+                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(2, 'Dupla jornada')}>
                   Dupla jornada (Trabalho + Casa)
                 </button>
-                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(2, 'Nenhuma barreira')}>
+                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(2, 'Nenhuma barreira')}>
                   Tenho tempo livre razoável
                 </button>
               </div>
@@ -426,19 +429,19 @@ export default function PlanoCarreira() {
           )}
 
           {passoWizard === 3 && (
-            <div className="wl-wizard-step animate-fade-in">
-              <h2 className="wl-wizard-question">Qual área desperta mais seu interesse?</h2>
-              <div className="wl-wizard-options-grid">
-                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(3, 'Comércio e Vendas')}>
+            <div className="animate-fade-in">
+              <h2 className="text-2xl font-semibold text-[#214E8A] mb-6 text-center">Qual área desperta mais seu interesse?</h2>
+              <div className="flex flex-col gap-4">
+                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(3, 'Comércio e Vendas')}>
                   Comércio, Vendas e Atendimento
                 </button>
-                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(3, 'Tecnologia')}>
+                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(3, 'Tecnologia')}>
                   Tecnologia e Administração
                 </button>
-                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(3, 'Beleza e Culinária')}>
+                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(3, 'Beleza e Culinária')}>
                   Beleza, Estética ou Culinária
                 </button>
-                <button className="wl-wizard-option" onClick={() => handleRespostaWizard(3, 'Serviços Gerais')}>
+                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(3, 'Serviços Gerais')}>
                   Serviços Gerais ou Saúde
                 </button>
               </div>
@@ -446,28 +449,29 @@ export default function PlanoCarreira() {
           )}
 
           {passoWizard === 4 && (
-            <div className="wl-wizard-step animate-fade-in">
-              <h2 className="wl-wizard-question">Qual a sua meta número 1 para os próximos 3 meses?</h2>
-              <div className="wl-wizard-options-grid">
-                <button className="wl-wizard-option wl-meta-option" onClick={() => handleRespostaWizard(4, 'Renda Imediata', 'renda_imediata')}>
-                  <strong>Renda Rápida</strong>
-                  <p>Qualquer alternativa flexível para fechar as contas.</p>
+            <div className="animate-fade-in">
+              <h2 className="text-2xl font-semibold text-[#214E8A] mb-6 text-center">Qual a sua meta número 1 para os próximos 3 meses?</h2>
+              <div className="flex flex-col gap-4">
+                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm flex flex-col" onClick={() => handleRespostaWizard(4, 'Renda Imediata', 'renda_imediata')}>
+                  <strong className="text-lg mb-1">Renda Rápida</strong>
+                  <span className="text-sm text-gray-500 font-normal">Qualquer alternativa flexível para fechar as contas.</span>
                 </button>
-                <button className="wl-wizard-option wl-meta-option" onClick={() => handleRespostaWizard(4, 'Formalizar Negócio', 'formalizacao')}>
-                  <strong>Abrir MEI</strong>
-                  <p>Me formalizar e conseguir crédito.</p>
+                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm flex flex-col" onClick={() => handleRespostaWizard(4, 'Formalizar Negócio', 'formalizacao')}>
+                  <strong className="text-lg mb-1">Abrir MEI</strong>
+                  <span className="text-sm text-gray-500 font-normal">Me formalizar e conseguir crédito.</span>
                 </button>
-                <button className="wl-wizard-option wl-meta-option" onClick={() => handleRespostaWizard(4, 'Carteira Assinada', 'recolocacao_formal')}>
-                  <strong>Vaga CLT</strong>
-                  <p>Estabilidade e direitos trabalhistas.</p>
+                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm flex flex-col" onClick={() => handleRespostaWizard(4, 'Carteira Assinada', 'recolocacao_formal')}>
+                  <strong className="text-lg mb-1">Vaga CLT</strong>
+                  <span className="text-sm text-gray-500 font-normal">Estabilidade e direitos trabalhistas.</span>
                 </button>
-                <button className="wl-wizard-option wl-meta-option" onClick={() => handleRespostaWizard(4, 'Estudar TI', 'migracao_tec')}>
-                  <strong>Mudar para Tecnologia</strong>
-                  <p>Aprender digital e buscar vagas remotas.</p>
+                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm flex flex-col" onClick={() => handleRespostaWizard(4, 'Estudar TI', 'migracao_tec')}>
+                  <strong className="text-lg mb-1">Mudar para Tecnologia</strong>
+                  <span className="text-sm text-gray-500 font-normal">Aprender digital e buscar vagas remotas.</span>
                 </button>
               </div>
             </div>
           )}
+        </div>
         </div>
       </main>
     );
