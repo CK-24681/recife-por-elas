@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from '../utils/roteador';
 import { apiJSON } from '../services/api';
+import '../plano-carreira-novo.css';
 
 interface Oportunidade {
   id?: number;
@@ -370,108 +371,134 @@ export default function PlanoCarreira() {
   // WIZARD DE DIAGNÓSTICO (ESTADO INICIAL)
   if (!momentoAtivo) {
     return (
-      <main className="min-h-screen bg-[#FAF9F7] py-16 px-4 font-sans">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-10">
-            <span className="bg-[#F46E5D] text-white text-xs font-bold tracking-wider uppercase px-4 py-1.5 rounded-full mb-4 inline-block">
+      <main className="min-h-screen bg-gray-50 py-12 px-4 font-sans">
+        <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-12">
+          
+          <div className="text-center mb-12">
+            <span className="bg-pink-100 text-pink-700 text-xs font-bold tracking-wider uppercase px-4 py-1.5 rounded-full mb-4 inline-block">
               Diagnóstico Interativo
             </span>
-            <h1 className="text-3xl font-semibold text-[#214E8A] mb-3">Vamos conhecer você.</h1>
-            <p className="text-gray-600">
-              Responda estas {passoWizard} de 4 perguntas rápidas para montarmos um plano de carreira totalmente personalizado para sua rotina.
+            <h1 className="text-4xl font-extrabold text-gray-900 mb-4 tracking-tight">Vamos conhecer você.</h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Responda estas 4 perguntas rápidas para montarmos um plano de carreira totalmente personalizado para sua rotina.
             </p>
           </div>
 
-          <div className="bg-white shadow-md border border-[#E6E1EA] rounded-2xl p-8">
-            <div className="h-2 bg-gray-200 rounded-full mb-4 overflow-hidden">
-               <div className="h-full bg-[#6B3FA0] rounded-full transition-all duration-500 ease-out" style={{ width: `${(passoWizard / 4) * 100}%` }}></div>
+          <div className="mb-10">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+                Passo {passoWizard} de 4
+              </span>
+              <span className="text-sm font-bold text-pink-600">
+                {passoWizard * 25}% Concluído
+              </span>
             </div>
-            <p className="text-sm color-gray-500 font-semibold uppercase tracking-wide mb-8 text-center text-gray-500">Passo {passoWizard} de 4</p>
+            <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-pink-500 rounded-full transition-all duration-500 ease-out" 
+                style={{ width: `${(passoWizard / 4) * 100}%` }}
+              ></div>
+            </div>
+          </div>
 
           {passoWizard === 1 && (
             <div className="animate-fade-in">
-              <h2 className="text-2xl font-semibold text-[#214E8A] mb-6 text-center">Qual o seu momento profissional atual?</h2>
-              <div className="flex flex-col gap-4">
-                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(1, 'Informal / Autônoma')}>
-                  Informal ou Autônoma
-                </button>
-                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(1, 'Desempregada')}>
-                  Desempregada buscando vaga
-                </button>
-                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(1, 'Trabalhando CLT')}>
-                  Trabalho, mas quero mudar
-                </button>
-                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(1, 'Apenas Cuidado Familiar')}>
-                  Dedicada ao cuidado da casa/filhos
-                </button>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Qual o seu momento profissional atual?</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { label: 'Informal ou Autônoma', value: 'Informal / Autônoma' },
+                  { label: 'Desempregada buscando vaga', value: 'Desempregada' },
+                  { label: 'Trabalho, mas quero mudar', value: 'Trabalhando CLT' },
+                  { label: 'Dedicada ao cuidado da casa/filhos', value: 'Apenas Cuidado Familiar' }
+                ].map((opcao, idx) => (
+                  <label key={idx} className="flex items-center gap-4 p-5 border-2 border-gray-200 rounded-xl cursor-pointer transition-all duration-200 hover:border-pink-400 hover:bg-pink-50 group">
+                    <input 
+                      type="radio" 
+                      name="momento_atual" 
+                      className="w-5 h-5 text-pink-500 border-gray-300 focus:ring-pink-500 cursor-pointer"
+                      onChange={() => handleRespostaWizard(1, opcao.value)}
+                    />
+                    <span className="text-lg text-gray-700 font-medium group-hover:text-pink-700">{opcao.label}</span>
+                  </label>
+                ))}
               </div>
             </div>
           )}
 
           {passoWizard === 2 && (
             <div className="animate-fade-in">
-              <h2 className="text-2xl font-semibold text-[#214E8A] mb-6 text-center">Qual a sua maior barreira de tempo hoje?</h2>
-              <div className="flex flex-col gap-4">
-                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(2, 'Filhos pequenos')}>
-                  Cuidar de filhos pequenos
-                </button>
-                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(2, 'Parentes idosos/doentes')}>
-                  Cuidar de idosos ou doentes
-                </button>
-                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(2, 'Dupla jornada')}>
-                  Dupla jornada (Trabalho + Casa)
-                </button>
-                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(2, 'Nenhuma barreira')}>
-                  Tenho tempo livre razoável
-                </button>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Qual a sua maior barreira de tempo hoje?</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { label: 'Cuidar de filhos pequenos', value: 'Filhos pequenos' },
+                  { label: 'Cuidar de idosos ou doentes', value: 'Parentes idosos/doentes' },
+                  { label: 'Dupla jornada (Trabalho + Casa)', value: 'Dupla jornada' },
+                  { label: 'Tenho tempo livre razoável', value: 'Nenhuma barreira' }
+                ].map((opcao, idx) => (
+                  <label key={idx} className="flex items-center gap-4 p-5 border-2 border-gray-200 rounded-xl cursor-pointer transition-all duration-200 hover:border-pink-400 hover:bg-pink-50 group">
+                    <input 
+                      type="radio" 
+                      name="barreira_tempo" 
+                      className="w-5 h-5 text-pink-500 border-gray-300 focus:ring-pink-500 cursor-pointer"
+                      onChange={() => handleRespostaWizard(2, opcao.value)}
+                    />
+                    <span className="text-lg text-gray-700 font-medium group-hover:text-pink-700">{opcao.label}</span>
+                  </label>
+                ))}
               </div>
             </div>
           )}
 
           {passoWizard === 3 && (
             <div className="animate-fade-in">
-              <h2 className="text-2xl font-semibold text-[#214E8A] mb-6 text-center">Qual área desperta mais seu interesse?</h2>
-              <div className="flex flex-col gap-4">
-                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(3, 'Comércio e Vendas')}>
-                  Comércio, Vendas e Atendimento
-                </button>
-                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(3, 'Tecnologia')}>
-                  Tecnologia e Administração
-                </button>
-                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(3, 'Beleza e Culinária')}>
-                  Beleza, Estética ou Culinária
-                </button>
-                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm" onClick={() => handleRespostaWizard(3, 'Serviços Gerais')}>
-                  Serviços Gerais ou Saúde
-                </button>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Qual área desperta mais seu interesse?</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { label: 'Comércio, Vendas e Atendimento', value: 'Comércio e Vendas' },
+                  { label: 'Tecnologia e Administração', value: 'Tecnologia' },
+                  { label: 'Beleza, Estética ou Culinária', value: 'Beleza e Culinária' },
+                  { label: 'Serviços Gerais ou Saúde', value: 'Serviços Gerais' }
+                ].map((opcao, idx) => (
+                  <label key={idx} className="flex items-center gap-4 p-5 border-2 border-gray-200 rounded-xl cursor-pointer transition-all duration-200 hover:border-pink-400 hover:bg-pink-50 group">
+                    <input 
+                      type="radio" 
+                      name="area_interesse" 
+                      className="w-5 h-5 text-pink-500 border-gray-300 focus:ring-pink-500 cursor-pointer"
+                      onChange={() => handleRespostaWizard(3, opcao.value)}
+                    />
+                    <span className="text-lg text-gray-700 font-medium group-hover:text-pink-700">{opcao.label}</span>
+                  </label>
+                ))}
               </div>
             </div>
           )}
 
           {passoWizard === 4 && (
             <div className="animate-fade-in">
-              <h2 className="text-2xl font-semibold text-[#214E8A] mb-6 text-center">Qual a sua meta número 1 para os próximos 3 meses?</h2>
-              <div className="flex flex-col gap-4">
-                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm flex flex-col" onClick={() => handleRespostaWizard(4, 'Renda Imediata', 'renda_imediata')}>
-                  <strong className="text-lg mb-1">Renda Rápida</strong>
-                  <span className="text-sm text-gray-500 font-normal">Qualquer alternativa flexível para fechar as contas.</span>
-                </button>
-                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm flex flex-col" onClick={() => handleRespostaWizard(4, 'Formalizar Negócio', 'formalizacao')}>
-                  <strong className="text-lg mb-1">Abrir MEI</strong>
-                  <span className="text-sm text-gray-500 font-normal">Me formalizar e conseguir crédito.</span>
-                </button>
-                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm flex flex-col" onClick={() => handleRespostaWizard(4, 'Carteira Assinada', 'recolocacao_formal')}>
-                  <strong className="text-lg mb-1">Vaga CLT</strong>
-                  <span className="text-sm text-gray-500 font-normal">Estabilidade e direitos trabalhistas.</span>
-                </button>
-                <button className="w-full text-left px-6 py-4 border-2 border-[#E6E1EA] rounded-xl text-[#1F2430] font-medium transition-all duration-200 hover:border-[#6B3FA0] hover:bg-[#E9DDF8] hover:shadow-sm flex flex-col" onClick={() => handleRespostaWizard(4, 'Estudar TI', 'migracao_tec')}>
-                  <strong className="text-lg mb-1">Mudar para Tecnologia</strong>
-                  <span className="text-sm text-gray-500 font-normal">Aprender digital e buscar vagas remotas.</span>
-                </button>
+              <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Qual a sua meta número 1 para os próximos 3 meses?</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { label: 'Renda Rápida', desc: 'Qualquer alternativa flexível para fechar as contas.', value: 'Renda Imediata', meta: 'renda_imediata' },
+                  { label: 'Abrir MEI', desc: 'Me formalizar e conseguir crédito.', value: 'Formalizar Negócio', meta: 'formalizacao' },
+                  { label: 'Vaga CLT', desc: 'Estabilidade e direitos trabalhistas.', value: 'Carteira Assinada', meta: 'recolocacao_formal' },
+                  { label: 'Mudar para Tecnologia', desc: 'Aprender digital e buscar vagas remotas.', value: 'Estudar TI', meta: 'migracao_tec' }
+                ].map((opcao, idx) => (
+                  <label key={idx} className="flex items-start gap-4 p-5 border-2 border-gray-200 rounded-xl cursor-pointer transition-all duration-200 hover:border-pink-400 hover:bg-pink-50 group">
+                    <input 
+                      type="radio" 
+                      name="meta_principal" 
+                      className="w-5 h-5 mt-1 text-pink-500 border-gray-300 focus:ring-pink-500 cursor-pointer"
+                      onChange={() => handleRespostaWizard(4, opcao.value, opcao.meta)}
+                    />
+                    <div className="flex flex-col">
+                      <strong className="text-lg text-gray-800 group-hover:text-pink-700 mb-1">{opcao.label}</strong>
+                      <span className="text-sm text-gray-500">{opcao.desc}</span>
+                    </div>
+                  </label>
+                ))}
               </div>
             </div>
           )}
-        </div>
         </div>
       </main>
     );
