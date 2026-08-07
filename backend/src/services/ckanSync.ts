@@ -25,33 +25,38 @@ function extrairCoordenadas(record: any): { lat: number | null; lng: number | nu
   return { lat, lng };
 }
 
-// Função para categorizar com base em palavras-chave no texto
 function categorizarEquipamento(record: any): string {
-  // Transforma o record inteiro em string para buscar palavras em qualquer campo (nome, descricao, tipo, etc)
   const textoGeral = JSON.stringify(record).toLowerCase();
 
-  if (textoGeral.includes('mulher') && (textoGeral.includes('delegacia') || textoGeral.includes('deam'))) {
-    return 'Segurança';
+  // 1. Cidadania / Apoio
+  if (textoGeral.includes('abrigo') || textoGeral.includes('acolhimento') || 
+      (textoGeral.includes('mulher') && (textoGeral.includes('delegacia') || textoGeral.includes('deam'))) ||
+      textoGeral.includes('cras') || textoGeral.includes('creas') || textoGeral.includes('conselho tutelar')) {
+    return 'Cidadania / Apoio';
   }
-  if (textoGeral.includes('mulher') && (textoGeral.includes('maternidade') || textoGeral.includes('hospital') || textoGeral.includes('saúde') || textoGeral.includes('saude'))) {
-    return 'Saúde da Mulher';
+  
+  // 2. Educação / Creches
+  if (textoGeral.includes('creche') || textoGeral.includes('infantil') || textoGeral.includes('cmei') || 
+      textoGeral.includes('eja') || textoGeral.includes('escola')) {
+    return 'Educação / Creches';
   }
-  if (textoGeral.includes('creche') || textoGeral.includes('infantil') || textoGeral.includes('cmei') || textoGeral.includes('escola')) {
-    return 'Educação Infantil';
+  
+  // 3. Saúde
+  if (textoGeral.includes('mulher') && (textoGeral.includes('maternidade') || textoGeral.includes('hospital') || textoGeral.includes('saúde') || textoGeral.includes('saude') || textoGeral.includes('unidade materno'))) {
+    return 'Saúde';
   }
-  if (textoGeral.includes('cras') || textoGeral.includes('creas') || textoGeral.includes('assistência social') || textoGeral.includes('assistencia social')) {
-    return 'Assistência Social';
-  }
-  if (textoGeral.includes('compaz') || textoGeral.includes('empreendedor') || textoGeral.includes('renda')) {
-    return 'Geração de Renda e Cidadania';
+  
+  // 4. Trabalho e Empreendedorismo
+  if (textoGeral.includes('compaz') || textoGeral.includes('empreendedor') || textoGeral.includes('renda') || textoGeral.includes('qualificação') || textoGeral.includes('qualificacao')) {
+    return 'Trabalho e Empreendedorismo';
   }
 
-  // Se for uma delegacia mas não necessariamente da mulher
+  // Fallbacks extras para segurança em geral
   if (textoGeral.includes('delegacia')) {
-    return 'Segurança';
+    return 'Cidadania / Apoio';
   }
 
-  return 'Outros'; // Itens "Outros" não aparecerão no mapa
+  return 'Outros'; 
 }
 
 export async function sincronizarEquipamentosCKAN(pool: Pool): Promise<void> {

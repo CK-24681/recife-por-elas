@@ -1,143 +1,153 @@
-import { useState, useEffect } from 'react';
-import { executarCrawlerCKAN } from '../services/mapa';
+import { useState, useEffect, useMemo } from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { buscarEquipamentosBackend } from '../services/mapa';
 import type { PontoNormalizado } from '../services/mapa';
+
+const CATEGORIAS_DISPONIVEIS = [
+  'Cidadania / Apoio',
+  'Educação / Creches',
+  'Saúde',
+  'Trabalho e Empreendedorismo'
+];
 
 export default function Mapa() {
   const [dados, setDados] = useState<PontoNormalizado[]>([]);
   const [carregando, setCarregando] = useState<boolean>(true);
+  const [categoriasSelecionadas, setCategoriasSelecionadas] = useState<Set<string>>(
+    new Set(CATEGORIAS_DISPONIVEIS)
+  );
 
   useEffect(() => {
     let ativo = true;
-    const iniciarCrawler = async () => {
+    const carregar = async () => {
       setCarregando(true);
-      const resultados = await executarCrawlerCKAN();
+      const resultados = await buscarEquipamentosBackend(); // Busca todos sem filtro para filtrar localmente
       if (ativo) {
         setDados(resultados);
         setCarregando(false);
       }
     };
-    iniciarCrawler();
+    carregar();
     return () => {
       ativo = false;
     };
   }, []);
 
-  if (carregando) {
-    return (
-      <div className="container" style={{ paddingBlock: '40px' }}>
-        <header style={{ marginBottom: '24px' }}>
-          <span className="secao-etiqueta">Equipamentos Públicos &amp; CKAN Sync</span>
-          <h1 style={{ fontSize: '26px', fontWeight: 800, margin: '8px 0 4px 0', color: 'var(--tinta)' }}>
-            Equipamentos Públicos da Prefeitura do Recife
-          </h1>
-          <p style={{ color: 'var(--texto-suave)', fontSize: '15px', margin: 0 }}>
-            Dados sincronizados em segundo plano (Worker/Cron) a partir da API do CKAN do Recife.
-          </p>
-        </header>
+  const toggleCategoria = (categoria: string) => {
+    setCategoriasSelecionadas(prev => {
+      const novo = new Set(prev);
+      if (novo.has(categoria)) novo.delete(categoria);
+      else novo.add(categoria);
+      return novo;
+    });
+  };
 
-        <div
-          style={{
-            padding: '48px 24px',
-            background: '#ffffff',
-            borderRadius: '16px',
-            border: '1px solid var(--borda)',
-            textAlign: 'center',
-            boxShadow: 'var(--sombra-1)',
-          }}
-        >
-          <h2 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--tinta)', margin: 0 }}>
-            Carregando equipamentos públicos...
-          </h2>
-          <p style={{ color: 'var(--texto-suave)', fontSize: '14px', marginTop: '6px' }}>
-            Obtendo dados atualizados do banco de dados do backend (/api/equipamentos).
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const dadosFiltrados = useMemo(() => {
+    return dados.filter(d => categoriasSelecionadas.has(d.categoria));
+  }, [dados, categoriasSelecionadas]);
 
   return (
-    <div className="container" style={{ paddingBlock: '40px' }}>
-      <header style={{ marginBottom: '24px' }}>
-        <span className="secao-etiqueta">Equipamentos Públicos &amp; CKAN Sync</span>
-        <h1 style={{ fontSize: '26px', fontWeight: 800, margin: '8px 0 4px 0', color: 'var(--tinta)' }}>
-          Equipamentos Públicos da Prefeitura do Recife
+    <div className="container" style={{ paddingBlock: '20px', height: 'calc(100vh - 80px)', display: 'flex', flexDirection: 'column' }}>
+      <header style={{ marginBottom: '16px' }}>
+        <h1 style={{ fontSize: '24px', fontWeight: 800, margin: '0 0 4px 0', color: 'var(--tinta)' }}>
+          Mapa de Equipamentos Públicos
         </h1>
-        <p style={{ color: 'var(--texto-suave)', fontSize: '15px', margin: 0 }}>
-          Dados sincronizados em segundo plano (Worker/Cron) a partir da API do CKAN do Recife.
+        <p style={{ color: 'var(--texto-suave)', fontSize: '14px', margin: 0 }}>
+          Explore a rede de apoio, saúde e cidadania do Recife Por Elas.
         </p>
       </header>
 
-      <div
-        style={{
-          background: '#0f172a',
-          color: '#f8fafc',
-          padding: '24px',
-          borderRadius: '16px',
-          overflowX: 'auto',
-          border: '1px solid #1e293b',
-          boxShadow: 'var(--sombra-2)',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '16px',
-            borderBottom: '1px solid #334155',
-            paddingBottom: '12px',
-          }}
-        >
-          <strong style={{ color: '#38bdf8', fontSize: '15px' }}>
-            Total de registros: {dados.length}
-          </strong>
-          <button
-            type="button"
-            onClick={() => window.location.reload()}
-            style={{
-              background: '#38bdf8',
-              color: '#0f172a',
-              border: 'none',
-              padding: '6px 14px',
-              borderRadius: '8px',
-              fontWeight: 700,
-              fontSize: '13px',
-              cursor: 'pointer',
-            }}
-          >
-            Refazer Varredura
-          </button>
-        </div>
+      <div style={{ display: 'flex', gap: '20px', flex: 1, overflow: 'hidden' }}>
+        {/* Sidebar de Filtros */}
+        <aside style={{
+          width: '280px',
+          background: '#ffffff',
+          borderRadius: '12px',
+          border: '1px solid var(--borda)',
+          padding: '16px',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: 'var(--sombra-1)',
+          overflowY: 'auto'
+        }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--tinta)', marginBottom: '16px', paddingBottom: '8px', borderBottom: '1px solid var(--borda)' }}>
+            Filtros por Categoria
+          </h3>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {CATEGORIAS_DISPONIVEIS.map(cat => (
+              <label key={cat} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={categoriasSelecionadas.has(cat)}
+                  onChange={() => toggleCategoria(cat)}
+                  style={{ marginTop: '3px', accentColor: 'var(--primaria, #db2777)' }}
+                />
+                <span style={{ fontSize: '14px', color: 'var(--texto)', lineHeight: 1.4 }}>
+                  {cat}
+                </span>
+              </label>
+            ))}
+          </div>
 
-        <div>
-          {Object.entries(
-            dados.reduce((acc, curr) => {
-              const cat = curr.categoria || 'outros';
-              if (!acc[cat]) acc[cat] = [];
-              acc[cat].push(curr);
-              return acc;
-            }, {} as Record<string, PontoNormalizado[]>)
-          ).map(([cat, itens]) => (
-            <div key={cat} style={{ marginBottom: '24px' }}>
-              <h3 style={{ textTransform: 'capitalize', color: '#38bdf8', borderBottom: '1px dashed #334155', paddingBottom: '8px', marginBottom: '12px' }}>
-                {cat} ({itens.length})
-              </h3>
-              <div style={{ display: 'grid', gap: '12px' }}>
-                {itens.map((item) => (
-                  <div key={item.id} style={{ background: '#1e293b', padding: '12px', borderRadius: '8px', fontSize: '13px' }}>
-                    <strong style={{ display: 'block', fontSize: '14px', marginBottom: '4px', color: '#f8fafc' }}>{item.nome}</strong>
-                    <div style={{ color: '#cbd5e1' }}>
-                      {item.endereco && <div>📍 {item.endereco}</div>}
-                      {item.telefone && <div>📞 {item.telefone}</div>}
-                      {item.fonte_dados && <div style={{ marginTop: '6px', fontSize: '12px', color: '#94a3b8' }}>Fonte: {item.fonte_dados}</div>}
-                    </div>
-                  </div>
-                ))}
-              </div>
+          <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
+            <p style={{ fontSize: '12px', color: 'var(--texto-suave)', textAlign: 'center' }}>
+              Exibindo {dadosFiltrados.length} pontos no mapa
+            </p>
+          </div>
+        </aside>
+
+        {/* Visualizador do Mapa */}
+        <main style={{
+          flex: 1,
+          borderRadius: '12px',
+          overflow: 'hidden',
+          border: '1px solid var(--borda)',
+          boxShadow: 'var(--sombra-1)',
+          position: 'relative'
+        }}>
+          {carregando ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', background: '#f8fafc' }}>
+              <p style={{ color: 'var(--texto-suave)', fontWeight: 600 }}>Carregando mapa...</p>
             </div>
-          ))}
-        </div>
+          ) : (
+            <MapContainer
+              center={[-8.0476, -34.8770]} // Centro do Recife
+              zoom={13}
+              style={{ height: '100%', width: '100%' }}
+            >
+              <TileLayer
+                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+              />
+              
+              {dadosFiltrados.map((item) => (
+                <Marker key={item.id} position={[item.lat, item.lng]}>
+                  <Popup>
+                    <div style={{ padding: '4px' }}>
+                      <strong style={{ display: 'block', fontSize: '14px', marginBottom: '6px', color: '#0f172a' }}>
+                        {item.nome}
+                      </strong>
+                      <span style={{ 
+                        display: 'inline-block',
+                        background: '#f1f5f9',
+                        color: '#475569',
+                        fontSize: '11px',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        marginBottom: '8px'
+                      }}>
+                        {item.categoria}
+                      </span>
+                      {item.endereco && <div style={{ fontSize: '12px', color: '#334155', marginBottom: '4px' }}>📍 {item.endereco}</div>}
+                      {item.telefone && <div style={{ fontSize: '12px', color: '#334155' }}>📞 {item.telefone}</div>}
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
+          )}
+        </main>
       </div>
     </div>
   );

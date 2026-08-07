@@ -631,13 +631,22 @@ export function registrarRotas(app: Express, pool: Pool): void {
     }
   });
 
-  app.get('/api/mapa/locais', async (_req: Request, res: Response) => {
+  app.get('/api/mapa/locais', async (req: Request, res: Response) => {
     if (!pool) return res.status(503).json({ erro: 'banco de dados nao disponivel' });
     try {
-      // Filtrar no backend/banco de dados: retornar apenas categorias relevantes mapeadas
-      const { rows } = await pool.query(
-        "SELECT * FROM equipamentos_locais WHERE categoria != 'Outros' AND latitude IS NOT NULL AND longitude IS NOT NULL"
-      );
+      const categoriasQuery = String(req.query.categorias || '').trim();
+      let sql = "SELECT * FROM equipamentos_locais WHERE categoria != 'Outros' AND latitude IS NOT NULL AND longitude IS NOT NULL";
+      const params: any[] = [];
+
+      if (categoriasQuery) {
+        const categoriasArray = categoriasQuery.split(',').map(c => c.trim()).filter(Boolean);
+        if (categoriasArray.length > 0) {
+          sql += ' AND categoria = ANY($1::varchar[])';
+          params.push(categoriasArray);
+        }
+      }
+
+      const { rows } = await pool.query(sql, params);
       res.json(rows);
     } catch (e) {
       console.error('Erro ao buscar equipamentos_locais:', e);
