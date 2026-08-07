@@ -9,6 +9,7 @@ import Mapa from './paginas/Mapa';
 import Mural from './paginas/Mural';
 import PlanoCarreira from './paginas/PlanoCarreira';
 import Perfil from './paginas/Perfil';
+import PerfilPublico from './paginas/PerfilPublico';
 import Cadastro from './paginas/Cadastro';
 
 export default function App() {
@@ -97,8 +98,21 @@ function Conteudo() {
     );
   }
 
+  // ── /perfil/:id (Perfil Público) ──
+  if (caminho.startsWith('/perfil/') && caminho !== '/perfil/') {
+    return (
+      <Protegido>
+        <div className="pagina-topo">
+          <HeaderApp />
+          <PerfilPublico />
+          <FooterLanding />
+        </div>
+      </Protegido>
+    );
+  }
+
   // ── /perfil ──
-  if (caminho === '/perfil') {
+  if (caminho === '/perfil' || caminho === '/perfil/') {
     return (
       <Protegido>
         <div className="pagina-topo">

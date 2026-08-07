@@ -112,6 +112,7 @@ export default function Mural() {
   const [texto, setTexto] = useState('');
   const [filtroFeed, setFiltroFeed] = useState<FiltroFeed>('todas');
   const [mostrarAjuda, setMostrarAjuda] = useState(false);
+  const [abaFeed, setAbaFeed] = useState<'para_voce' | 'seguindo'>('para_voce');
   const [anexo, setAnexo] = useState<File | null>(null);
   const [anexoPreview, setAnexoPreview] = useState('');
   const [anexoErro, setAnexoErro] = useState('');
@@ -263,7 +264,26 @@ export default function Mural() {
           </article>
         )}
 
-        <form className="mural-composer" onSubmit={publicar}>
+        <div className="mural-layout">
+          <div className="mural-main">
+            <div className="mural-feed-tabs">
+              <button
+                type="button"
+                className={`mural-feed-tab ${abaFeed === 'para_voce' ? 'ativo' : ''}`}
+                onClick={() => setAbaFeed('para_voce')}
+              >
+                Para Você
+              </button>
+              <button
+                type="button"
+                className={`mural-feed-tab ${abaFeed === 'seguindo' ? 'ativo' : ''}`}
+                onClick={() => setAbaFeed('seguindo')}
+              >
+                Seguindo
+              </button>
+            </div>
+
+            <form className="mural-composer" onSubmit={publicar}>
           <div className="mural-tabs">
             <button
               type="button"
@@ -430,6 +450,7 @@ export default function Mural() {
               <PostCard
                 key={post.id}
                 post={post}
+                isProprioPost={usuario?.id === post.usuario_id}
                 onCurtirPost={async (postId) => {
                   const resposta = await apiJSON<{ ok: boolean; curtido: boolean; likes_count: number }>(
                     `/mural/${postId}/curtir`,
@@ -445,6 +466,40 @@ export default function Mural() {
             ))}
           </div>
         )}
+          </div>
+          
+          <aside className="mural-sidebar">
+            <div className="mural-sidebar-widget">
+              <h3 className="mural-sidebar-titulo">Comunidades</h3>
+              <div style={{display: 'flex', flexDirection: 'column', gap: '16px'}}>
+                <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+                  <div className="post-avatar" style={{width: '40px', height: '40px', fontSize: '14px'}}>M</div>
+                  <div style={{flex: 1}}>
+                    <strong style={{display: 'block', fontSize: '14px', color: '#111827'}}>Mães Empreendedoras</strong>
+                    <span style={{fontSize: '12px', color: '#6b7280'}}>Ibura</span>
+                  </div>
+                  <button className="btn-seguir" onClick={() => toast.sucesso('Em breve: Comunidades!')}>Participar</button>
+                </div>
+                <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+                  <div className="post-avatar" style={{width: '40px', height: '40px', fontSize: '14px', background: '#eff6ff', color: '#2563eb'}}>T</div>
+                  <div style={{flex: 1}}>
+                    <strong style={{display: 'block', fontSize: '14px', color: '#111827'}}>Troca de Roupas</strong>
+                    <span style={{fontSize: '12px', color: '#6b7280'}}>Boa Viagem</span>
+                  </div>
+                  <button className="btn-seguir" onClick={() => toast.sucesso('Em breve: Comunidades!')}>Participar</button>
+                </div>
+                <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+                  <div className="post-avatar" style={{width: '40px', height: '40px', fontSize: '14px', background: '#f0fdf4', color: '#16a34a'}}>A</div>
+                  <div style={{flex: 1}}>
+                    <strong style={{display: 'block', fontSize: '14px', color: '#111827'}}>Apoio Materno</strong>
+                    <span style={{fontSize: '12px', color: '#6b7280'}}>Recife Antigo</span>
+                  </div>
+                  <button className="btn-seguir" onClick={() => toast.sucesso('Em breve: Comunidades!')}>Participar</button>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
       </section>
 
       {toast.container}
@@ -454,10 +509,12 @@ export default function Mural() {
 
 function PostCard({
   post,
+  isProprioPost,
   onCurtirPost,
   onComentarioAdicionado,
 }: {
   post: MuralPost;
+  isProprioPost?: boolean;
   onCurtirPost: (postId: string) => Promise<void>;
   onComentarioAdicionado: (postId: string) => void;
 }) {
@@ -518,17 +575,27 @@ function PostCard({
   return (
     <article className="post-card surgir">
       <header className="post-header">
-        <div className="post-avatar" aria-hidden="true">
-          {iniciais(post.autor_nome)}
-        </div>
-        <div className="post-header-info">
-          <strong>{post.autor_nome}</strong>
-          <p>
-            {post.bairro}
-            <span aria-hidden="true"> • </span>
-            {formatarData(post.criado_em)}
-          </p>
-        </div>
+        <button type="button" className="post-autor-click" onClick={() => toast.sucesso('Em breve: Perfil Público!')}>
+          <div className="post-avatar" aria-hidden="true">
+            {iniciais(post.autor_nome)}
+          </div>
+          <div className="post-header-info">
+            <strong>{post.autor_nome}</strong>
+            <p>
+              {post.bairro}
+              <span aria-hidden="true"> • </span>
+              {formatarData(post.criado_em)}
+            </p>
+          </div>
+        </button>
+        {!isProprioPost && (
+          <div className="post-header-acoes">
+            <button type="button" className="btn-seguir" onClick={() => toast.sucesso(`Você começou a seguir ${post.autor_nome.split(' ')[0]}`)}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+              Seguir
+            </button>
+          </div>
+        )}
       </header>
 
       <div className="post-badges">
@@ -550,7 +617,7 @@ function PostCard({
         </div>
       ) : null}
 
-      <div className="post-actions">
+      <div className="post-actions" style={{display: 'flex', justifyContent: 'space-between', gap: '4px'}}>
         <button
           type="button"
           className={post.me_liked ? 'btn-acao ativo' : 'btn-acao'}
@@ -568,6 +635,14 @@ function PostCard({
         <button type="button" className="btn-acao" onClick={alternarComentarios}>
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
           <span>{contarComentarios} comentário{contarComentarios === 1 ? '' : 's'}</span>
+        </button>
+        <button type="button" className="btn-acao" onClick={() => toast.sucesso('Em breve: Salvar Posts!')}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+          <span>Salvar</span>
+        </button>
+        <button type="button" className="btn-acao" onClick={() => toast.sucesso('Em breve: Compartilhar Posts!')}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
+          <span>Compartilhar</span>
         </button>
       </div>
 

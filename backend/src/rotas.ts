@@ -193,6 +193,32 @@ export async function inicializarBanco(pool: Pool, schema: string): Promise<void
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_mural_posts_criado_em ON mural_posts (criado_em DESC)`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_mural_posts_bairro ON mural_posts (LOWER(bairro))`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_mural_comments_post_id ON mural_comments (post_id, criado_em ASC)`);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS seguidores (
+      seguidor_id UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+      seguido_id  UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+      criado_em   TIMESTAMPTZ NOT NULL DEFAULT now(),
+      PRIMARY KEY (seguidor_id, seguido_id)
+    )`);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS post_favoritos (
+      usuario_id UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+      post_id    UUID NOT NULL REFERENCES mural_posts(id) ON DELETE CASCADE,
+      criado_em  TIMESTAMPTZ NOT NULL DEFAULT now(),
+      PRIMARY KEY (usuario_id, post_id)
+    )`);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS mensagens (
+      id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      remetente_id    UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+      destinatario_id UUID NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+      texto           TEXT NOT NULL,
+      lida            BOOLEAN NOT NULL DEFAULT false,
+      criado_em       TIMESTAMPTZ NOT NULL DEFAULT now()
+    )`);
 }
 
 export function registrarRotas(app: Express, pool: Pool): void {
@@ -393,7 +419,9 @@ export function registrarRotas(app: Express, pool: Pool): void {
           p.*,
           COALESCE(lp.likes_count, 0)::int AS likes_count,
           COALESCE(cq.comments_count, 0)::int AS comments_count,
-          COALESCE(me.me_liked, false) AS me_liked
+          COALESCE(me.me_liked, false) AS me_liked,
+          COALESCE(mf.me_favorited, false) AS me_favorited,
+          COALESCE(seg.autor_seguidores, 0)::int AS autor_seguidores
         FROM mural_posts p
         LEFT JOIN (
           SELECT post_id, COUNT(*)::int AS likes_count
@@ -410,6 +438,16 @@ export function registrarRotas(app: Express, pool: Pool): void {
           FROM mural_post_likes
           WHERE usuario_id = $1
         ) me ON me.post_id = p.id
+        LEFT JOIN (
+          SELECT post_id, true AS me_favorited
+          FROM post_favoritos
+          WHERE usuario_id = $1
+        ) mf ON mf.post_id = p.id
+        LEFT JOIN (
+          SELECT seguido_id, COUNT(*)::int AS autor_seguidores
+          FROM seguidores
+          GROUP BY seguido_id
+        ) seg ON seg.seguido_id = p.usuario_id
         WHERE 1=1
       `;
       const params: any[] = [usuarioLogado || null];
@@ -679,6 +717,113 @@ export function registrarRotas(app: Express, pool: Pool): void {
     } catch (e) {
       console.error('Erro ao sincronizar CKAN:', e);
       res.status(500).json({ erro: 'erro interno durante sincronização' });
+    }
+  });
+
+  // --- Hub Social: Seguidores ---
+  app.post('/api/usuarios/:id/seguir', autenticar, async (req: ReqAuth, res: Response) => {
+    try {
+      if (req.usuarioId === req.params.id) {
+        return res.status(400).json({ erro: 'nao pode seguir a si mesmo' });
+      }
+      await pool.query('INSERT INTO seguidores (seguidor_id, seguido_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [req.usuarioId, req.params.id]);
+      res.json({ ok: true });
+    } catch (e) {
+      console.error('seguir erro', e);
+      res.status(500).json({ erro: 'erro interno' });
+    }
+  });
+
+  app.delete('/api/usuarios/:id/seguir', autenticar, async (req: ReqAuth, res: Response) => {
+    try {
+      await pool.query('DELETE FROM seguidores WHERE seguidor_id = $1 AND seguido_id = $2', [req.usuarioId, req.params.id]);
+      res.json({ ok: true });
+    } catch (e) {
+      console.error('unfollow erro', e);
+      res.status(500).json({ erro: 'erro interno' });
+    }
+  });
+
+  app.get('/api/usuarios/:id/seguidores', async (req: Request, res: Response) => {
+    try {
+      const { rows } = await pool.query(`
+        SELECT u.id, p.nome, p.photo_url 
+        FROM seguidores s 
+        JOIN usuarios u ON s.seguidor_id = u.id 
+        LEFT JOIN perfil p ON p.usuario_id = u.id
+        WHERE s.seguido_id = $1
+      `, [req.params.id]);
+      res.json({ count: rows.length, seguidores: rows });
+    } catch (e) {
+      res.status(500).json({ erro: 'erro interno' });
+    }
+  });
+
+  app.get('/api/usuarios/:id/seguindo', async (req: Request, res: Response) => {
+    try {
+      const { rows } = await pool.query(`
+        SELECT u.id, p.nome, p.photo_url 
+        FROM seguidores s 
+        JOIN usuarios u ON s.seguido_id = u.id 
+        LEFT JOIN perfil p ON p.usuario_id = u.id
+        WHERE s.seguidor_id = $1
+      `, [req.params.id]);
+      res.json({ count: rows.length, seguindo: rows });
+    } catch (e) {
+      res.status(500).json({ erro: 'erro interno' });
+    }
+  });
+
+  // --- Hub Social: Favoritos ---
+  app.post('/api/mural/:id/favoritar', autenticar, async (req: ReqAuth, res: Response) => {
+    try {
+      await pool.query('INSERT INTO post_favoritos (usuario_id, post_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [req.usuarioId, req.params.id]);
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ erro: 'erro interno' });
+    }
+  });
+
+  app.delete('/api/mural/:id/favoritar', autenticar, async (req: ReqAuth, res: Response) => {
+    try {
+      await pool.query('DELETE FROM post_favoritos WHERE usuario_id = $1 AND post_id = $2', [req.usuarioId, req.params.id]);
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ erro: 'erro interno' });
+    }
+  });
+
+  // --- Hub Social: Mensagens Privadas ---
+  app.get('/api/mensagens/:destinatario_id', autenticar, async (req: ReqAuth, res: Response) => {
+    try {
+      const { destinatario_id } = req.params;
+      const { rows } = await pool.query(`
+        SELECT * FROM mensagens 
+        WHERE (remetente_id = $1 AND destinatario_id = $2) 
+           OR (remetente_id = $2 AND destinatario_id = $1)
+        ORDER BY criado_em ASC
+      `, [req.usuarioId, destinatario_id]);
+      res.json(rows);
+    } catch (e) {
+      console.error('get mensagens erro', e);
+      res.status(500).json({ erro: 'erro interno' });
+    }
+  });
+
+  app.post('/api/mensagens/:destinatario_id', autenticar, async (req: ReqAuth, res: Response) => {
+    try {
+      const { destinatario_id } = req.params;
+      const { texto } = req.body;
+      if (!texto || !texto.trim()) return res.status(400).json({ erro: 'texto invalido' });
+      
+      const { rows } = await pool.query(
+        'INSERT INTO mensagens (remetente_id, destinatario_id, texto) VALUES ($1, $2, $3) RETURNING *',
+        [req.usuarioId, destinatario_id, texto.trim()]
+      );
+      res.json(rows[0]);
+    } catch (e) {
+      console.error('post mensagem erro', e);
+      res.status(500).json({ erro: 'erro interno' });
     }
   });
 }

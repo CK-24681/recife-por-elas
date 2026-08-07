@@ -5389,10 +5389,119 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
 
 /* ——— MURAL SOCIAL HUB ——— */
 .mural-container {
-  max-width: 680px;
+  max-width: 980px;
   margin: 0 auto;
   padding: 20px;
   font-family: sans-serif;
+}
+
+.mural-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 24px;
+}
+
+@media (max-width: 860px) {
+  .mural-layout {
+    grid-template-columns: 1fr;
+  }
+  .mural-sidebar {
+    display: none;
+  }
+}
+
+.mural-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.mural-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.mural-sidebar-widget {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.mural-sidebar-titulo {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 16px;
+}
+
+.mural-feed-tabs {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 24px;
+}
+
+.mural-feed-tab {
+  flex: 1;
+  text-align: center;
+  padding: 12px;
+  font-weight: 600;
+  font-size: 15px;
+  color: #6b7280;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.mural-feed-tab:hover {
+  color: #111827;
+  background: #f9fafb;
+}
+
+.mural-feed-tab.ativo {
+  color: #db2777;
+  border-bottom-color: #db2777;
+}
+
+.post-header-acoes {
+  margin-left: auto;
+}
+
+.btn-seguir {
+  font-size: 13px;
+  font-weight: 600;
+  color: #db2777;
+  background: #fdf2f8;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-seguir:hover {
+  background: #fbcfe8;
+}
+
+.post-autor-click {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
+.post-autor-click:hover strong {
+  text-decoration: underline;
 }
 
 .mural-composer, .post-card {
@@ -5499,6 +5608,12 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
 
 .btn-acao.ativo {
   color: #E24C8F;
+}
+
+@media (max-width: 600px) {
+  .btn-acao span {
+    display: none;
+  }
 }
 
 .mural-comentario {
@@ -5694,4 +5809,58 @@ p, span, a, li, blockquote, label, summary { overflow-wrap: break-word; }
   font-size: 14px;
   color: #374151;
   margin-bottom: 8px;
+}
+
+/* ——— PERFIL PÚBLICO (Fase 2 do Hub Social) ——— */
+.perfil-publico-container {
+  max-width: 680px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  margin-top: 20px;
+}
+
+.perfil-capa {
+  height: 150px;
+  background: linear-gradient(to right, #E24C8F, #fbcfe8);
+  width: 100%;
+}
+
+.perfil-info {
+  padding: 20px;
+  position: relative;
+}
+
+.perfil-avatar-grande {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  background: #fdf2f8;
+  color: #E24C8F;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.5rem;
+  font-weight: bold;
+  position: absolute;
+  top: -50px;
+}
+
+.perfil-stats {
+  display: flex;
+  gap: 16px;
+  color: #4b5563;
+  margin-top: 12px;
+  font-size: 0.95rem;
+}
+
+.perfil-botoes {
+  display: flex;
+  gap: 10px;
+  margin-top: -10px;
+  justify-content: flex-end;
+  width: 100%;
 }
