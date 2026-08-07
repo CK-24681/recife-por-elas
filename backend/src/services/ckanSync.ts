@@ -16,19 +16,42 @@ export interface EquipamentoPublico {
 }
 
 export const TERMOS_CATEGORIAS = [
-  { termo: 'hospital da mulher', categoria: 'saude' },
-  { termo: 'maternidade', categoria: 'saude' },
-  { termo: 'policlinica', categoria: 'saude' },
-  { termo: 'delegacia da mulher', categoria: 'seguranca' },
-  { termo: 'protecao', categoria: 'seguranca' },
-  { termo: 'deam', categoria: 'seguranca' },
-  { termo: 'compaz', categoria: 'empreendedorismo' },
-  { termo: 'sala do empreendedor', categoria: 'empreendedorismo' },
-  { termo: 'qualifica', categoria: 'empreendedorismo' },
-  { termo: 'cras', categoria: 'apoio' },
-  { termo: 'creas', categoria: 'apoio' },
-  { termo: 'assistencia social', categoria: 'apoio' }
+  { termo: 'hospital da mulher', categoria: 'Saúde da Mulher' },
+  { termo: 'maternidade', categoria: 'Saúde da Mulher' },
+  { termo: 'policlinica', categoria: 'Saúde da Mulher' },
+  { termo: 'delegacia da mulher', categoria: 'Segurança e Proteção' },
+  { termo: 'protecao', categoria: 'Segurança e Proteção' },
+  { termo: 'deam', categoria: 'Segurança e Proteção' },
+  { termo: 'compaz', categoria: 'Empreendedorismo e Geração de Renda' },
+  { termo: 'sala do empreendedor', categoria: 'Empreendedorismo e Geração de Renda' },
+  { termo: 'qualifica', categoria: 'Empreendedorismo e Geração de Renda' },
+  { termo: 'cras', categoria: 'CRAS e Apoio' },
+  { termo: 'creas', categoria: 'CRAS e Apoio' },
+  { termo: 'assistencia social', categoria: 'CRAS e Apoio' },
+  { termo: 'creche', categoria: 'Creches e Educação' },
+  { termo: 'eja', categoria: 'Creches e Educação' }
 ];
+
+export function isEquipamentoRelevante(nome: string, categoria: string): boolean {
+  const n = nome.toLowerCase();
+  
+  if (categoria === 'Saúde da Mulher') {
+    return /mulher|maternidade|materno|policl[íi]nica/.test(n);
+  }
+  if (categoria === 'Segurança e Proteção') {
+    return /mulher|deam|prote[çc][ãa]o|defensoria/.test(n);
+  }
+  if (categoria === 'Creches e Educação') {
+    return /creche|cmei|eja|infantil/.test(n);
+  }
+  if (categoria === 'Empreendedorismo e Geração de Renda') {
+    return /compaz|empreendedor|qualifica|incubadora/.test(n);
+  }
+  if (categoria === 'CRAS e Apoio') {
+    return /cras|creas|assist[êe]ncia/.test(n);
+  }
+  return true;
+}
 
 // Normalizador Universal: adivinha colunas de Latitude, Longitude, Nome e Endereço
 export function normalizarRegistroCKAN(
@@ -165,7 +188,7 @@ export async function sincronizarEquipamentosCKAN(pool: Pool): Promise<void> {
 
             for (let i = 0; i < records.length; i++) {
               const eq = normalizarRegistroCKAN(records[i], categoriaDaBusca, resId, i);
-              if (eq) {
+              if (eq && isEquipamentoRelevante(eq.nome, eq.categoria)) {
                 equipamentos.push(eq);
               }
             }
