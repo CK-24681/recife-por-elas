@@ -82,6 +82,9 @@ export async function inicializarBanco(pool: Pool, schema: string): Promise<void
       criado_em  TIMESTAMPTZ DEFAULT now()
     )`);
 
+  await pool.query(`ALTER TABLE equipamentos_locais ADD COLUMN IF NOT EXISTS dados_brutos JSONB`);
+
+
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS candidatura (
