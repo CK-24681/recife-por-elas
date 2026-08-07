@@ -57,6 +57,13 @@ function categorizarEquipamento(record: any): string {
 export async function sincronizarEquipamentosCKAN(pool: Pool): Promise<void> {
   console.log('[CKAN Sync] Iniciando sincronização do CKAN...');
 
+  try {
+    console.log('[CKAN Sync] Limpando base antiga de equipamentos (TRUNCATE)...');
+    await pool.query('TRUNCATE TABLE equipamentos_locais CASCADE');
+  } catch (err) {
+    console.error('[CKAN Sync] Erro ao limpar a base antiga:', err);
+  }
+
   let upsertados = 0;
 
   for (const resourceId of RESOURCE_IDS) {

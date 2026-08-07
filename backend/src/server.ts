@@ -11,7 +11,6 @@ import { inicializarUploads } from './uploads';
 import { inicializarArquivos } from './arquivos';
 import { estadoDeSaude, registrarInicializacao } from './saude';
 import { inicializarBanco, registrarRotas } from './rotas';
-import { sincronizarEquipamentosSeed } from './services/seedSync';
 import path from 'node:path';
 
 // Porta vem da plataforma (process.env.PORT). Em dev, cai pra 3000.
@@ -90,11 +89,6 @@ if (pool) {
   registrarInicializacao('app', inicializarBanco(pool, process.env.DB_SCHEMA || 'public'));
   // Telemetria ANTES das rotas: middleware loga todo CRUD + endpoint de pageview.
   registrarTelemetria(app, pool);
-
-  // Injeta os dados do arquivo de curadoria manual no banco
-  sincronizarEquipamentosSeed(pool).catch((err) =>
-    console.error('[Seed Sync] Erro na inserção manual:', err)
-  );
 }
 
 // Rotas SEMPRE registradas — síncronas, não dependem do banco estar pronto.
