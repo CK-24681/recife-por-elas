@@ -2,7 +2,7 @@
   {
     "id": "seed_hm_01",
     "nome": "Hospital da Mulher do Recife Dra. Mercês Pontes Cunha",
-    "categoria": "Saúde da Mulher",
+    "categoria": "saude",
     "endereco": "BR-101, s/n - Curado, Recife - PE",
     "bairro": "Curado",
     "telefone": "(81) 2011-0100",
@@ -10,12 +10,13 @@
     "latitude": -8.0772,
     "longitude": -34.9546,
     "fonte_dados": "Curadoria Manual (Seed)",
-    "verificado_manualmente": true
+    "verificado_manualmente": true,
+    "ativo": true
   },
   {
     "id": "seed_hm_02",
     "nome": "Maternidade Professor Barros Lima",
-    "categoria": "Saúde da Mulher",
+    "categoria": "saude",
     "endereco": "Av. Norte Miguel Arraes de Alencar, 6465 - Casa Amarela, Recife - PE",
     "bairro": "Casa Amarela",
     "telefone": "(81) 3355-3211",
@@ -23,12 +24,13 @@
     "latitude": -8.0245,
     "longitude": -34.9123,
     "fonte_dados": "Curadoria Manual (Seed)",
-    "verificado_manualmente": true
+    "verificado_manualmente": true,
+    "ativo": true
   },
   {
     "id": "seed_hm_03",
     "nome": "Maternidade Professor Bandeira Filho",
-    "categoria": "Saúde da Mulher",
+    "categoria": "saude",
     "endereco": "Rua Londrina, s/n - Afogados, Recife - PE",
     "bairro": "Afogados",
     "telefone": "(81) 3355-2235",
@@ -36,12 +38,13 @@
     "latitude": -8.0789,
     "longitude": -34.9087,
     "fonte_dados": "Curadoria Manual (Seed)",
-    "verificado_manualmente": true
+    "verificado_manualmente": true,
+    "ativo": true
   },
   {
     "id": "seed_deam_01",
     "nome": "Delegacia Especializada de Atendimento à Mulher (DEAM) - Santo Amaro",
-    "categoria": "Segurança e Proteção",
+    "categoria": "seguranca",
     "endereco": "Praça do Campo Santo, s/n - Santo Amaro, Recife - PE",
     "bairro": "Santo Amaro",
     "telefone": "(81) 3184-3352",
@@ -49,12 +52,13 @@
     "latitude": -8.0469,
     "longitude": -34.8812,
     "fonte_dados": "Curadoria Manual (Seed)",
-    "verificado_manualmente": true
+    "verificado_manualmente": true,
+    "ativo": true
   },
   {
     "id": "seed_prot_01",
     "nome": "Centro de Referência Clarice Lispector",
-    "categoria": "Segurança e Proteção",
+    "categoria": "seguranca",
     "endereco": "Rua Bernardo Guimarães, 470 - Santo Amaro, Recife - PE",
     "bairro": "Santo Amaro",
     "telefone": "0800 281 0107",
@@ -62,12 +66,13 @@
     "latitude": -8.0545,
     "longitude": -34.8845,
     "fonte_dados": "Curadoria Manual (Seed)",
-    "verificado_manualmente": true
+    "verificado_manualmente": true,
+    "ativo": true
   },
   {
     "id": "seed_compaz_01",
     "nome": "Compaz Governador Eduardo Campos",
-    "categoria": "Empreendedorismo e Geração de Renda",
+    "categoria": "empreendedorismo",
     "endereco": "Av. Aníbal Benévolo, s/n - Alto Santa Terezinha, Recife - PE",
     "bairro": "Alto Santa Terezinha",
     "telefone": "(81) 3355-6831",
@@ -75,12 +80,13 @@
     "latitude": -8.0135,
     "longitude": -34.8961,
     "fonte_dados": "Curadoria Manual (Seed)",
-    "verificado_manualmente": true
+    "verificado_manualmente": true,
+    "ativo": true
   },
   {
     "id": "seed_compaz_02",
     "nome": "Compaz Escritor Ariano Suassuna",
-    "categoria": "Empreendedorismo e Geração de Renda",
+    "categoria": "empreendedorismo",
     "endereco": "Av. Gen. San Martin, 1208 - Cordeiro, Recife - PE",
     "bairro": "Cordeiro",
     "telefone": "(81) 3355-6831",
@@ -88,12 +94,13 @@
     "latitude": -8.0560,
     "longitude": -34.9215,
     "fonte_dados": "Curadoria Manual (Seed)",
-    "verificado_manualmente": true
+    "verificado_manualmente": true,
+    "ativo": true
   },
   {
     "id": "seed_cras_01",
     "nome": "CRAS - Centro de Referência de Assistência Social (Santo Amaro)",
-    "categoria": "CRAS e Apoio",
+    "categoria": "assistencia",
     "endereco": "Av. Cruz Cabugá, s/n - Santo Amaro, Recife - PE",
     "bairro": "Santo Amaro",
     "telefone": "(81) 3355-1234",
@@ -101,12 +108,13 @@
     "latitude": -8.0501,
     "longitude": -34.8770,
     "fonte_dados": "Curadoria Manual (Seed)",
-    "verificado_manualmente": true
+    "verificado_manualmente": true,
+    "ativo": true
   },
   {
     "id": "seed_educ_01",
     "nome": "CMEI Professor Paulo Rosas",
-    "categoria": "Creches e Educação",
+    "categoria": "educacao_creche",
     "endereco": "Av. Prof. Artur de Sá, s/n - Cidade Universitária, Recife - PE",
     "bairro": "Cidade Universitária",
     "telefone": "(81) 3355-4321",
@@ -114,6 +122,7 @@
     "latitude": -8.0522,
     "longitude": -34.9490,
     "fonte_dados": "Curadoria Manual (Seed)",
-    "verificado_manualmente": true
+    "verificado_manualmente": true,
+    "ativo": true
   }
 ]

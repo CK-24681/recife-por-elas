@@ -1,254 +1,135 @@
-import type { Pool } from 'pg';
-import fs from 'fs';
-import path from 'path';
+import { Pool } from 'pg';
 
-export interface EquipamentoPublico {
-  id: string;
-  nome: string;
-  categoria: string;
-  endereco: string;
-  bairro: string;
-  telefone: string;
-  horario_funcionamento: string;
-  latitude: number;
-  longitude: number;
-  fonte_dados: string;
-}
-
-export const TERMOS_CATEGORIAS = [
-  { termo: 'hospital da mulher', categoria: 'Saúde da Mulher' },
-  { termo: 'maternidade', categoria: 'Saúde da Mulher' },
-  { termo: 'policlinica', categoria: 'Saúde da Mulher' },
-  { termo: 'delegacia da mulher', categoria: 'Segurança e Proteção' },
-  { termo: 'protecao', categoria: 'Segurança e Proteção' },
-  { termo: 'deam', categoria: 'Segurança e Proteção' },
-  { termo: 'compaz', categoria: 'Empreendedorismo e Geração de Renda' },
-  { termo: 'sala do empreendedor', categoria: 'Empreendedorismo e Geração de Renda' },
-  { termo: 'qualifica', categoria: 'Empreendedorismo e Geração de Renda' },
-  { termo: 'cras', categoria: 'CRAS e Apoio' },
-  { termo: 'creas', categoria: 'CRAS e Apoio' },
-  { termo: 'assistencia social', categoria: 'CRAS e Apoio' },
-  { termo: 'creche', categoria: 'Creches e Educação' },
-  { termo: 'eja', categoria: 'Creches e Educação' }
+// IDs reais ou de exemplo dos datasets do Recife (dados.recife.pe.gov.br)
+const RESOURCE_IDS = [
+  '2eaaed0b-af55-460c-85ce-ddc7b2cc8e21', // Ex: Unidades de Saúde
+  'd4d8a7f0-d4be-4397-b950-f0c991438111', // Ex: Escolas e Creches
+  '4c99736e-d4c3-424a-939e-4e4a9e1e2d42', // Ex: Assistência Social (CRAS, CREAS)
+  'c62d64f0-4f51-40b9-8e6f-40e94939b4f9', // Ex: Compaz / Geração de Renda
+  // Adicione outros IDs reais do CKAN Recife aqui
 ];
 
-export function isEquipamentoRelevante(nome: string, categoria: string): boolean {
-  const n = nome.toLowerCase();
-  
-  if (categoria === 'Saúde da Mulher') {
-    return /mulher|maternidade|materno|policl[íi]nica/.test(n);
-  }
-  if (categoria === 'Segurança e Proteção') {
-    return /mulher|deam|prote[çc][ãa]o|defensoria/.test(n);
-  }
-  if (categoria === 'Creches e Educação') {
-    return /creche|cmei|eja|infantil/.test(n);
-  }
-  if (categoria === 'Empreendedorismo e Geração de Renda') {
-    return /compaz|empreendedor|qualifica|incubadora/.test(n);
-  }
-  if (categoria === 'CRAS e Apoio') {
-    return /cras|creas|assist[êe]ncia/.test(n);
-  }
-  return true;
+const CKAN_API_URL = 'http://dados.recife.pe.gov.br/api/3/action/datastore_search';
+
+// Função auxiliar para tentar extrair latitude e longitude dos dados brutos
+function extrairCoordenadas(record: any): { lat: number | null; lng: number | null } {
+  const latStr = record.latitude || record.lat || record.LATITUDE || record.LAT;
+  const lngStr = record.longitude || record.lon || record.lng || record.LONGITUDE || record.LONG;
+
+  let lat = latStr ? parseFloat(String(latStr).replace(',', '.')) : null;
+  let lng = lngStr ? parseFloat(String(lngStr).replace(',', '.')) : null;
+
+  if (lat && isNaN(lat)) lat = null;
+  if (lng && isNaN(lng)) lng = null;
+
+  return { lat, lng };
 }
 
-// Normalizador Universal: adivinha colunas de Latitude, Longitude, Nome e Endereço
-export function normalizarRegistroCKAN(
-  rec: Record<string, unknown>,
-  categoria: string,
-  resourceId: string,
-  index: number
-): EquipamentoPublico | null {
-  if (!rec || typeof rec !== 'object') return null;
+// Função para categorizar com base em palavras-chave no texto
+function categorizarEquipamento(record: any): string {
+  // Transforma o record inteiro em string para buscar palavras em qualquer campo (nome, descricao, tipo, etc)
+  const textoGeral = JSON.stringify(record).toLowerCase();
 
-  const keys = Object.keys(rec);
-
-  // Procurar chave de Latitude (lat, latitude, y, coordenada_y)
-  const latKey = keys.find((k) =>
-    /^(latitude|lat|coordenada_y|y|lat_y)$/i.test(k.trim()) ||
-    /latitude|coordenada_y/i.test(k.trim())
-  );
-
-  // Procurar chave de Longitude (lon, lng, longitude, x, coordenada_x)
-  const lngKey = keys.find((k) =>
-    /^(longitude|lng|lon|coordenada_x|x|long|lng_x)$/i.test(k.trim()) ||
-    /longitude|coordenada_x/i.test(k.trim())
-  );
-
-  if (!latKey || !lngKey) return null;
-
-  const rawLat = rec[latKey];
-  const rawLng = rec[lngKey];
-
-  let lat = typeof rawLat === 'number' ? rawLat : parseFloat(String(rawLat).replace(',', '.'));
-  let lng = typeof rawLng === 'number' ? rawLng : parseFloat(String(rawLng).replace(',', '.'));
-
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-
-  // Ajustar se lat/lng vierem invertidas
-  if (lat < -30 && lng > -10) {
-    const temp = lat;
-    lat = lng;
-    lng = temp;
+  if (textoGeral.includes('mulher') && (textoGeral.includes('delegacia') || textoGeral.includes('deam'))) {
+    return 'Segurança';
+  }
+  if (textoGeral.includes('mulher') && (textoGeral.includes('maternidade') || textoGeral.includes('hospital') || textoGeral.includes('saúde') || textoGeral.includes('saude'))) {
+    return 'Saúde da Mulher';
+  }
+  if (textoGeral.includes('creche') || textoGeral.includes('infantil') || textoGeral.includes('cmei') || textoGeral.includes('escola')) {
+    return 'Educação Infantil';
+  }
+  if (textoGeral.includes('cras') || textoGeral.includes('creas') || textoGeral.includes('assistência social') || textoGeral.includes('assistencia social')) {
+    return 'Assistência Social';
+  }
+  if (textoGeral.includes('compaz') || textoGeral.includes('empreendedor') || textoGeral.includes('renda')) {
+    return 'Geração de Renda e Cidadania';
   }
 
-  // Validação geográfica para a região do Recife / Pernambuco (-9.5 < lat < -7.0 e -36.0 < lng < -34.0)
-  if (lat < -9.5 || lat > -7.0 || lng < -36.0 || lng > -34.0) return null;
+  // Se for uma delegacia mas não necessariamente da mulher
+  if (textoGeral.includes('delegacia')) {
+    return 'Segurança';
+  }
 
-  // Procurar chave de Nome (nome, equipamento, unidade, descricao)
-  const nomeKey = keys.find((k) =>
-    /^(nome|equipamento|unidade|descricao|escola|hospital|denominacao|nome_oficial)$/i.test(k.trim()) ||
-    /nome|equipamento|unidade/i.test(k.trim())
-  );
-
-  const nomeRaw = nomeKey ? rec[nomeKey] : null;
-  const nome = nomeRaw ? String(nomeRaw).trim() : `${categoria.toUpperCase()} #${index + 1}`;
-
-  // Procurar endereço se existir
-  const endKey = keys.find((k) => /endereco|logradouro|localizacao/i.test(k.trim()) && !/bairro/i.test(k.trim()));
-  const endereco = endKey ? String(rec[endKey]).trim() : '';
-
-  const bairroKey = keys.find((k) => /bairro/i.test(k.trim()));
-  const bairro = bairroKey ? String(rec[bairroKey]).trim() : '';
-
-  const telKey = keys.find((k) => /telefone|celular|contato/i.test(k.trim()));
-  const telefone = telKey ? String(rec[telKey]).trim() : '';
-
-  const horKey = keys.find((k) => /horario|funcionamento/i.test(k.trim()));
-  const horario_funcionamento = horKey ? String(rec[horKey]).trim() : '';
-
-  const fonte_dados = 'API Dados Abertos Recife (CKAN)';
-
-  const id = `${resourceId}_${rec._id || index}`;
-
-  return {
-    id,
-    nome,
-    categoria,
-    endereco,
-    bairro,
-    telefone,
-    horario_funcionamento,
-    latitude: lat,
-    longitude: lng,
-    fonte_dados
-  };
+  return 'Outros'; // Itens "Outros" não aparecerão no mapa
 }
 
-// Serviço de Sincronização em Segundo Plano (Worker/Cron)
 export async function sincronizarEquipamentosCKAN(pool: Pool): Promise<void> {
-  console.log('[CKAN Sync] Iniciando sincronização com API do Recife em segundo plano...');
-  const equipamentos: EquipamentoPublico[] = [];
-  const idsProcessados = new Set<string>();
+  console.log('[CKAN Sync] Iniciando sincronização do CKAN...');
 
-  let seedData: EquipamentoPublico[] = [];
-  try {
-    const seedPath = path.join(__dirname, '../data/seedEquipamentos.json');
-    if (fs.existsSync(seedPath)) {
-      const raw = fs.readFileSync(seedPath, 'utf8');
-      seedData = JSON.parse(raw);
-    }
-  } catch(e) {
-    console.error('[CKAN Sync] Erro ao ler seedEquipamentos.json:', e);
-  }
+  let upsertados = 0;
 
-  for (const tc of TERMOS_CATEGORIAS) {
-    const termo = tc.termo;
-    const categoriaDaBusca = tc.categoria;
+  for (const resourceId of RESOURCE_IDS) {
     try {
-      const urlPkg = `https://dados.recife.pe.gov.br/api/3/action/package_search?q=${encodeURIComponent(termo)}`;
-      const resPkg = await fetch(urlPkg);
-      if (!resPkg.ok) continue;
+      console.log(`[CKAN Sync] Buscando dados do resource_id: ${resourceId}`);
+      // Limite alto para garantir que trazemos tudo, ou podemos paginar
+      const response = await fetch(`${CKAN_API_URL}?resource_id=${resourceId}&limit=10000`);
+      
+      if (!response.ok) {
+        console.error(`[CKAN Sync] Falha ao buscar resource_id ${resourceId}: ${response.statusText}`);
+        continue;
+      }
 
-      const dataPkg = (await resPkg.json()) as { result?: { results?: Array<{ resources?: Array<{ id?: string; format?: string; datastore_active?: boolean }> }> } };
-      const pacotes = dataPkg?.result?.results;
-      if (!Array.isArray(pacotes)) continue;
+      const data = await response.json();
+      const records = data?.result?.records || [];
 
-      for (const pkg of pacotes.slice(0, 4)) {
-        const resources = pkg?.resources;
-        if (!Array.isArray(resources)) continue;
+      console.log(`[CKAN Sync] ${records.length} registros encontrados no resource_id ${resourceId}`);
 
-        for (const r of resources) {
-          const resId = r?.id;
-          const format = String(r?.format || '').toUpperCase();
-          const datastoreActive = Boolean(r?.datastore_active || format === 'CSV');
+      for (const record of records) {
+        const idStr = record._id ? String(record._id) : Math.random().toString(36).substring(7);
+        const uniqueId = `ckan_${resourceId}_${idStr}`; // Evita colisão entre diferentes recursos
 
-          if (!resId || !datastoreActive || idsProcessados.has(resId)) continue;
-          idsProcessados.add(resId);
+        const nome = record.nome || record.nome_oficial || record.equipamento || record.unidade || `Equipamento ${idStr}`;
+        const endereco = record.endereco || record.logradouro || '';
+        const bairro = record.bairro || '';
+        const telefone = record.telefone || record.fone || '';
+        const horario_funcionamento = record.horario_funcionamento || record.funcionamento || '';
+        const fonte_dados = `CKAN_${resourceId}`;
+        const dadosBrutos = JSON.stringify(record);
 
-          try {
-            const urlData = `https://dados.recife.pe.gov.br/api/3/action/datastore_search?resource_id=${encodeURIComponent(resId)}&limit=100`;
-            const resData = await fetch(urlData);
-            if (!resData.ok) continue;
+        const { lat, lng } = extrairCoordenadas(record);
+        const categoria = categorizarEquipamento(record);
 
-            const dataRecords = (await resData.json()) as { result?: { records?: Array<Record<string, unknown>> } };
-            const records = dataRecords?.result?.records;
-            if (!Array.isArray(records)) continue;
-
-            for (let i = 0; i < records.length; i++) {
-              const eq = normalizarRegistroCKAN(records[i], categoriaDaBusca, resId, i);
-              if (eq && isEquipamentoRelevante(eq.nome, eq.categoria)) {
-                equipamentos.push(eq);
-              }
-            }
-          } catch (e) {
-            console.warn(`[CKAN Sync] Erro ao ler resource ${resId}:`, e);
-          }
+        try {
+          await pool.query(
+            `INSERT INTO equipamentos_locais (
+              id, nome, categoria, endereco, bairro, telefone, horario_funcionamento, latitude, longitude, fonte_dados, dados_brutos
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+            ON CONFLICT (id) DO UPDATE SET
+              nome = EXCLUDED.nome,
+              categoria = EXCLUDED.categoria,
+              endereco = EXCLUDED.endereco,
+              bairro = EXCLUDED.bairro,
+              telefone = EXCLUDED.telefone,
+              horario_funcionamento = EXCLUDED.horario_funcionamento,
+              latitude = EXCLUDED.latitude,
+              longitude = EXCLUDED.longitude,
+              fonte_dados = EXCLUDED.fonte_dados,
+              dados_brutos = EXCLUDED.dados_brutos,
+              atualizado_em = now()`,
+            [
+              uniqueId,
+              nome,
+              categoria,
+              endereco,
+              bairro,
+              telefone,
+              horario_funcionamento,
+              lat,
+              lng,
+              fonte_dados,
+              dadosBrutos
+            ]
+          );
+          upsertados++;
+        } catch (dbErr) {
+          console.error(`[CKAN Sync] Erro ao salvar registro ${uniqueId}:`, dbErr);
         }
       }
-    } catch (e) {
-      console.warn(`[CKAN Sync] Erro ao buscar pacotes para o termo '${termo}':`, e);
+    } catch (fetchErr) {
+      console.error(`[CKAN Sync] Erro de rede/fetch no resource_id ${resourceId}:`, fetchErr);
     }
   }
 
-  if (equipamentos.length === 0 && seedData.length === 0) {
-    console.log('[CKAN Sync] Nenhum registro retornado da API ou serviço indisponível no momento.');
-    return;
-  }
-
-  equipamentos.push(...seedData);
-
-  const deduplicados = equipamentos.reduce((acc, current) => {
-    const existe = acc.find(item => 
-      (Math.abs(item.latitude - current.latitude) < 0.0001 && Math.abs(item.longitude - current.longitude) < 0.0001) ||
-      (item.nome.toLowerCase().trim() === current.nome.toLowerCase().trim())
-    );
-    if (!existe) {
-      acc.push(current);
-    } else {
-      if (current.id.startsWith('seed_') && !existe.id.startsWith('seed_')) {
-        const idx = acc.indexOf(existe);
-        acc[idx] = current;
-      }
-    }
-    return acc;
-  }, [] as EquipamentoPublico[]);
-
-  console.log(`[CKAN Sync] ${deduplicados.length} registros (após deduplicação). Executando Upsert no banco de dados...`);
-
-  for (const eq of deduplicados) {
-    try {
-      await pool.query(
-        `INSERT INTO equipamentos_locais (id, nome, categoria, endereco, bairro, telefone, horario_funcionamento, latitude, longitude, fonte_dados)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-         ON CONFLICT (id) DO UPDATE SET
-           nome = CASE WHEN equipamentos_locais.verificado_manualmente = true THEN equipamentos_locais.nome ELSE EXCLUDED.nome END,
-           categoria = CASE WHEN equipamentos_locais.verificado_manualmente = true THEN equipamentos_locais.categoria ELSE EXCLUDED.categoria END,
-           endereco = CASE WHEN equipamentos_locais.verificado_manualmente = true THEN equipamentos_locais.endereco ELSE EXCLUDED.endereco END,
-           bairro = CASE WHEN equipamentos_locais.verificado_manualmente = true THEN equipamentos_locais.bairro ELSE EXCLUDED.bairro END,
-           telefone = CASE WHEN equipamentos_locais.verificado_manualmente = true THEN equipamentos_locais.telefone ELSE EXCLUDED.telefone END,
-           horario_funcionamento = CASE WHEN equipamentos_locais.verificado_manualmente = true THEN equipamentos_locais.horario_funcionamento ELSE EXCLUDED.horario_funcionamento END,
-           latitude = CASE WHEN equipamentos_locais.verificado_manualmente = true THEN equipamentos_locais.latitude ELSE EXCLUDED.latitude END,
-           longitude = CASE WHEN equipamentos_locais.verificado_manualmente = true THEN equipamentos_locais.longitude ELSE EXCLUDED.longitude END,
-           fonte_dados = EXCLUDED.fonte_dados,
-           atualizado_em = now()`,
-        [eq.id, eq.nome, eq.categoria, eq.endereco, eq.bairro, eq.telefone, eq.horario_funcionamento, eq.latitude, eq.longitude, eq.fonte_dados]
-      );
-    } catch (e) {
-      console.error(`[CKAN Sync] Erro ao salvar equipamento ${eq.id}:`, e);
-    }
-  }
-
-  console.log(`[CKAN Sync] Sincronização concluída com sucesso. Total de registros salvos/atualizados: ${equipamentos.length}`);
+  console.log(`[CKAN Sync] Finalizado! ${upsertados} registros sincronizados do CKAN.`);
 }

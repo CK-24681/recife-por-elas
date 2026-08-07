@@ -77,6 +77,7 @@ export async function inicializarBanco(pool: Pool, schema: string): Promise<void
       fonte_dados VARCHAR DEFAULT 'desconhecida',
       verificado_manualmente BOOLEAN DEFAULT false,
       ativo      BOOLEAN DEFAULT true,
+      dados_brutos JSONB,
       atualizado_em TIMESTAMPTZ DEFAULT now(),
       criado_em  TIMESTAMPTZ DEFAULT now()
     )`);
@@ -633,11 +634,27 @@ export function registrarRotas(app: Express, pool: Pool): void {
   app.get('/api/mapa/locais', async (_req: Request, res: Response) => {
     if (!pool) return res.status(503).json({ erro: 'banco de dados nao disponivel' });
     try {
-      const { rows } = await pool.query('SELECT * FROM equipamentos_locais');
+      // Filtrar no backend/banco de dados: retornar apenas categorias relevantes mapeadas
+      const { rows } = await pool.query(
+        "SELECT * FROM equipamentos_locais WHERE categoria != 'Outros' AND latitude IS NOT NULL AND longitude IS NOT NULL"
+      );
       res.json(rows);
     } catch (e) {
       console.error('Erro ao buscar equipamentos_locais:', e);
       res.status(500).json({ erro: 'erro interno' });
+    }
+  });
+
+  app.post('/api/admin/sync-ckan', async (_req: Request, res: Response) => {
+    if (!pool) return res.status(503).json({ erro: 'banco de dados nao disponivel' });
+    try {
+      const { sincronizarEquipamentosCKAN } = await import('./services/ckanSync.js');
+      // Executa de forma assíncrona (não bloqueia a resposta, mas aqui vamos aguardar para ter o resultado)
+      await sincronizarEquipamentosCKAN(pool);
+      res.json({ ok: true, mensagem: 'Sincronização CKAN concluída com sucesso.' });
+    } catch (e) {
+      console.error('Erro ao sincronizar CKAN:', e);
+      res.status(500).json({ erro: 'erro interno durante sincronização' });
     }
   });
 }

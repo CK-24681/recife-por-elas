@@ -11,7 +11,7 @@ import { inicializarUploads } from './uploads';
 import { inicializarArquivos } from './arquivos';
 import { estadoDeSaude, registrarInicializacao } from './saude';
 import { inicializarBanco, registrarRotas } from './rotas';
-import { sincronizarEquipamentosCKAN } from './services/ckanSync';
+import { sincronizarEquipamentosSeed } from './services/seedSync';
 import path from 'node:path';
 
 // Porta vem da plataforma (process.env.PORT). Em dev, cai pra 3000.
@@ -91,16 +91,10 @@ if (pool) {
   // Telemetria ANTES das rotas: middleware loga todo CRUD + endpoint de pageview.
   registrarTelemetria(app, pool);
 
-  // Executa sincronização do CKAN na subida e agenda a cada 24 horas (86.400.000 ms)
-  sincronizarEquipamentosCKAN(pool).catch((err) =>
-    console.error('[CKAN Sync] Erro na sincronização inicial:', err)
+  // Injeta os dados do arquivo de curadoria manual no banco
+  sincronizarEquipamentosSeed(pool).catch((err) =>
+    console.error('[Seed Sync] Erro na inserção manual:', err)
   );
-  const INTERVALO_24H = 24 * 60 * 60 * 1000;
-  setInterval(() => {
-    sincronizarEquipamentosCKAN(pool).catch((err) =>
-      console.error('[CKAN Sync] Erro no agendamento periódico do CKAN:', err)
-    );
-  }, INTERVALO_24H);
 }
 
 // Rotas SEMPRE registradas — síncronas, não dependem do banco estar pronto.
