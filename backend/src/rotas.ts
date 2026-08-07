@@ -84,42 +84,16 @@ export async function inicializarBanco(pool: Pool, schema: string): Promise<void
 
   await pool.query(`ALTER TABLE equipamentos_locais ADD COLUMN IF NOT EXISTS dados_brutos JSONB`);
 
-  // Auto-sincronizar dados do CKAN se a tabela estiver vazia OU os dados tiverem mais de 24h
+  // Sincronizar dados do CKAN sempre na inicialização do servidor backend
   try {
-    const timeRes = await pool.query(`
-      SELECT 
-        COUNT(*)::int as total,
-        MAX(atualizado_em) as ultima_atualizacao
-      FROM equipamentos_locais
-    `);
-    
-    const total = timeRes.rows[0]?.total || 0;
-    const ultimaAtualizacao = timeRes.rows[0]?.ultima_atualizacao ? new Date(timeRes.rows[0].ultima_atualizacao).getTime() : 0;
-    const umDiaEmMs = 24 * 60 * 60 * 1000;
-    const dadosAntigos = Date.now() - ultimaAtualizacao > umDiaEmMs;
-
-    if (total === 0 || dadosAntigos) {
-      console.log(`[Startup] Dados do CKAN ${total === 0 ? 'ausentes' : 'desatualizados (mais de 24h)'}. Sincronizando automaticamente...`);
-      import('./services/ckanSync.js').then(({ sincronizarEquipamentosCKAN }) => {
-        sincronizarEquipamentosCKAN(pool).catch((err) => {
-          console.error('[Startup Sync CKAN] Erro na sincronização inicial:', err);
-        });
+    console.log('[Startup] Executando sincronização automática dos dados do CKAN...');
+    import('./services/ckanSync.js').then(({ sincronizarEquipamentosCKAN }) => {
+      sincronizarEquipamentosCKAN(pool).catch((err) => {
+        console.error('[Startup Sync CKAN] Erro na sincronização inicial:', err);
       });
-    }
-
-    // Agendar atualização automática recorrente a cada 24 horas
-    const INTERVALO_24H = 24 * 60 * 60 * 1000;
-    setInterval(() => {
-      console.log('[Cron Diário] Executando sincronização diária dos dados do CKAN...');
-      import('./services/ckanSync.js').then(({ sincronizarEquipamentosCKAN }) => {
-        sincronizarEquipamentosCKAN(pool).catch((err) => {
-          console.error('[Cron Diário CKAN] Erro na sincronização periódica:', err);
-        });
-      });
-    }, INTERVALO_24H);
-
+    });
   } catch (err) {
-    console.error('[Startup] Erro ao checar sincronização da tabela equipamentos_locais:', err);
+    console.error('[Startup] Erro ao inicializar sincronização do CKAN:', err);
   }
 
 
