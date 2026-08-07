@@ -1,5 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from '../utils/roteador';
+import { apiJSON } from '../services/api';
+
+interface Oportunidade {
+  id?: number;
+  titulo: string;
+  descricao: string;
+  empresa?: string;
+  tipo: string;
+  link_inscricao?: string;
+  bairro?: string;
+}
 
 type Nivel = 1 | 2 | 3;
 
@@ -13,7 +24,7 @@ interface PassoTrilha {
   titulo: string;
   descricao: string;
   habilidades: Habilidade[];
-  acoes: { label: string; link: string; interno?: boolean; destaque?: boolean }[];
+  filtrosTipo: string[];
 }
 
 interface Momento {
@@ -34,15 +45,12 @@ const MOMENTOS: Momento[] = [
       {
         nivel: 1,
         titulo: 'Base de Estabilidade',
-        descricao: 'Antes de acelerar, garanta os benefícios sociais básicos (CRAS, Bolsa Família) e rede de apoio para seus filhos.',
+        descricao: 'Antes de acelerar, garanta os benefícios sociais básicos e rede de apoio para seus filhos.',
         habilidades: [
           { nome: 'Gestão de Orçamento Básico', tipo: 'hard' },
           { nome: 'Resiliência e Foco', tipo: 'soft' }
         ],
-        acoes: [
-          { label: 'Ver Benefícios (CRAS)', link: '/mapa', interno: true },
-          { label: 'Vagas Diaristas/Freelance', link: '/', interno: true, destaque: true }
-        ]
+        filtrosTipo: ['benefício', 'apoio']
       },
       {
         nivel: 2,
@@ -50,11 +58,9 @@ const MOMENTOS: Momento[] = [
         descricao: 'Aprenda uma habilidade prática de curta duração (ex: culinária, beleza, artesanato) que possa ser vendida imediatamente.',
         habilidades: [
           { nome: 'Atendimento ao Cliente', tipo: 'soft' },
-          { nome: 'Técnicas de Venda Simples', tipo: 'hard' }
+          { nome: 'Técnicas de Venda', tipo: 'hard' }
         ],
-        acoes: [
-          { label: 'Cursos Qualifica Recife', link: 'https://qualifica.recife.pe.gov.br/' }
-        ]
+        filtrosTipo: ['curso', 'oficina', 'microcapacitação']
       },
       {
         nivel: 3,
@@ -64,9 +70,7 @@ const MOMENTOS: Momento[] = [
           { nome: 'Uso de Redes Sociais', tipo: 'hard' },
           { nome: 'Comunicação Clara', tipo: 'soft' }
         ],
-        acoes: [
-          { label: 'Microcrédito CredPop', link: 'https://credpop.recife.pe.gov.br/' }
-        ]
+        filtrosTipo: ['emprego', 'freelance', 'microcrédito']
       }
     ]
   },
@@ -84,21 +88,16 @@ const MOMENTOS: Momento[] = [
           { nome: 'Educação Financeira', tipo: 'hard' },
           { nome: 'Planejamento', tipo: 'soft' }
         ],
-        acoes: [
-          { label: 'Cursos SEBRAE', link: 'https://pe.lojavirtualsebrae.com.br/', destaque: true }
-        ]
+        filtrosTipo: ['curso', 'oficina']
       },
       {
         nivel: 2,
         titulo: 'Formalização MEI',
         descricao: 'Abra seu CNPJ MEI gratuitamente. Isso garante seus direitos previdenciários (auxílio-doença, salário maternidade).',
         habilidades: [
-          { nome: 'Navegação em Portais do Governo', tipo: 'hard' }
+          { nome: 'Navegação em Portais', tipo: 'hard' }
         ],
-        acoes: [
-          { label: 'Portal do Empreendedor', link: 'https://www.gov.br/empresas-e-negocios/pt-br/empreendedor' },
-          { label: 'Salas do Empreendedor', link: '/mapa', interno: true }
-        ]
+        filtrosTipo: ['apoio', 'serviço']
       },
       {
         nivel: 3,
@@ -108,9 +107,7 @@ const MOMENTOS: Momento[] = [
           { nome: 'Gestão de Estoque', tipo: 'hard' },
           { nome: 'Negociação', tipo: 'soft' }
         ],
-        acoes: [
-          { label: 'CredPop Recife', link: 'https://credpop.recife.pe.gov.br/', destaque: true }
-        ]
+        filtrosTipo: ['microcrédito', 'financiamento']
       }
     ]
   },
@@ -128,34 +125,27 @@ const MOMENTOS: Momento[] = [
           { nome: 'Autoconhecimento', tipo: 'soft' },
           { nome: 'Ferramentas de Texto', tipo: 'hard' }
         ],
-        acoes: [
-          { label: 'Gerador de CV Simples', link: '#' }
-        ]
+        filtrosTipo: ['apoio', 'benefício']
       },
       {
         nivel: 2,
         titulo: 'Atualização Profissional',
         descricao: 'Faça cursos técnicos gratuitos (SENAI, SENAC) na sua área para voltar competitiva ao mercado.',
         habilidades: [
-          { nome: 'Adaptação tecnológica', tipo: 'soft' },
+          { nome: 'Adaptação', tipo: 'soft' },
           { nome: 'Pacote Office Básico', tipo: 'hard' }
         ],
-        acoes: [
-          { label: 'Vagas no Feed', link: '/', interno: true, destaque: true },
-          { label: 'SENAC PE', link: 'https://www.pe.senac.br/psg/' }
-        ]
+        filtrosTipo: ['curso', 'técnico']
       },
       {
         nivel: 3,
-        titulo: 'Entrevistas e Networking',
+        titulo: 'Entrevistas e Vagas',
         descricao: 'Aprenda a se portar em entrevistas e acione sua rede de contatos para indicações.',
         habilidades: [
           { nome: 'Comunicação e Oratória', tipo: 'soft' },
           { nome: 'Inteligência Emocional', tipo: 'soft' }
         ],
-        acoes: [
-          { label: 'Agências de Trabalho no Mapa', link: '/mapa', interno: true }
-        ]
+        filtrosTipo: ['emprego', 'vaga']
       }
     ]
   },
@@ -171,44 +161,68 @@ const MOMENTOS: Momento[] = [
         descricao: 'Ganhe fluência com computadores, digitação, navegadores e ferramentas de trabalho remoto (Zoom, Drive).',
         habilidades: [
           { nome: 'Informática Básica', tipo: 'hard' },
-          { nome: 'Curiosidade e Aprendizado', tipo: 'soft' }
+          { nome: 'Curiosidade', tipo: 'soft' }
         ],
-        acoes: [
-          { label: 'Nave do Conhecimento (Mapa)', link: '/mapa', interno: true }
-        ]
+        filtrosTipo: ['curso', 'oficina']
       },
       {
         nivel: 2,
         titulo: 'Formação Específica',
         descricao: 'Entre em bootcamps ou formações técnicas focadas em Mulheres (ex: Programação, Design, Assistente Virtual).',
         habilidades: [
-          { nome: 'Lógica e Resolução de Problemas', tipo: 'hard' },
+          { nome: 'Lógica', tipo: 'hard' },
           { nome: 'Gestão de Tempo', tipo: 'soft' }
         ],
-        acoes: [
-          { label: 'Porto Digital Mulheres', link: 'https://www.portodigital.org/', destaque: true },
-          { label: 'IFPE Cursos', link: 'https://www.ifpe.edu.br/' }
-        ]
+        filtrosTipo: ['curso', 'bootcamp']
       },
       {
         nivel: 3,
         titulo: 'Primeira Oportunidade Júnior',
         descricao: 'Monte um portfólio prático com projetos reais e candidate-se a vagas júnior remotas ou híbridas na RMR.',
         habilidades: [
-          { nome: 'Trabalho em Equipe (Remoto)', tipo: 'soft' },
+          { nome: 'Trabalho em Equipe', tipo: 'soft' },
           { nome: 'Metodologias Ágeis', tipo: 'hard' }
         ],
-        acoes: [
-          { label: 'Filtrar Vagas Tech', link: '/', interno: true }
-        ]
+        filtrosTipo: ['emprego', 'estágio', 'vaga']
       }
     ]
   }
 ];
 
+function normalizar(valor: string): string {
+  return String(valor || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
 export default function PlanoCarreira() {
   const [momentoAtivo, setMomentoAtivo] = useState<Momento | null>(null);
   const [nivelAtivo, setNivelAtivo] = useState<Nivel>(1);
+  const [oportunidades, setOportunidades] = useState<Oportunidade[]>([]);
+  const [carregando, setCarregando] = useState(true);
+
+  useEffect(() => {
+    let ativo = true;
+    const carregar = async () => {
+      setCarregando(true);
+      try {
+        const [internas, externas] = await Promise.all([
+          apiJSON<Oportunidade[]>('/oportunidades').catch(() => []),
+          apiJSON<Oportunidade[]>('/oportunidades/externas').catch(() => []),
+        ]);
+        if (ativo) {
+          setOportunidades([...internas, ...externas]);
+        }
+      } finally {
+        if (ativo) setCarregando(false);
+      }
+    };
+    void carregar();
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   if (!momentoAtivo) {
     return (
@@ -242,6 +256,18 @@ export default function PlanoCarreira() {
   }
 
   const passoAtual = momentoAtivo.trilha.find(p => p.nivel === nivelAtivo)!;
+
+  // Filtragem dinâmica de oportunidades baseada nos filtros do Nível Atual
+  const oportunidadesFiltradas = oportunidades.filter(op => {
+    const tipoNormalizado = normalizar(op.tipo);
+    const tituloNormalizado = normalizar(op.titulo);
+    
+    // Verifica se o tipo da oportunidade combina com os filtros exigidos pelo nível (e.g., 'curso', 'vaga', 'benefício')
+    return passoAtual.filtrosTipo.some(filtro => {
+      const fNorm = normalizar(filtro);
+      return tipoNormalizado.includes(fNorm) || tituloNormalizado.includes(fNorm);
+    });
+  }).slice(0, 4); // Limita a 4 recomendações para não sobrecarregar a tela
 
   return (
     <main className="container" style={{ paddingBlock: '40px' }}>
@@ -310,20 +336,38 @@ export default function PlanoCarreira() {
             </div>
 
             <div className="pc-acoes-box">
-              <h3>Recomendações e Próximos Passos</h3>
-              <div className="pc-acoes-list">
-                {passoAtual.acoes.map(acao => (
-                  acao.interno ? (
-                    <Link key={acao.label} to={acao.link} className={`btn-acao ${acao.destaque ? 'primario' : 'secundario'}`}>
-                      {acao.label} →
-                    </Link>
-                  ) : (
-                    <a key={acao.label} href={acao.link} target="_blank" rel="noopener noreferrer" className={`btn-acao ${acao.destaque ? 'primario' : 'secundario'}`}>
-                      {acao.label} ↗
-                    </a>
-                  )
-                ))}
-              </div>
+              <h3>Oportunidades Conectadas a este Nível</h3>
+              {carregando ? (
+                <p style={{ color: 'var(--texto-suave)', fontSize: '14px' }}>Buscando recomendações no ecossistema...</p>
+              ) : oportunidadesFiltradas.length > 0 ? (
+                <div className="pc-oportunidades-grid">
+                  {oportunidadesFiltradas.map(op => (
+                    <div key={op.id || op.titulo} className="pc-oportunidade-card">
+                      <span className="pc-op-tipo">{op.tipo}</span>
+                      <h4>{op.titulo}</h4>
+                      {op.empresa && <strong className="pc-op-empresa">{op.empresa}</strong>}
+                      <p>{op.descricao.substring(0, 80)}...</p>
+                      
+                      {op.link_inscricao ? (
+                        <a href={op.link_inscricao} target="_blank" rel="noopener noreferrer" className="btn-secundario pc-op-btn">
+                          Acessar ↗
+                        </a>
+                      ) : op.id ? (
+                        <Link to={`/oportunidades/${op.id}`} className="btn-secundario pc-op-btn">
+                          Ver Detalhes →
+                        </Link>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="pc-oportunidade-vazia">
+                  <p>Não encontramos vagas ou cursos públicos exatos para este nível no momento.</p>
+                  <Link to="/mapa" className="btn-primario">
+                    Acessar o Mapa de Apoio
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </section>
