@@ -116,12 +116,6 @@ export default function Mural() {
   const [anexoPreview, setAnexoPreview] = useState('');
   const [anexoErro, setAnexoErro] = useState('');
 
-  const destaque = useMemo(() => {
-    if (modoNovo === 'pedido') {
-      return 'Peça ajuda de forma clara e simples. A comunidade pode responder com indicação, apoio ou solução prática.';
-    }
-    return 'Compartilhe uma conquista, dica, oferta de apoio ou algo que você queira dividir com outras mães.';
-  }, [modoNovo]);
 
   useEffect(() => {
     (async () => {
