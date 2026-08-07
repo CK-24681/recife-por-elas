@@ -269,7 +269,7 @@ export default function PlanoCarreira() {
   });
   
   // Wizard States
-  const [passoWizard, setPassoWizard] = useState(() => {
+  const [passoWizard, setPassoWizard] = useState<number>(() => {
     const salvo = localStorage.getItem('plano_passoWizard');
     return salvo ? JSON.parse(salvo) : 1;
   });
@@ -323,7 +323,7 @@ export default function PlanoCarreira() {
        const m = MOMENTOS.find(mom => mom.id === metaId) || MOMENTOS[0];
        setMomentoAtivo(m);
     } else {
-       setPassoWizard(p => p + 1);
+       setPassoWizard((p: number) => p + 1);
     }
   };
 
@@ -336,7 +336,7 @@ export default function PlanoCarreira() {
     localStorage.removeItem('plano_tarefasConcluidas');
   };
 
-  const toggleTarefa = (id: string, nivel: number) => {
+  const toggleTarefa = (id: string) => {
     setTarefasConcluidas(prev => {
       const concluido = prev.includes(id);
       if (!concluido) {
@@ -353,15 +353,15 @@ export default function PlanoCarreira() {
 
   const verificarNivelBloqueado = (nivel: number, trilha: PassoTrilha[]) => {
     if (nivel === 1) return false;
-    const nivelAnterior = trilha.find(p => p.nivel === nivel - 1);
+    const nivelAnterior = trilha.find((p: PassoTrilha) => p.nivel === nivel - 1);
     if (!nivelAnterior) return false;
-    return nivelAnterior.tarefas.some(t => !tarefasConcluidas.includes(t.id));
+    return nivelAnterior.tarefas.some((t: Tarefa) => !tarefasConcluidas.includes(t.id));
   };
 
   const calcularProgresso = (trilha: PassoTrilha[]) => {
-    const total = trilha.reduce((acc, p) => acc + p.tarefas.length, 0);
+    const total = trilha.reduce((acc: number, p: PassoTrilha) => acc + p.tarefas.length, 0);
     if (total === 0) return 0;
-    const concluidas = trilha.flatMap(p => p.tarefas).filter(t => tarefasConcluidas.includes(t.id)).length;
+    const concluidas = trilha.flatMap((p: PassoTrilha) => p.tarefas).filter((t: Tarefa) => tarefasConcluidas.includes(t.id)).length;
     return Math.round((concluidas / total) * 100);
   };
 
@@ -574,7 +574,7 @@ export default function PlanoCarreira() {
                           <input 
                             type="checkbox" 
                             checked={isConcluida}
-                            onChange={() => toggleTarefa(tarefa.id, passo.nivel)}
+                            onChange={() => toggleTarefa(tarefa.id)}
                             className="plano-checkbox"
                             disabled={isBloqueado}
                           />
